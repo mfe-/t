@@ -1,5 +1,8 @@
-﻿namespace t.lib
+﻿using System.Diagnostics;
+
+namespace t.lib
 {
+    [DebuggerDisplay("Name={Name}, Points={Points}")]
     public class Player
     {
         public Player(string name)

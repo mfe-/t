@@ -1,20 +1,26 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Server
+namespace t.lib
 {
-    public class SocketListener
+    public class ServerSocketListener : IHostedService
     {
-
-        // Incoming data from the client.  
-        public static string data = null;
-
-        public void StartListening()
+        private readonly ILogger _logger;
+        public ServerSocketListener(int serverPort, ILogger logger)
         {
-            // Data buffer for incoming data.  
-            byte[] bytes = new Byte[1024];
+            ServerPort = serverPort;
+            this._logger = logger;
+        }
+        public int ServerPort { get; }
 
+        private async Task StartListeningAsync(CancellationToken cancellationToken)
+        {
             // Establish the local endpoint for the socket.  
             // Dns.GetHostName returns the name of the
             // host running the application.  
@@ -26,6 +32,17 @@ namespace Server
             Socket listener = new Socket(ipAddress.AddressFamily,
                 SocketType.Stream, ProtocolType.Tcp);
 
+            await Task.Factory.StartNew(() => Listening(localEndPoint, listener),
+                cancellationToken, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
+
+        }
+        // Incoming data from the client. 
+        public string? data = null;
+        private void Listening(IPEndPoint localEndPoint, Socket listener)
+        {
+            _logger.LogInformation($"{nameof(Listening)} on {ServerPort}", ServerPort);
+            // Data buffer for incoming data.  
+            byte[] bytes = new byte[1024];
             // Bind the socket to the local endpoint and
             // listen for incoming connections.  
             try
@@ -36,7 +53,7 @@ namespace Server
                 // Start listening for connections.  
                 while (true)
                 {
-                    Console.WriteLine("Waiting for a connection...");
+                    _logger.LogInformation("Waiting for a connection...");
                     // Program is suspended while waiting for an incoming connection.  
                     Socket handler = listener.Accept();
                     data = null;
@@ -53,7 +70,7 @@ namespace Server
                     }
 
                     // Show the data on the console.  
-                    Console.WriteLine("Text received : {0}", data);
+                    _logger.LogInformation("Text received : {0}", data);
 
                     // Echo the data back to the client.  
                     byte[] msg = Encoding.ASCII.GetBytes(data);
@@ -66,12 +83,18 @@ namespace Server
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                _logger.LogError(e,"exception while listing");
             }
+        }
 
-            Console.WriteLine("\nPress ENTER to continue...");
-            Console.Read();
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            return StartListeningAsync(cancellationToken);
+        }
 
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
     }
 }

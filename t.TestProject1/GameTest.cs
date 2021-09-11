@@ -1,5 +1,6 @@
 using Moq;
 using Moq.Protected;
+using System.Linq;
 using t.lib;
 using Xunit;
 

@@ -3,7 +3,7 @@
 namespace t.lib
 {
     [DebuggerDisplay("Value={Value}")]
-    public class Card
+    public record Card
     {
         public Card(int value)
         {

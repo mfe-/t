@@ -13,6 +13,10 @@ namespace t.Server
             Game game = new Game();
             game.NewGame();
 
+            GameActionProtocol gameActionProtocol = new GameActionProtocol();
+            gameActionProtocol.Version = 0b0000100;
+            System.Console.WriteLine(gameActionProtocol.Version);
+
             Player player1 = new Player("martin");
             Player player2 = new Player("simon");
             Player player3 = new Player("katharina");

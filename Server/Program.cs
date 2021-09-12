@@ -4,10 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-using t.lib;
+using t.lib.Server;
 
 namespace t.Server
 {
@@ -15,16 +13,9 @@ namespace t.Server
     {
         public static async Task<int> Main(String[] args)
         {
-            ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddJsonFile("appsettings.json");
-            var configuration = configurationBuilder.Build();
-
-            var serverPort = configuration.GetValue<int>("AppConfig:ServerPort");
-
             var builder = new HostBuilder().ConfigureAppConfiguration((hostingContext, config) =>
             {
-                config.AddConfiguration(configuration);
-
+                config.AddJsonFile("appsettings.json");
                 if (args != null)
                 {
                     config.AddCommandLine(args);
@@ -32,21 +23,36 @@ namespace t.Server
             }).ConfigureServices((hostContext, services) =>
             {
                 services.AddOptions();
-                //services.AddSingleton<ServerSocketListener>();
 
                 services.AddHostedService(serviceProvider =>
-                    new ServerSocketListener(serverPort, serviceProvider.GetService<ILogger<ServerSocketListener>>()));
+                {
+                    var identifier = hostContext.Configuration.GetValue<Guid>("AppConfig:Identifier");
+                    if (identifier == Guid.Empty)
+                    {
+
+                        return new GameSocketServer(hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"), 
+                            serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new ArgumentNullException());
+                    }
+                    else
+                    {
+                        return new GameSocketServer(
+                            hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"), 
+                            serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new ArgumentNullException(),
+                            identifier);
+                    }
+
+                });
             }).ConfigureLogging((hostingContext, logging) =>
             {
                 logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                 logging.AddConsole();
             }).UseConsoleLifetime();
 
+            var runConsoleTask = builder.RunConsoleAsync();
 
 
-            await builder.RunConsoleAsync();
 
-
+            await runConsoleTask;
             //GameActionProtocol gameActionProtocol = new GameActionProtocol();
             //gameActionProtocol.Version = 0b0000100;
             //System.Console.WriteLine(gameActionProtocol.Version);

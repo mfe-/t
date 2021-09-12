@@ -1,5 +1,6 @@
 using Moq;
 using Moq.Protected;
+using System;
 using System.Linq;
 using t.lib;
 using Xunit;
@@ -25,10 +26,10 @@ namespace t.TestProject1
             });
             game.NewGame();
 
-            Player player1 = new Player("martin");
-            Player player2 = new Player("simon");
-            Player player3 = new Player("katharina");
-            Player player4 = new Player("renate");
+            Player player1 = new Player("martin", Guid.NewGuid());
+            Player player2 = new Player("simon", Guid.NewGuid());
+            Player player3 = new Player("katharina", Guid.NewGuid());
+            Player player4 = new Player("renate", Guid.NewGuid());
 
             game.RegisterPlayer(player2);
             game.RegisterPlayer(player1);
@@ -72,11 +73,11 @@ namespace t.TestProject1
             Game game = new Game();
             game.NewGame();
 
-            Player player1 = new Player("martin");
-            Player player2 = new Player("simon");
-            Player player3 = new Player("katharina");
-            Player player4 = new Player("renate");
-            Player player5 = new Player("");
+            Player player1 = new Player("martin", Guid.NewGuid());
+            Player player2 = new Player("simon", Guid.NewGuid());
+            Player player3 = new Player("katharina", Guid.NewGuid());
+            Player player4 = new Player("renate", Guid.NewGuid());
+            Player player5 = new Player("", Guid.NewGuid());
 
             game.RegisterPlayer(player2);
             game.RegisterPlayer(player1);
@@ -114,10 +115,10 @@ namespace t.TestProject1
             });
             game.NewGame();
 
-            Player player1 = new Player("martin");
-            Player player2 = new Player("simon");
-            Player player3 = new Player("katharina");
-            Player player4 = new Player("renate");
+            Player player1 = new Player("martin", Guid.NewGuid());
+            Player player2 = new Player("simon", Guid.NewGuid());
+            Player player3 = new Player("katharina", Guid.NewGuid());
+            Player player4 = new Player("renate", Guid.NewGuid());
 
             game.RegisterPlayer(player2);
             game.RegisterPlayer(player1);
@@ -152,10 +153,10 @@ namespace t.TestProject1
             });
             game.NewGame();
 
-            Player player1 = new Player("martin");
-            Player player2 = new Player("simon");
-            Player player3 = new Player("katharina");
-            Player player4 = new Player("renate");
+            Player player1 = new Player("martin", Guid.NewGuid()); ;
+            Player player2 = new Player("simon", Guid.NewGuid());
+            Player player3 = new Player("katharina", Guid.NewGuid());
+            Player player4 = new Player("renate", Guid.NewGuid());
 
             game.RegisterPlayer(player2);
             game.RegisterPlayer(player1);
@@ -188,10 +189,10 @@ namespace t.TestProject1
             });
             game.NewGame();
 
-            Player player1 = new Player("martin");
-            Player player2 = new Player("simon");
-            Player player3 = new Player("katharina");
-            Player player4 = new Player("renate");
+            Player player1 = new Player("martin", Guid.NewGuid());
+            Player player2 = new Player("simon", Guid.NewGuid());
+            Player player3 = new Player("katharina", Guid.NewGuid());
+            Player player4 = new Player("renate", Guid.NewGuid());
 
             game.RegisterPlayer(player2);
             game.RegisterPlayer(player1);

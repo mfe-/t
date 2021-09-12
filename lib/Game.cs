@@ -16,6 +16,7 @@ namespace t.lib
         public event EventHandler<EventArgs>? GameStartedEvent;
         public event EventHandler<EventArgs>? NextRoundEvent;
         public event EventHandler<EventArgs>? GameEndEvent;
+        public event EventHandler<EventArgs<Player>>? NewPlayerRegisteredEvent;
         public Game()
         {
             random = new Random();
@@ -36,6 +37,7 @@ namespace t.lib
             if (Cards.Count == 0) throw new InvalidOperationException(InitializeAndStartNewGameMessage);
             if (Players.Count == CardCapacity) throw new InvalidOperationException($"Game only designed for {CardCapacity} players");
             Players.Add(player);
+            NewPlayerRegisteredEvent?.Invoke(this, new EventArgs<Player>(player));
         }
         public void OnLeavePlayerEvent(Player player)
         {

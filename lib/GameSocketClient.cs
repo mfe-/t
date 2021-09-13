@@ -8,14 +8,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace t.lib.Client
+namespace t.lib
 {
     public class GameSocketClient : GameBase, IHostedService
     {
         private readonly IPAddress serverIpAdress;
         private readonly int serverPort;
         private readonly ILogger logger;
-        private readonly Game game;
         private string? PlayerName;
 
         public GameSocketClient(IPAddress serverIpAdress, int serverPort, ILogger logger) : base(logger)
@@ -23,7 +22,6 @@ namespace t.lib.Client
             this.serverIpAdress = serverIpAdress;
             this.serverPort = serverPort;
             this.logger = logger;
-            this.game = new Game();
         }
         public GameSocketClient(IPAddress serverIpAdress, int serverPort, ILogger logger, string playerName)
             : this(serverIpAdress, serverPort, logger)
@@ -43,10 +41,7 @@ namespace t.lib.Client
         }
         public GameActionProtocol JoinGame(string name)
         {
-            GameActionProtocol gameActionProtocol = new GameActionProtocol();
-            gameActionProtocol.Version = Constants.Version;
-            gameActionProtocol.Phase = Constants.RegisterPlayer;
-            gameActionProtocol.PlayerId = Guid.NewGuid();
+            var gameActionProtocol = GameActionProtocolFactory(Constants.RegisterPlayer);
             gameActionProtocol.Payload = Encoding.ASCII.GetBytes($"{name}{Environment.NewLine}");
             return gameActionProtocol;
         }
@@ -77,7 +72,7 @@ namespace t.lib.Client
                     logger.LogInformation("Socket connected to {0}",
                         sender.RemoteEndPoint.ToString());
 
-                    Console.WriteLine("Enter your name:");
+                    System.Console.WriteLine("Enter your name:");
 #if DEBUG
                     string? name = PlayerName;
 #else

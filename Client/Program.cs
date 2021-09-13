@@ -8,7 +8,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using t.lib;
-using t.lib.Client;
+using t.lib.Console;
 
 namespace t.Client
 {
@@ -23,16 +23,29 @@ namespace t.Client
                 {
                     config.AddCommandLine(args);
                 }
+                //services.Configure<AppConfig>(options => Configuration.GetSection("AppConfig").Bind(options));
             }).ConfigureServices((hostContext, services) =>
             {
                 services.AddOptions();
 
-                services.AddHostedService(serviceProvider =>
-                    new GameSocketClient(
-                        IPAddress.Parse(hostContext.Configuration.GetValue<string>("AppConfig:ServerIpAdress")),
-                        hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"),
-                        serviceProvider.GetService<ILogger<GameSocketClient>>() ?? throw new ArgumentNullException(),
-                        hostContext.Configuration.GetValue<string>("AppConfig:DefaultPlayerName")));
+                //services.AddHostedService(serviceProvider =>
+                //    new GameSocketClient(
+                //        IPAddress.Parse(hostContext.Configuration.GetValue<string>("AppConfig:ServerIpAdress")),
+                //        hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"),
+                //        serviceProvider.GetService<ILogger<GameSocketClient>>() ?? throw new ArgumentNullException(),
+                //        hostContext.Configuration.GetValue<string>("AppConfig:DefaultPlayerName")));
+
+                var appConfig = hostContext.Configuration.GetSection("AppConfig").Get<AppConfig>();
+
+                Func<Task> func = new Func<Task>(() =>
+                {
+                    string? s = Console.ReadLine();
+
+                    return Task.CompletedTask;
+                });
+
+                services.AddHostedService(serviceProvider => new GameClientConsole(
+                    serviceProvider.GetService<ILogger<GameClientConsole>>() ?? throw new ArgumentNullException(nameof(ILogger<GameClientConsole>)), args, func));
             }).ConfigureLogging((hostingContext, logging) =>
             {
                 logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));

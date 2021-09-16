@@ -12,26 +12,27 @@ namespace t.lib
     {
         protected readonly ILogger logger;
         protected readonly string[] args;
-        protected readonly Func<Task> onCommandFunc;
-        public GameClient(ILogger logger, string[] args, Func<Task> onCommandFunc)
+        protected readonly Func<Task<string>> onChoiceCommandFunc;
+        public GameClient(ILogger logger, string[] args, Func<Task<string>> onChoiceCommandFunc)
         {
             this.logger = logger;
             this.args = args;
-            this.onCommandFunc = onCommandFunc;
+            this.onChoiceCommandFunc = onChoiceCommandFunc;
         }
-        protected virtual void OnSocketClient()
+        public virtual Task OnJoinLanGameAsync(string ServerIpAdress, int port)
         {
-
+            if (String.IsNullOrEmpty(ServerIpAdress)) throw new ArgumentException($"{nameof(ServerIpAdress)} is required");
+            if (port == 0) throw new ArgumentException("port 0 not allowed");
+            return Task.CompletedTask;
         }
         protected TaskCompletionSource? TaskCompletionSource;
 
-        public abstract void OnShowMenue();
+        public abstract Task OnShowMenueAsync();
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             TaskCompletionSource = new TaskCompletionSource();
-            OnShowMenue();
-            await onCommandFunc.Invoke();
+            OnShowMenueAsync();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

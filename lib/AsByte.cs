@@ -39,7 +39,7 @@ namespace t.lib
 
         public static GameActionProtocol ToGameActionProtocol(this byte[] byteArray, int length = -1)
         {
-            if (length != -1 && byteArray.Length != length) throw new ArgumentOutOfRangeException($"Expected {nameof(byteArray)} with length {length}");
+            if (length != -1 && byteArray.Length < length) throw new ArgumentOutOfRangeException($"Expected {nameof(byteArray)} with at least a length of {length} ");
             GameActionProtocol gameActionProtocol = new GameActionProtocol();
             gameActionProtocol.Version = byteArray[PositionVersion];
             Span<byte> byteSpan = byteArray;

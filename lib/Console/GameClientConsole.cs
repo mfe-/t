@@ -15,10 +15,15 @@ namespace t.lib.Console
         {
 
         }
-        public override async Task ParseAsync(string[] args)
+        /// <summary>
+        /// Parse StartArguments if provided
+        /// </summary>
+        /// <param name="args">StartArguments - can be empty if none are provided</param>
+        /// <returns>Task which indicates the process of the current execution of the method</returns>
+        public override async Task ParseStartArgumentsAsync(string[] args)
         {
             string command = String.Join(" ", args.Skip(1));
-            string enteredCommand = PrepareCommandInput(command).Replace("-","");
+            string enteredCommand = PrepareCommandInput(command).Replace("-", "");
             string[] param = ToParam(command, enteredCommand);
             await ProcessEntertedCommand(enteredCommand, param);
         }
@@ -57,7 +62,8 @@ namespace t.lib.Console
                 case "join":
                     string ipadress = (param.FirstOrDefault(a => a.Contains("ip")) ?? "").Replace("-ip=", "");
                     int.TryParse((param.FirstOrDefault(a => a.Contains("port")) ?? "").Replace("-port=", ""), out int port);
-                    await OnJoinLanGameAsync(ipadress, port);
+                    string playername = (param.FirstOrDefault(a => a.Contains("name")) ?? "").Replace("-name=", "");
+                    await OnJoinLanGameAsync(ipadress, port, playername);
                     break;
                 default:
                     ShowOptions();

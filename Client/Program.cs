@@ -17,7 +17,7 @@ namespace t.Client
     {
         public static async Task<int> Main(String[] args)
         {
-            
+
             var builder = new HostBuilder().ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.AddJsonFile("appsettings.json");
@@ -26,8 +26,10 @@ namespace t.Client
                     //https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.commandlineconfigurationextensions.addcommandline?view=dotnet-plat-ext-5.0
                     var switchMappings = new Dictionary<string, string>()
                     {
-                       { "-ip", "ServerIpAdress" },
-                       { "-port", "Port" }
+                        { "-ip", "ServerIpAdress" }
+                       ,{ "-port", "Port" }
+                       ,{ "-join", "join" }
+                       ,{"-name", "name" }
                     };
                     config.AddCommandLine(args, switchMappings);
                 }

@@ -30,12 +30,15 @@ namespace t.Server
                     if (identifier == Guid.Empty)
                     {
 
-                        return new GameSocketServer(hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"), 
+                        return new GameSocketServer(
+                            hostContext.Configuration.GetValue<string>("AppConfig:ServerIpAdress"),
+                            hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"),
                             serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new ArgumentNullException());
                     }
                     else
                     {
                         return new GameSocketServer(
+                            hostContext.Configuration.GetValue<string>("AppConfig:ServerIpAdress"),
                             hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"), 
                             serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new ArgumentNullException(),
                             identifier);

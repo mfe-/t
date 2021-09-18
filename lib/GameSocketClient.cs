@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace t.lib
 {
-    public class GameSocketClient : GameBase, IHostedService
+    public class GameSocketClient : GameBase
     {
         private readonly IPAddress serverIpAdress;
         private readonly int serverPort;
@@ -28,26 +28,11 @@ namespace t.lib
         {
             PlayerName = playerName;
         }
-        private TaskCompletionSource? TaskCompletionSource;
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            TaskCompletionSource = new TaskCompletionSource();
-            StartClient();
-            return TaskCompletionSource.Task;
-        }
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-        public GameActionProtocol JoinGame(string name)
-        {
-            var gameActionProtocol = GameActionProtocolFactory(Constants.RegisterPlayer);
-            gameActionProtocol.Payload = Encoding.ASCII.GetBytes($"{name}{Environment.NewLine}");
-            return gameActionProtocol;
-        }
+
         // The port number for the remote device.  
-        public void StartClient()
+        public async Task JoinGameAsync(string name)
         {
+            _guid = Guid.NewGuid();
             // Data buffer for incoming data.  
             byte[] bytes = new byte[1024];
 
@@ -61,41 +46,29 @@ namespace t.lib
                 IPEndPoint remoteEP = new IPEndPoint(serverIpAdress, serverPort);
 
                 // Create a TCP/IP  socket.  
-                Socket sender = new Socket(serverIpAdress.AddressFamily,
-                    SocketType.Stream, ProtocolType.Tcp);
+                Socket sender = new Socket(serverIpAdress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
                 // Connect the socket to the remote endpoint. Catch any errors.  
                 try
                 {
                     sender.Connect(remoteEP);
 
-                    logger.LogInformation("Socket connected to {0}",
-                        sender.RemoteEndPoint.ToString());
+                    logger.LogInformation("Socket connected to {0}", sender.RemoteEndPoint?.ToString() ?? $"Could not determine {nameof(sender.RemoteEndPoint)}");
 
-                    System.Console.WriteLine("Enter your name:");
-#if DEBUG
-                    string? name = PlayerName;
-#else
-                    string? name = Console.ReadLine();
-#endif
-                    GameActionProtocol gameActionProtocol = new GameActionProtocol();
-
-                    if (!String.IsNullOrEmpty(name))
-                    {
-                        gameActionProtocol = JoinGame(name);
-                        logger.LogInformation("PlayerId Generated {gamePlayerId}", gameActionProtocol.PlayerId);
-                    }
+                    GameActionProtocol gameActionProtocol = GameActionProtocolFactory(Constants.RegisterPlayer, new Player(name, _guid));
 
                     // Encode the data string into a byte array.  
                     byte[] msg = gameActionProtocol.ToByteArray();
 
                     // Send the data through the socket.  
-                    int bytesSent = sender.Send(msg);
-
+                    logger.LogInformation("PlayerId {gamePlayerId} generated and sending {bytesSent}", gameActionProtocol.PlayerId, msg.Length);
+                    int bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
+                    //int bytesSend = sender.Send(msg);
                     // Receive the response from the remote device.  
                     int bytesRec = sender.Receive(bytes);
-                    logger.LogInformation("Echoed test = {0}",
-                        Encoding.ASCII.GetString(bytes, 0, bytesRec));
+                    GameActionProtocol gameActionProtocolRec = bytes.ToGameActionProtocol(); 
+
+                    logger.LogInformation("Echoed test = {0}", Encoding.ASCII.GetString(bytes, 0, bytesRec));
 
                     // Release the socket.  
                     sender.Shutdown(SocketShutdown.Both);
@@ -124,7 +97,7 @@ namespace t.lib
 
         protected override void BroadcastMessage(GameActionProtocol gameActionProtocol)
         {
-            
+
         }
     }
 }

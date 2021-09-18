@@ -44,7 +44,7 @@ namespace t.lib
         }
         protected virtual void OnProtocolError(GameActionProtocol gameActionProtocol)
         {
-            
+
         }
         protected abstract void BroadcastMessage(GameActionProtocol gameActionProtocol);
 
@@ -86,9 +86,18 @@ namespace t.lib
                     gameActionProtocol.Payload = paypload;
                 }
             }
+            else if (gameActionProtocol.Phase == Constants.RegisterPlayer)
+            {
+                if (player == null) throw new ArgumentException($"{nameof(Constants.NewPlayer)} requires argument {nameof(player)}");
+                gameActionProtocol.Payload = Encoding.ASCII.GetBytes($"{player.Name}{Environment.NewLine}");
+            }
             return gameActionProtocol;
         }
-
+        /// <summary>
+        /// Gets the <see cref="Player"/> if <see cref="GameActionProtocol.Phase"/> is <see cref="Constants.NewPlayer"/>
+        /// </summary>
+        /// <param name="gameActionProtocol"></param>
+        /// <returns></returns>
         internal virtual Player GetNewPlayer(GameActionProtocol gameActionProtocol)
         {
             if (gameActionProtocol.Phase != Constants.NewPlayer) throw new ArgumentException($"{nameof(Constants.NewPlayer)} required for argument {nameof(gameActionProtocol.Phase)}");
@@ -98,6 +107,18 @@ namespace t.lib
             var playerNameBytes = span.Slice(Marshal.SizeOf(typeof(Guid)), gameActionProtocol.PayloadSize - Marshal.SizeOf(typeof(Guid)));
             var playername = Encoding.ASCII.GetString(playerNameBytes);
             return new Player(playername, playerId);
+        }
+        /// <summary>
+        /// Gets the <see cref="Player"/> if <see cref="GameActionProtocol.Phase"/> is <see cref="Constants.RegisterPlayer"/>
+        /// </summary>
+        /// <param name="gameActionProtocol"></param>
+        /// <returns></returns>
+        internal Player GetPlayer(GameActionProtocol gameActionProtocol)
+        {
+            if (gameActionProtocol.Phase != Constants.RegisterPlayer) throw new ArgumentException($"{nameof(Constants.RegisterPlayer)} required for argument {nameof(gameActionProtocol.Phase)}");
+            string playername = Encoding.ASCII.GetString(gameActionProtocol.Payload).Replace(Environment.NewLine, String.Empty);
+            Player player = new Player(playername, gameActionProtocol.PlayerId);
+            return player;
         }
     }
 }

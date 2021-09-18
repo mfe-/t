@@ -12,7 +12,7 @@ using Xunit;
 
 namespace t.TestProject1
 {
-    public class DeencodingTest
+    public class DeAndEncodingTest
     {
         [Fact]
         public void Serializing_and_deserializing_protocol_should_contain_all_information()
@@ -44,12 +44,12 @@ namespace t.TestProject1
         {
             Guid guid = Guid.Parse("6d88b7c1-5b8b-4068-b510-b4ff01309670");
             Player expectedPlayer = new Player("martin", guid);
-            GameSocketServer gameSocketServer = new GameSocketServer(0, new Mock<ILogger>().Object);
+            GameSocketServer gameSocketServer = new GameSocketServer("", 0, new Mock<ILogger>().Object);
             var gameActionProtocol = gameSocketServer.GameActionProtocolFactory(Constants.NewPlayer, expectedPlayer);
 
             Player player = gameSocketServer.GetNewPlayer(gameActionProtocol);
 
-            Assert.Equal(expectedPlayer.PlayerId,player.PlayerId);
+            Assert.Equal(expectedPlayer.PlayerId, player.PlayerId);
             Assert.Equal(expectedPlayer.Name, player.Name);
 
         }

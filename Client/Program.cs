@@ -17,12 +17,19 @@ namespace t.Client
     {
         public static async Task<int> Main(String[] args)
         {
+            
             var builder = new HostBuilder().ConfigureAppConfiguration((hostingContext, config) =>
             {
                 config.AddJsonFile("appsettings.json");
                 if (args != null)
                 {
-                    config.AddCommandLine(args);
+                    //https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.commandlineconfigurationextensions.addcommandline?view=dotnet-plat-ext-5.0
+                    var switchMappings = new Dictionary<string, string>()
+                    {
+                       { "-ip", "ServerIpAdress" },
+                       { "-port", "Port" }
+                    };
+                    config.AddCommandLine(args, switchMappings);
                 }
                 //services.Configure<AppConfig>(options => Configuration.GetSection("AppConfig").Bind(options));
             }).ConfigureServices((hostContext, services) =>
@@ -39,7 +46,8 @@ namespace t.Client
                 var appConfig = hostContext.Configuration.GetSection("AppConfig").Get<AppConfig>();
 
                 services.AddHostedService(serviceProvider => new GameClientConsole(
-                    serviceProvider.GetService<ILogger<GameClientConsole>>() ?? throw new ArgumentNullException(nameof(ILogger<GameClientConsole>)), args, ReadLineAsync));
+                    serviceProvider.GetService<ILogger<GameClientConsole>>() ?? throw new ArgumentNullException(nameof(ILogger<GameClientConsole>)),
+                    serviceProvider.GetService<IConfiguration>() ?? throw new ArgumentNullException(nameof(IConfiguration)), ReadLineAsync));
             }).ConfigureLogging((hostingContext, logging) =>
             {
                 logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));

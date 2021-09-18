@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,12 +12,14 @@ namespace t.lib
     public abstract class GameClient : IHostedService
     {
         protected readonly ILogger logger;
+        private readonly IConfiguration configuration;
         protected readonly string[] args;
         protected readonly Func<Task<string>> onChoiceCommandFunc;
-        public GameClient(ILogger logger, string[] args, Func<Task<string>> onChoiceCommandFunc)
+        public GameClient(ILogger logger, IConfiguration configuration, Func<Task<string>> onChoiceCommandFunc)
         {
             this.logger = logger;
-            this.args = args;
+            this.configuration = configuration;
+            this.args = Environment.GetCommandLineArgs() ?? new string[0];
             this.onChoiceCommandFunc = onChoiceCommandFunc;
         }
         public virtual Task OnJoinLanGameAsync(string ServerIpAdress, int port)
@@ -29,10 +32,19 @@ namespace t.lib
 
         public abstract Task OnShowMenueAsync();
 
+        public abstract Task ParseAsync(string[] args);
+
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             TaskCompletionSource = new TaskCompletionSource();
-            OnShowMenueAsync();
+            if (args.Any())
+            {
+                await ParseAsync(args);
+            }
+            else
+            {
+                await OnShowMenueAsync();
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,11 +11,17 @@ namespace t.lib.Console
 {
     public class GameClientConsole : GameClient
     {
-        public GameClientConsole(ILogger logger, string[] args, Func<Task<string>> onCommandFunc) : base(logger, args, onCommandFunc)
+        public GameClientConsole(ILogger logger, IConfiguration configuration, Func<Task<string>> onCommandFunc) : base(logger, configuration, onCommandFunc)
         {
 
         }
-
+        public override async Task ParseAsync(string[] args)
+        {
+            string command = String.Join(" ", args.Skip(1));
+            string enteredCommand = PrepareCommandInput(command).Replace("-","");
+            string[] param = ToParam(command, enteredCommand);
+            await ProcessEntertedCommand(enteredCommand, param);
+        }
         public override async Task OnShowMenueAsync()
         {
             ShowOptions();
@@ -28,22 +35,7 @@ namespace t.lib.Console
                     command = await onChoiceCommandFunc();
                     string enteredCommand = PrepareCommandInput(command);
                     string[] param = ToParam(command, enteredCommand);
-                    switch (enteredCommand)
-                    {
-                        case "exit":
-                            break;
-                        case "version":
-                            System.Console.WriteLine(Assembly.GetExecutingAssembly().FullName);
-                            break;
-                        case "join":
-                            string ipadress = (param.FirstOrDefault(a => a.Contains("ip")) ?? "").Replace("-ip=", "");
-                            int.TryParse((param.FirstOrDefault(a => a.Contains("port")) ?? "").Replace("-port=", ""), out int port);
-                            await OnJoinLanGameAsync(ipadress, port);
-                            break;
-                        default:
-                            ShowOptions();
-                            break;
-                    }
+                    await ProcessEntertedCommand(enteredCommand, param);
                 }
                 catch (Exception e)
                 {
@@ -51,9 +43,26 @@ namespace t.lib.Console
                 }
             } while (command != "exit");
 
+        }
 
-
-
+        private async Task ProcessEntertedCommand(string enteredCommand, string[] param)
+        {
+            switch (enteredCommand)
+            {
+                case "exit":
+                    break;
+                case "version":
+                    System.Console.WriteLine(Assembly.GetExecutingAssembly().FullName);
+                    break;
+                case "join":
+                    string ipadress = (param.FirstOrDefault(a => a.Contains("ip")) ?? "").Replace("-ip=", "");
+                    int.TryParse((param.FirstOrDefault(a => a.Contains("port")) ?? "").Replace("-port=", ""), out int port);
+                    await OnJoinLanGameAsync(ipadress, port);
+                    break;
+                default:
+                    ShowOptions();
+                    break;
+            }
         }
 
         private static void ShowOptions()

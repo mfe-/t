@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="t.lib.AppConfig" Collapsed="true">
+    <Position X="11" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAABABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>AppConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="t.lib.AsByte" Collapsed="true">
+    <Position X="12.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAAAAACAAAIAAAAggAAAAAAAAAAABAAEAAAA=</HashCode>
+      <FileName>AsByte.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="t.lib.Constants" Collapsed="true">
+    <Position X="11" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAgAAAAAAAAAAAAIAAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>Constants.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="t.lib.EventArgs&lt;T&gt;" Collapsed="true">
+    <Position X="12.75" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAA=</HashCode>
+      <FileName>EventArgs{T}.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="t.lib.GameLogic" Collapsed="true">
+    <Position X="14.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAQAAAASEgCAAAIAgEAAAaRAEgAAAIAASQAQIQEAA=</HashCode>
+      <FileName>GameLogic.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="t.lib.GameAction" Collapsed="true">
+    <Position X="11" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAAAAIAAAAAAAAAAAAAAAAAAAAQIAAgA=</HashCode>
+      <FileName>GameAction.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="t.lib.GameBase" Collapsed="true">
+    <Position X="7.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAACAAEAAAIEAAAAAYQACAAAAAAAAAARAAAQ=</HashCode>
+      <FileName>GameBase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="t.lib.GameClient" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="12.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAACJAgIIAAAAACAAAAAAQAAAAAAgAA=</HashCode>
+      <FileName>GameClient.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="t.lib.GameSocketClient" Collapsed="true">
+    <Position X="8.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAkAAAAAACAAEEACAAACAAQAAQAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameSocketClient.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="t.lib.Player" Collapsed="true">
+    <Position X="14.5" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAAAAAAAQAAAAAAAAAAAAIAAAAAAA=</HashCode>
+      <FileName>Player.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="t.lib.Server.ClientConnectionState" Collapsed="true">
+    <Position X="14.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAACAEAAAAAACAAAAAAAAAAAQAAQAA=</HashCode>
+      <FileName>ClientConnectionState.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="t.lib.Server.GameSocketServer" Collapsed="true">
+    <Position X="6.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIACABQAAAIAAAABEhAAAAACQAgAAAgAQCAEAAAAAA=</HashCode>
+      <FileName>GameSocketServer.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Struct Name="t.lib.GameActionProtocol" Collapsed="true">
+    <Position X="11" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAEAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAIAAAABAA=</HashCode>
+      <FileName>GameActionProtocol.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

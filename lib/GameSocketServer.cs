@@ -21,25 +21,24 @@ namespace t.lib.Server
             ServerIpAdress = serverIpAdress;
             _game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
             _guid = Guid.NewGuid();
-            ActionDictionary.Add(Constants.RegisterPlayer, OnPlayerRegister);
         }
         public GameSocketServer(string serverIpAdress, int serverPort, ILogger logger, Guid guid)
             : this(serverIpAdress, serverPort, logger)
         {
             _guid = guid;
         }
-        protected virtual void OnPlayerRegister(GameActionProtocol gameActionProtocol)
-        {
-            if (gameActionProtocol.Phase != Constants.RegisterPlayer) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(Constants.RegisterPlayer)}");
-
-            Player player = GetPlayer(gameActionProtocol);
-            _game.RegisterPlayer(player);
-        }
         private void Game_NewPlayerRegisteredEvent(object? sender, EventArgs<Player> e)
         {
-            //broadcast the new player to all other players
+            //broadcast the "new player and all existing players" to all other players
+            List<GameActionProtocol> gameActionProtocols = new List<GameActionProtocol>();
             GameActionProtocol gameActionProtocol = GameActionProtocolFactory(Constants.NewPlayer, e.Data);
-            BroadcastMessage(gameActionProtocol);
+            gameActionProtocols.Add(gameActionProtocol);
+            //add existing players
+            gameActionProtocols.AddRange(_game.Players.Select(a => GameActionProtocolFactory(Constants.NewPlayer, a)));
+            foreach (var protocol in gameActionProtocols)
+            {
+                BroadcastMessage(protocol);
+            }
         }
         public int ServerPort { get; }
         public string ServerIpAdress { get; }
@@ -77,6 +76,7 @@ namespace t.lib.Server
         private void Listening(IPEndPoint localEndPoint, Socket listener)
         {
             _logger.LogInformation($"{nameof(Listening)} on {localEndPoint.Address} {ServerPort}", localEndPoint.Address, ServerPort);
+            _logger.LogInformation("ServerId {ServerId} generated", _guid);
             // Bind the socket to the local endpoint and
             // listen for incoming connections.  
             using (cancellationTokenSource = new CancellationTokenSource())
@@ -106,30 +106,6 @@ namespace t.lib.Server
                         allDone.WaitOne();
                     }
 
-                    //while (true)
-                    //{
-                    //    _logger.LogInformation("Waiting for a connection...");
-                    //    // Program is suspended while waiting for an incoming connection.  
-                    //    Socket handler = listener.Accept();
-                    //    // An incoming connection needs to be processed.  
-                    //    while (true)
-                    //    {
-                    //        //check if a cancellation was requested
-                    //        int bytesRec = handler.Receive(bytes);
-
-
-                    //    }
-
-                    //    // Show the data on the console.  
-
-
-                    //    // Echo the data back to the client.  
-
-
-                    //    //handler.Send(msg);
-                    //    handler.Shutdown(SocketShutdown.Both);
-                    //    handler.Close();
-                    //}
                 }
                 catch (Exception e)
                 {
@@ -246,7 +222,7 @@ namespace t.lib.Server
         {
             foreach (var connectionState in _playerConnections.Values)
             {
-                _logger.LogInformation("Broadcasting {Phase} to {PlayerName} {PlayerId}", gameActionProtocol.Phase, connectionState.Player?.Name ?? "", gameActionProtocol.PlayerId);
+                _logger.LogInformation("Broadcasting as {ServerId} to {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.Player?.Name ?? "", gameActionProtocol.Phase);
                 Send(connectionState.workSocket, gameActionProtocol);
             }
         }

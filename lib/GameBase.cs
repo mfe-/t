@@ -13,16 +13,27 @@ namespace t.lib
 {
     public abstract class GameBase
     {
-        protected readonly Game _game;
+        protected readonly GameLogic _game;
         protected readonly ILogger _logger;
         protected Guid _guid;
         public GameBase(ILogger logger)
         {
-            _game = new Game();
+            _game = new GameLogic();
             _logger = logger;
             ActionDictionary.Add(Constants.ErrorOccoured, OnProtocolError);
-
+            ActionDictionary.Add(Constants.RegisterPlayer, OnPlayerRegister);
         }
+        protected virtual void OnPlayerRegister(GameActionProtocol gameActionProtocol)
+        {
+            if (gameActionProtocol.Phase != Constants.RegisterPlayer) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(Constants.RegisterPlayer)}");
+
+            Player player = GetPlayer(gameActionProtocol);
+            if (!_game.Players.Any(a => a.PlayerId == player.PlayerId))
+            {
+                _game.RegisterPlayer(player);
+            }
+        }
+
         protected Dictionary<byte, Action<GameActionProtocol>> ActionDictionary = new();
 
         protected virtual void OnMessageReceive(GameActionProtocol gameActionProtocol)
@@ -93,12 +104,19 @@ namespace t.lib
             }
             return gameActionProtocol;
         }
+        public virtual Player GetPlayer(GameActionProtocol gameActionProtocol)
+        {
+            if (gameActionProtocol.Phase == Constants.NewPlayer) return GetNewPlayer(ref gameActionProtocol);
+            if (gameActionProtocol.Phase == Constants.RegisterPlayer) return GetRegisterePlayer(ref gameActionProtocol);
+            throw new NotImplementedException($"Not implemented {gameActionProtocol.Phase}");
+        }
+
         /// <summary>
         /// Gets the <see cref="Player"/> if <see cref="GameActionProtocol.Phase"/> is <see cref="Constants.NewPlayer"/>
         /// </summary>
         /// <param name="gameActionProtocol"></param>
         /// <returns></returns>
-        internal virtual Player GetNewPlayer(GameActionProtocol gameActionProtocol)
+        protected virtual Player GetNewPlayer(ref GameActionProtocol gameActionProtocol)
         {
             if (gameActionProtocol.Phase != Constants.NewPlayer) throw new ArgumentException($"{nameof(Constants.NewPlayer)} required for argument {nameof(gameActionProtocol.Phase)}");
             var span = gameActionProtocol.Payload.AsSpan();
@@ -113,7 +131,7 @@ namespace t.lib
         /// </summary>
         /// <param name="gameActionProtocol"></param>
         /// <returns></returns>
-        internal Player GetPlayer(GameActionProtocol gameActionProtocol)
+        protected Player GetRegisterePlayer(ref GameActionProtocol gameActionProtocol)
         {
             if (gameActionProtocol.Phase != Constants.RegisterPlayer) throw new ArgumentException($"{nameof(Constants.RegisterPlayer)} required for argument {nameof(gameActionProtocol.Phase)}");
             string playername = Encoding.ASCII.GetString(gameActionProtocol.Payload).Replace(Environment.NewLine, String.Empty);

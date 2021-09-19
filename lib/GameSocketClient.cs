@@ -10,11 +10,12 @@ using System.Threading.Tasks;
 
 namespace t.lib
 {
-    public class GameSocketClient : GameBase
+    public class GameSocketClient : GameBase, IDisposable
     {
         private readonly IPAddress serverIpAdress;
         private readonly int serverPort;
         private readonly ILogger logger;
+        private Socket? sender;
         private string? PlayerName;
 
         public GameSocketClient(IPAddress serverIpAdress, int serverPort, ILogger logger) : base(logger)
@@ -33,6 +34,7 @@ namespace t.lib
         public async Task JoinGameAsync(string name)
         {
             _guid = Guid.NewGuid();
+            _game.NewGame();
             // Data buffer for incoming data.  
             byte[] bytes = new byte[1024];
 
@@ -46,7 +48,7 @@ namespace t.lib
                 IPEndPoint remoteEP = new IPEndPoint(serverIpAdress, serverPort);
 
                 // Create a TCP/IP  socket.  
-                Socket sender = new Socket(serverIpAdress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                sender = new Socket(serverIpAdress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
                 // Connect the socket to the remote endpoint. Catch any errors.  
                 try
@@ -56,23 +58,16 @@ namespace t.lib
                     logger.LogInformation("Socket connected to {0}", sender.RemoteEndPoint?.ToString() ?? $"Could not determine {nameof(sender.RemoteEndPoint)}");
 
                     GameActionProtocol gameActionProtocol = GameActionProtocolFactory(Constants.RegisterPlayer, new Player(name, _guid));
-
                     // Encode the data string into a byte array.  
                     byte[] msg = gameActionProtocol.ToByteArray();
-
                     // Send the data through the socket.  
                     logger.LogInformation("PlayerId {gamePlayerId} generated and sending {bytesSent}", gameActionProtocol.PlayerId, msg.Length);
                     int bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
-                    //int bytesSend = sender.Send(msg);
                     // Receive the response from the remote device.  
                     int bytesRec = sender.Receive(bytes);
-                    GameActionProtocol gameActionProtocolRec = bytes.ToGameActionProtocol(); 
+                    GameActionProtocol gameActionProtocolRec = bytes.ToGameActionProtocol();
 
-                    logger.LogInformation("Echoed test = {0}", Encoding.ASCII.GetString(bytes, 0, bytesRec));
-
-                    // Release the socket.  
-                    sender.Shutdown(SocketShutdown.Both);
-                    sender.Close();
+                    OnMessageReceive(gameActionProtocol);
 
                 }
                 catch (ArgumentNullException ane)
@@ -98,6 +93,18 @@ namespace t.lib
         protected override void BroadcastMessage(GameActionProtocol gameActionProtocol)
         {
 
+        }
+        public void ExitGame()
+        {
+            // Release the socket.  
+            sender?.Shutdown(SocketShutdown.Both);
+            sender?.Close();
+            sender?.Dispose();
+            sender = null;
+        }
+        public void Dispose()
+        {
+            ExitGame();
         }
     }
 }

@@ -47,7 +47,7 @@ namespace t.TestProject1
             GameSocketServer gameSocketServer = new GameSocketServer("", 0, new Mock<ILogger>().Object);
             var gameActionProtocol = gameSocketServer.GameActionProtocolFactory(Constants.NewPlayer, expectedPlayer);
 
-            Player player = gameSocketServer.GetNewPlayer(gameActionProtocol);
+            Player player = gameSocketServer.GetPlayer(gameActionProtocol);
 
             Assert.Equal(expectedPlayer.PlayerId, player.PlayerId);
             Assert.Equal(expectedPlayer.Name, player.Name);

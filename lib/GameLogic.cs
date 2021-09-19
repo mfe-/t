@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("t.TestProject1")]
 namespace t.lib
 {
-    public class Game
+    public class GameLogic
     {
         private int TotalPointsToPlay = 0;
         private const int CardCapacity = 10;
@@ -17,7 +17,7 @@ namespace t.lib
         public event EventHandler<EventArgs>? NextRoundEvent;
         public event EventHandler<EventArgs>? GameEndEvent;
         public event EventHandler<EventArgs<Player>>? NewPlayerRegisteredEvent;
-        public Game()
+        public GameLogic()
         {
             random = new Random();
             Cards = new List<Card>(CardCapacity);
@@ -31,7 +31,7 @@ namespace t.lib
 
         public Card? CurrentCard { get; private set; }
 
-        public void RegisterPlayer(Player player)
+        public virtual void RegisterPlayer(Player player)
         {
             if (player == null) throw new ArgumentNullException();
             if (Cards.Count == 0) throw new InvalidOperationException(InitializeAndStartNewGameMessage);

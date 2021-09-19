@@ -73,8 +73,8 @@ namespace t.lib.Console
 
         private static void ShowOptions()
         {
-            System.Console.WriteLine("Welcome");
-            System.Console.WriteLine("join -ip=127.0.0.1 -port=11000");
+            System.Console.WriteLine("Welcome to t");
+            System.Console.WriteLine("join -ip=127.0.0.1 -port=11000 -name=martin");
             System.Console.WriteLine("version shows the version of the app");
             System.Console.WriteLine("exit the app");
         }

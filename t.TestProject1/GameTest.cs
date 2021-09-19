@@ -15,7 +15,7 @@ namespace t.TestProject1
         {
             const int highestPlayedValueCard = 4;
 
-            Mock<Game> gameMock = new Mock<Game>(() => new Game());
+            Mock<GameLogic> gameMock = new Mock<GameLogic>(() => new GameLogic());
             var game = gameMock.Object;
             gameMock.Setup(a => a.MixCards()).Callback(() =>
             {
@@ -70,7 +70,7 @@ namespace t.TestProject1
             const int highestPlayedValueCard = 4;
             const int secondHighestPlayedValueCard = 3;
 
-            Game game = new Game();
+            GameLogic game = new GameLogic();
             game.NewGame();
 
             Player player1 = new Player("martin", Guid.NewGuid());
@@ -105,7 +105,7 @@ namespace t.TestProject1
         public void played_pair_card_and_higher_single_cards_wins()
         {
             const int highestPlayedValueCard = 3;
-            Mock<Game> gameMock = new Mock<Game>(() => new Game());
+            Mock<GameLogic> gameMock = new Mock<GameLogic>(() => new GameLogic());
             var game = gameMock.Object;
             int cardToWin = 7;
             gameMock.Setup(a => a.MixCards()).Callback(() =>
@@ -143,7 +143,7 @@ namespace t.TestProject1
         public void player_with_highest_card_wins()
         {
             const int highestPlayedValueCard = 4;
-            Mock<Game> gameMock = new Mock<Game>(() => new Game());
+            Mock<GameLogic> gameMock = new Mock<GameLogic>(() => new GameLogic());
             var game = gameMock.Object;
             int cardToWin = 7;
             gameMock.Setup(a => a.MixCards()).Callback(() =>
@@ -179,7 +179,7 @@ namespace t.TestProject1
         [Fact]
         public void player_gets_double_points_when_offered_equals_card_value()
         {
-            Mock<Game> gameMock = new Mock<Game>(() => new Game());
+            Mock<GameLogic> gameMock = new Mock<GameLogic>(() => new GameLogic());
             var game = gameMock.Object;
             int cardToWin = 7;
             gameMock.Setup(a => a.MixCards()).Callback(() =>

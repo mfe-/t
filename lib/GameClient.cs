@@ -28,7 +28,9 @@ namespace t.lib
             if (String.IsNullOrEmpty(ServerIpAdress)) throw new ArgumentException(nameof(ServerIpAdress));
             if (String.IsNullOrEmpty(playerName)) throw new ArgumentException(nameof(playerName));
             if (port == 0) throw new ArgumentException("port 0 not allowed");
+
             IPAddress iPAddress = IPAddress.Parse(ServerIpAdress);
+
             GameSocketClient gameSocketClient = new GameSocketClient(iPAddress, port, logger);
             await gameSocketClient.JoinGameAsync(playerName);
         }
@@ -41,7 +43,7 @@ namespace t.lib
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             TaskCompletionSource = new TaskCompletionSource();
-            if (args.Any())
+            if (args.Where(a => !a.Contains("t.Client.dll")).Any())
             {
                 await ParseStartArgumentsAsync(args);
             }

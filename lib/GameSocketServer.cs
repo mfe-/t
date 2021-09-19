@@ -82,6 +82,7 @@ namespace t.lib.Server
 
                     _game.NewGame();
 
+                    _logger.LogInformation("Waiting for a connection...");
                     // Start listening for connections.  
                     while (true)
                     {
@@ -91,7 +92,6 @@ namespace t.lib.Server
                         allDone.Reset();
 
                         // Start an asynchronous socket to listen for connections.
-                        _logger.LogInformation("Waiting for a connection...");
                         listener.BeginAccept(new AsyncCallback(AcceptClientConnection), listener);
 
                         // Wait until a connection is made before continuing.  

@@ -4,7 +4,7 @@ using System.Net.Sockets;
 
 namespace t.lib.Server
 {
-    [DebuggerDisplay("Ip={Socket.LocalEndPoint} Id={Player.PlayerId} Player={Player.Name} ")]
+    [DebuggerDisplay("Ip={SocketClient.LocalEndPoint} Id={Player.PlayerId} Player={Player.Name} ")]
     public sealed class ConnectionState
     {
         public ConnectionState(Socket socket)

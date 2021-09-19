@@ -29,12 +29,7 @@ namespace t.lib.Server
         private void Game_NewPlayerRegisteredEvent(object? sender, EventArgs<Player> e)
         {
             //broadcast the "new player and all existing players" to all other players
-            List<GameActionProtocol> gameActionProtocols = new List<GameActionProtocol>();
-            GameActionProtocol gameActionProtocol = GameActionProtocolFactory(Constants.NewPlayer, e.Data);
-            gameActionProtocols.Add(gameActionProtocol);
-            //add existing players
-            gameActionProtocols.AddRange(_game.Players.Select(a => GameActionProtocolFactory(Constants.NewPlayer, a)));
-            foreach (var protocol in gameActionProtocols)
+            foreach (var protocol in _game.Players.Select(a => GameActionProtocolFactory(Constants.NewPlayer, a)))
             {
                 BroadcastMessage(protocol);
             }
@@ -95,11 +90,9 @@ namespace t.lib.Server
                         // Set the event to nonsignaled state.  
                         allDone.Reset();
 
-                        // Start an asynchronous socket to listen for connections.  
+                        // Start an asynchronous socket to listen for connections.
                         _logger.LogInformation("Waiting for a connection...");
-                        listener.BeginAccept(
-                            new AsyncCallback(AcceptClientConnection),
-                            listener);
+                        listener.BeginAccept(new AsyncCallback(AcceptClientConnection), listener);
 
                         // Wait until a connection is made before continuing.  
                         allDone.WaitOne();

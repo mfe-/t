@@ -37,7 +37,7 @@ namespace t.lib.Server
         public int ServerPort { get; }
         public string ServerIpAdress { get; }
 
-        private ConcurrentDictionary<Guid, ClientConnectionState> _playerConnections = new ConcurrentDictionary<Guid, ClientConnectionState>();
+        private ConcurrentDictionary<Guid, ConnectionState> _playerConnections = new ConcurrentDictionary<Guid, ConnectionState>();
 
         private async Task StartListeningAsync(CancellationToken cancellationToken)
         {
@@ -119,8 +119,8 @@ namespace t.lib.Server
                 Socket handler = listener.EndAccept(ar);
 
                 // Create the state object.  
-                ClientConnectionState state = new ClientConnectionState(handler);
-                handler.BeginReceive(state.Buffer, 0, ClientConnectionState.BufferSize, 0, new AsyncCallback(ReadResult), state);
+                ConnectionState state = new ConnectionState(handler);
+                handler.BeginReceive(state.Buffer, 0, ConnectionState.BufferSize, 0, new AsyncCallback(ReadResult), state);
             }
         }
 
@@ -128,17 +128,17 @@ namespace t.lib.Server
         {
             // Retrieve the state object and the handler socket  
             // from the asynchronous state object.  
-            if (ar.AsyncState is ClientConnectionState connectionState)
+            if (ar.AsyncState is ConnectionState connectionState)
             {
-                ClientConnectionState state = connectionState;
-                Socket handler = state.workSocket;
+                ConnectionState state = connectionState;
+                Socket handler = state.SocketClient;
 
                 // Read data from the client socket.
                 int bytesRead = handler.EndReceive(ar);
 
                 if (bytesRead > 0)
                 {
-                    _logger.LogTrace("received : {0}", bytesRead);
+                    _logger.LogTrace("Received {0} bytes.", bytesRead);
 
                     GameActionProtocol gameActionProtocol = state.Buffer.ToGameActionProtocol(bytesRead);
                     if (gameActionProtocol.Phase == Constants.RegisterPlayer && !_playerConnections.ContainsKey(gameActionProtocol.PlayerId))
@@ -214,8 +214,8 @@ namespace t.lib.Server
         {
             foreach (var connectionState in _playerConnections.Values)
             {
-                _logger.LogInformation("Broadcasting as {ServerId} to {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.Player?.Name ?? "", gameActionProtocol.Phase);
-                Send(connectionState.workSocket, gameActionProtocol);
+                _logger.LogInformation("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.LocalEndPoint, connectionState.Player?.Name ?? "", gameActionProtocol.Phase);
+                Send(connectionState.SocketClient, gameActionProtocol);
             }
         }
     }

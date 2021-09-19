@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.Sockets;
 
 namespace t.lib.Server
 {
-    public sealed class ClientConnectionState
+    [DebuggerDisplay("Ip={Socket.LocalEndPoint} Id={Player.PlayerId} Player={Player.Name} ")]
+    public sealed class ConnectionState
     {
-        public ClientConnectionState(Socket socket)
+        public ConnectionState(Socket socket)
         {
-            workSocket = socket;
+            SocketClient = socket;
         }
         // Size of receive buffer.  
         public const int BufferSize = 1024;
@@ -23,7 +25,7 @@ namespace t.lib.Server
                 LastAction = DateTime.Now;
             }
         }
-        internal Socket workSocket;
+        internal Socket SocketClient;
         internal Player? Player;
         public DateTime LastAction { get; private set; }
 }

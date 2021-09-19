@@ -112,6 +112,11 @@ namespace t.lib
                 gameActionProtocol.PayloadSize = (byte)nbytes.Length;
                 gameActionProtocol.Payload = nbytes;
             }
+            else if (gameActionProtocol.Phase == Constants.Ok)
+            {
+                gameActionProtocol.Payload = new byte[0];
+                gameActionProtocol.PayloadSize = (byte)gameActionProtocol.Payload.Length;
+            }
             return gameActionProtocol;
         }
         internal int GetTotalPoints(GameActionProtocol gameActionProtocol)

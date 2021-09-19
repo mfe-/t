@@ -55,7 +55,7 @@ namespace t.lib
                     // Encode the data string into a byte array.  
                     byte[] msg = gameActionProtocol.ToByteArray();
                     // Send the data through the socket.  
-                    _logger.LogInformation("PlayerId {gamePlayerId} generated and sending {bytesSent}", gameActionProtocol.PlayerId, msg.Length);
+                    _logger.LogInformation("PlayerId {gamePlayerId} generated", gameActionProtocol.PlayerId);
                     int bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
                     _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                     // Receive the response from the remote device.  
@@ -66,6 +66,7 @@ namespace t.lib
                     //wait until all players joined
                     while (gameActionProtocolRec.Phase != Constants.StartGame)
                     {
+                        _logger.LogInformation("Waiting for remaining players to join");
                         //send ok
                         msg = GameActionProtocolFactory(Constants.Ok).ToByteArray();
                         bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);

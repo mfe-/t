@@ -10,7 +10,6 @@ namespace t.lib
     {
         private readonly IPAddress serverIpAdress;
         private readonly int serverPort;
-        private readonly ILogger logger;
         private Socket? sender;
         private string? PlayerName;
 
@@ -18,7 +17,6 @@ namespace t.lib
         {
             this.serverIpAdress = serverIpAdress;
             this.serverPort = serverPort;
-            this.logger = logger;
         }
         public GameSocketClient(IPAddress serverIpAdress, int serverPort, ILogger logger, string playerName)
             : this(serverIpAdress, serverPort, logger)
@@ -51,38 +49,44 @@ namespace t.lib
                 {
                     sender.Connect(remoteEP);
 
-                    logger.LogInformation("Socket connected to {0}", sender.RemoteEndPoint?.ToString() ?? $"Could not determine {nameof(sender.RemoteEndPoint)}");
+                    _logger.LogInformation("Socket connected to {0}", sender.RemoteEndPoint?.ToString() ?? $"Could not determine {nameof(sender.RemoteEndPoint)}");
 
                     GameActionProtocol gameActionProtocol = GameActionProtocolFactory(Constants.RegisterPlayer, new Player(name, _guid));
                     // Encode the data string into a byte array.  
                     byte[] msg = gameActionProtocol.ToByteArray();
                     // Send the data through the socket.  
-                    logger.LogInformation("PlayerId {gamePlayerId} generated and sending {bytesSent}", gameActionProtocol.PlayerId, msg.Length);
+                    _logger.LogInformation("PlayerId {gamePlayerId} generated and sending {bytesSent}", gameActionProtocol.PlayerId, msg.Length);
                     int bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
+                    _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                     // Receive the response from the remote device.  
                     int bytesRec = sender.Receive(bytes);
+                    _logger.LogTrace("Received {0} bytes.", bytesRec);
                     GameActionProtocol gameActionProtocolRec = bytes.ToGameActionProtocol();
 
                     OnMessageReceive(gameActionProtocol);
-
+                    //send ok
+                    msg = GameActionProtocolFactory(Constants.Ok).ToByteArray();
+                    bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
+                    bytes = new byte[1024];
+                    bytesRec = sender.Receive(bytes);
                 }
                 catch (ArgumentNullException ane)
                 {
-                    logger.LogCritical(ane, "ArgumentNullException : {0}", ane.ToString());
+                    _logger.LogCritical(ane, "ArgumentNullException : {0}", ane.ToString());
                 }
                 catch (SocketException se)
                 {
-                    logger.LogCritical(se, "Could not connect to {0} SocketException : {1}", serverIpAdress, se.ToString());
+                    _logger.LogCritical(se, "Could not connect to {0} SocketException : {1}", serverIpAdress, se.ToString());
                 }
                 catch (Exception e)
                 {
-                    logger.LogCritical(e, "Unexpected exception : {0}", e.ToString());
+                    _logger.LogCritical(e, "Unexpected exception : {0}", e.ToString());
                 }
 
             }
             catch (Exception e)
             {
-                logger.LogCritical(e, e.ToString());
+                _logger.LogCritical(e, e.ToString());
             }
         }
 

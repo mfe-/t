@@ -152,7 +152,7 @@ namespace t.lib.Server
             }
             else
             {
-                _logger.LogInformation("Recieved something unknown");
+                _logger.LogInformation("Received something unknown");
             }
         }
         protected void Send(Socket handler, GameActionProtocol gameActionProtocol)
@@ -175,7 +175,7 @@ namespace t.lib.Server
 
                     // Complete sending the data to the remote device.  
                     int bytesSent = handler.EndSend(ar);
-                    _logger.LogInformation("Sent {0} bytes to client.", bytesSent);
+                    _logger.LogTrace("Sent {0} bytes to client.", bytesSent);
 
                     //handler.Shutdown(SocketShutdown.Both);
                     //handler.Close();

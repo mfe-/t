@@ -34,8 +34,10 @@ namespace t.lib.Server
         private void Game_NewPlayerRegisteredEvent(object? sender, EventArgs<Player> e)
         {
             //broadcast the "new player and all existing players" to all other players
-            foreach (var protocol in _game.Players.Select(a => GameActionProtocolFactory(Constants.NewPlayer, a)))
+            foreach (var player in _game.Players)
             {
+                var protocol = GameActionProtocolFactory(Constants.NewPlayer, player);
+                _logger.LogTrace($"Created {nameof(GameActionProtocol)} with {nameof(GameActionProtocol.Phase)}={{Phase}} for Player {{player}} {{PlayerId}} ", protocol.Phase, player.Name, player.PlayerId);
                 BroadcastMessage(protocol);
             }
             if (_game.Players.Count == RequiredAmountOfPlayers)
@@ -185,7 +187,7 @@ namespace t.lib.Server
                 if (ar.AsyncState is Socket handler)
                 {
                     var connectionState = _playerConnections.Values.First(a => a.SocketClient == handler);
-
+                    connectionState.Buffer = new byte[ConnectionState.BufferSize];
                     int bytesSent = handler.Receive(connectionState.Buffer);
                     GameActionProtocol gameActionProtocol = connectionState.Buffer.AsSpan().Slice(0, bytesSent).ToArray().ToGameActionProtocol(bytesSent);
                     OnMessageReceive(gameActionProtocol);
@@ -199,7 +201,7 @@ namespace t.lib.Server
                     //handler.Close();
                 }
             }
-            catch(SocketException e)
+            catch (SocketException e)
             {
                 //System.Net.Sockets.SocketException: 'An existing connection was forcibly closed by the remote host.'
                 //client ist tot
@@ -237,7 +239,7 @@ namespace t.lib.Server
         {
             foreach (var connectionState in _playerConnections.Values)
             {
-                _logger.LogInformation("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.LocalEndPoint, connectionState.Player?.Name ?? "", gameActionProtocol.Phase);
+                _logger.LogInformation("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", gameActionProtocol.Phase);
                 Send(connectionState.SocketClient, gameActionProtocol);
             }
         }

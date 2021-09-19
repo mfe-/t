@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <StartArguments>-join -ip=10.51.51.164 -port=11000 -name=surface</StartArguments>
+    <StartArguments>-join -ip=10.51.51.197 -port=11000 -name=post</StartArguments>
   </PropertyGroup>
 
   <ItemGroup>

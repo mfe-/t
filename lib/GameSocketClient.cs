@@ -65,15 +65,15 @@ namespace t.lib
                     while (gameActionProtocolRec.Phase != Constants.StartGame)
                     {
                         // Receive the response from the remote device.  
+                        bytes = new byte[1024];
                         int bytesRec = sender.Receive(bytes);
                         _logger.LogTrace("Received {0} bytes.", bytesRec);
-                        gameActionProtocolRec = bytes.ToGameActionProtocol();
+                        gameActionProtocolRec = bytes.AsSpan().Slice(0,bytesRec).ToArray().ToGameActionProtocol(bytesRec);
                         OnMessageReceive(gameActionProtocol);
                         //send ok
                         msg = GameActionProtocolFactory(Constants.Ok).ToByteArray();
                         bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
                         _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
-                        bytes = new byte[1024];
                     }
                     while (gameActionProtocol.Phase != Constants.PlayerWon)
                     {

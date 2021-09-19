@@ -18,8 +18,10 @@ namespace t.lib
         {
             _game = new GameLogic();
             _logger = logger;
+            ActionDictionary.Add(Constants.Ok, OnOk);
             ActionDictionary.Add(Constants.ErrorOccoured, OnProtocolError);
             ActionDictionary.Add(Constants.RegisterPlayer, OnPlayerRegister);
+            ActionDictionary.Add(Constants.StartGame, OnStart);
         }
         protected virtual void OnPlayerRegister(GameActionProtocol gameActionProtocol)
         {
@@ -36,11 +38,15 @@ namespace t.lib
             int totalPoints = GetTotalPoints(gameActionProtocol);
             _game.Start(totalPoints);
         }
+        protected virtual void OnOk(GameActionProtocol gameActionProtocol)
+        {
 
+        }
         protected Dictionary<byte, Action<GameActionProtocol>> ActionDictionary = new();
 
         protected virtual void OnMessageReceive(GameActionProtocol gameActionProtocol)
         {
+            _logger.LogInformation("OnMessageReceive from {player} with Phase {Phase}", gameActionProtocol.PlayerId, gameActionProtocol.Phase);
             using (_logger.BeginScope(new Dictionary<string, object> {
                 { nameof(gameActionProtocol.Phase), gameActionProtocol.Phase }
                ,{ nameof(gameActionProtocol.PlayerId), gameActionProtocol.PlayerId}

@@ -40,7 +40,7 @@ namespace t.lib.Server
             }
             if (_game.Players.Count == RequiredAmountOfPlayers)
             {
-                var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame);
+                var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
                 OnStart(gameActionProtocol);
                 BroadcastMessage(gameActionProtocol);
             }
@@ -182,17 +182,27 @@ namespace t.lib.Server
             try
             {
                 // Retrieve the socket from the state object.
-                if (ar.AsyncState is Socket)
+                if (ar.AsyncState is Socket handler)
                 {
-                    Socket handler = (Socket)ar.AsyncState;
+                    var connectionState = _playerConnections.Values.First(a => a.SocketClient == handler);
+
+                    int bytesSent = handler.Receive(connectionState.Buffer);
+                    GameActionProtocol gameActionProtocol = connectionState.Buffer.AsSpan().Slice(0, bytesSent).ToArray().ToGameActionProtocol(bytesSent);
+                    OnMessageReceive(gameActionProtocol);
 
                     // Complete sending the data to the remote device.  
-                    int bytesSent = handler.EndSend(ar);
-                    _logger.LogTrace("Sent {0} bytes to client.", bytesSent);
+                    //int bytesSent = handler.EndSend(ar);
+                    //int bytesSent = handler.Send(connectionState.Buffer);
+                    //_logger.LogTrace("Sent {0} bytes to client.", bytesSent);
 
                     //handler.Shutdown(SocketShutdown.Both);
                     //handler.Close();
                 }
+            }
+            catch(SocketException e)
+            {
+                //System.Net.Sockets.SocketException: 'An existing connection was forcibly closed by the remote host.'
+                //client ist tot
             }
             catch (Exception e)
             {

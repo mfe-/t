@@ -62,13 +62,25 @@ namespace t.lib
                     int bytesRec = sender.Receive(bytes);
                     _logger.LogTrace("Received {0} bytes.", bytesRec);
                     GameActionProtocol gameActionProtocolRec = bytes.ToGameActionProtocol();
-
                     OnMessageReceive(gameActionProtocol);
-                    //send ok
-                    msg = GameActionProtocolFactory(Constants.Ok).ToByteArray();
-                    bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
-                    bytes = new byte[1024];
-                    bytesRec = sender.Receive(bytes);
+                    //wait until all players joined
+                    while (gameActionProtocolRec.Phase != Constants.StartGame)
+                    {
+                        //send ok
+                        msg = GameActionProtocolFactory(Constants.Ok).ToByteArray();
+                        bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
+                        _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
+                        bytes = new byte[1024];
+                        bytesRec = sender.Receive(bytes);
+                        _logger.LogTrace("Received {0} bytes.", bytesRec);
+                        gameActionProtocolRec = bytes.ToGameActionProtocol();
+                        OnMessageReceive(gameActionProtocol);
+                    }
+                    while (gameActionProtocol.Phase != Constants.PlayerWon)
+                    {
+
+                    }
+
                 }
                 catch (ArgumentNullException ane)
                 {

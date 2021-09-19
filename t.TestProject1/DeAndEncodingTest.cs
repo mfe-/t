@@ -40,7 +40,7 @@ namespace t.TestProject1
         {
             Guid guid = Guid.Parse("6d88b7c1-5b8b-4068-b510-b4ff01309670");
             Player expectedPlayer = new Player("martin", guid);
-            GameSocketServer gameSocketServer = new GameSocketServer("", 0, new Mock<ILogger>().Object);
+            GameSocketServer gameSocketServer = GameSocketFactory();
             var gameActionProtocol = gameSocketServer.GameActionProtocolFactory(Constants.NewPlayer, expectedPlayer);
 
             Player player = gameSocketServer.GetPlayer(gameActionProtocol);
@@ -48,6 +48,25 @@ namespace t.TestProject1
             Assert.Equal(expectedPlayer.PlayerId, player.PlayerId);
             Assert.Equal(expectedPlayer.Name, player.Name);
 
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(10)]
+        [InlineData(int.MaxValue)]
+        [InlineData(int.MinValue)]
+        public void Serialize_StartGame_And_Deserialize(int totalpoints)
+        {
+            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.StartGame, number: totalpoints);
+
+            int points = GameSocketFactory().GetTotalPoints(gameActionProtocol);
+
+            Assert.Equal(totalpoints, points);
+
+        }
+        private static GameSocketServer GameSocketFactory()
+        {
+            return new GameSocketServer(new AppConfig() { TotalPoints = 10, RequiredAmountOfPlayers = 2 }, "", 0, new Mock<ILogger>().Object);
         }
     }
 }

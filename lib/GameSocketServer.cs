@@ -13,16 +13,21 @@ namespace t.lib.Server
 {
     public partial class GameSocketServer : GameBase, IHostedService
     {
-
-        public GameSocketServer(string serverIpAdress, int serverPort, ILogger logger) : base(logger)
+        private readonly int RequiredAmountOfPlayers;
+        private readonly int TotalPoints;
+        public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger) : base(logger)
         {
+            if (appConfig.RequiredAmountOfPlayers < 1) throw new ArgumentException("At least two players are required to play the game!");
+            if (appConfig.TotalPoints < 10) throw new ArgumentException("At least ten points are expected!");
+            RequiredAmountOfPlayers = appConfig.RequiredAmountOfPlayers;
+            TotalPoints = appConfig.TotalPoints;
             ServerPort = serverPort;
             ServerIpAdress = serverIpAdress;
             _game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
             _guid = Guid.NewGuid();
         }
-        public GameSocketServer(string serverIpAdress, int serverPort, ILogger logger, Guid guid)
-            : this(serverIpAdress, serverPort, logger)
+        public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger, Guid guid)
+            : this(appConfig, serverIpAdress, serverPort, logger)
         {
             _guid = guid;
         }
@@ -32,6 +37,12 @@ namespace t.lib.Server
             foreach (var protocol in _game.Players.Select(a => GameActionProtocolFactory(Constants.NewPlayer, a)))
             {
                 BroadcastMessage(protocol);
+            }
+            if (_game.Players.Count == RequiredAmountOfPlayers)
+            {
+                var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame);
+                OnStart(gameActionProtocol);
+                BroadcastMessage(gameActionProtocol);
             }
         }
         public int ServerPort { get; }
@@ -64,12 +75,14 @@ namespace t.lib.Server
                 cancellationToken, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
 
         }
+
+
         private CancellationTokenSource? cancellationTokenSource;
         // Thread signal.  
         protected readonly ManualResetEvent allDone = new ManualResetEvent(false);
         private void Listening(IPEndPoint localEndPoint, Socket listener)
         {
-            _logger.LogInformation($"{nameof(Listening)} on {localEndPoint.Address} {ServerPort}", localEndPoint.Address, ServerPort);
+            _logger.LogInformation($"{nameof(Listening)} on {localEndPoint.Address}:{ServerPort}", localEndPoint.Address, ServerPort);
             _logger.LogInformation("ServerId {ServerId} generated", _guid);
             // Bind the socket to the local endpoint and
             // listen for incoming connections.  

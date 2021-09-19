@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using t.lib;
 using t.lib.Server;
 
 namespace t.Server
@@ -29,8 +30,8 @@ namespace t.Server
                     var identifier = hostContext.Configuration.GetValue<Guid>("AppConfig:Identifier");
                     if (identifier == Guid.Empty)
                     {
-
                         return new GameSocketServer(
+                            hostContext.Configuration.GetSection("AppConfig").Get<AppConfig>(),
                             hostContext.Configuration.GetValue<string>("AppConfig:ServerIpAdress"),
                             hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"),
                             serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new ArgumentNullException());
@@ -38,6 +39,7 @@ namespace t.Server
                     else
                     {
                         return new GameSocketServer(
+                            hostContext.Configuration.GetSection("AppConfig").Get<AppConfig>(),
                             hostContext.Configuration.GetValue<string>("AppConfig:ServerIpAdress"),
                             hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"), 
                             serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new ArgumentNullException(),

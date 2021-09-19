@@ -31,6 +31,11 @@ namespace t.lib
                 _game.RegisterPlayer(player);
             }
         }
+        protected virtual void OnStart(GameActionProtocol gameActionProtocol)
+        {
+            int totalPoints = GetTotalPoints(gameActionProtocol);
+            _game.Start(totalPoints);
+        }
 
         protected Dictionary<byte, Action<GameActionProtocol>> ActionDictionary = new();
 
@@ -57,7 +62,7 @@ namespace t.lib
         }
         protected abstract void BroadcastMessage(GameActionProtocol gameActionProtocol);
 
-        internal virtual GameActionProtocol GameActionProtocolFactory(byte phase, Player? player = null, string? message = null)
+        internal virtual GameActionProtocol GameActionProtocolFactory(byte phase, Player? player = null, string? message = null, int? number = null)
         {
             GameActionProtocol gameActionProtocol = new GameActionProtocol();
             gameActionProtocol.Version = Constants.Version;
@@ -65,7 +70,7 @@ namespace t.lib
             gameActionProtocol.Phase = phase;
             if (gameActionProtocol.Phase == Constants.NewPlayer)
             {
-                if (player == null) throw new ArgumentException($"{nameof(Constants.NewPlayer)} requires argument {nameof(player)}");
+                if (player == null) throw new ArgumentNullException($"{nameof(Constants.NewPlayer)} requires argument {nameof(player)}");
                 //encode playerid and playername into payload
                 var playerid = player.PlayerId.ToByteArray();
                 if (!player.Name.Contains(Environment.NewLine))
@@ -97,10 +102,23 @@ namespace t.lib
             }
             else if (gameActionProtocol.Phase == Constants.RegisterPlayer)
             {
-                if (player == null) throw new ArgumentException($"{nameof(Constants.NewPlayer)} requires argument {nameof(player)}");
+                if (player == null) throw new ArgumentNullException($"{nameof(Constants.NewPlayer)} requires argument {nameof(player)}");
                 gameActionProtocol.Payload = Encoding.ASCII.GetBytes($"{player.Name}{Environment.NewLine}");
             }
+            else if (gameActionProtocol.Phase == Constants.StartGame)
+            {
+                if (number == null) throw new ArgumentNullException($"{nameof(Constants.StartGame)} requires argument {nameof(number)}");
+                var nbytes = BitConverter.GetBytes(number.Value);
+                gameActionProtocol.PayloadSize = (byte)nbytes.Length;
+                gameActionProtocol.Payload = nbytes;
+            }
             return gameActionProtocol;
+        }
+        internal int GetTotalPoints(GameActionProtocol gameActionProtocol)
+        {
+            if (gameActionProtocol.Phase != Constants.StartGame) throw new ArgumentException($"{nameof(Constants.StartGame)} required for argument {nameof(gameActionProtocol.Phase)}");
+            int a = BitConverter.ToInt32(gameActionProtocol.Payload.AsSpan().Slice(0, gameActionProtocol.PayloadSize));
+            return a;
         }
         public virtual Player GetPlayer(GameActionProtocol gameActionProtocol)
         {

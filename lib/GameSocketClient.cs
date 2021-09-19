@@ -72,7 +72,7 @@ namespace t.lib
                 }
                 catch (SocketException se)
                 {
-                    logger.LogCritical(se, "SocketException : {0}", se.ToString());
+                    logger.LogCritical(se, "Could not connect to {0} SocketException : {1}", serverIpAdress, se.ToString());
                 }
                 catch (Exception e)
                 {

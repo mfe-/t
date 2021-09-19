@@ -58,24 +58,22 @@ namespace t.lib
                     _logger.LogInformation("PlayerId {gamePlayerId} generated", gameActionProtocol.PlayerId);
                     int bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
                     _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
-                    // Receive the response from the remote device.  
-                    int bytesRec = sender.Receive(bytes);
-                    _logger.LogTrace("Received {0} bytes.", bytesRec);
-                    GameActionProtocol gameActionProtocolRec = bytes.ToGameActionProtocol();
-                    OnMessageReceive(gameActionProtocol);
+                    _logger.LogInformation("Waiting for remaining players to join");
                     //wait until all players joined
+                    GameActionProtocol gameActionProtocolRec = new GameActionProtocol();
+                    gameActionProtocolRec.Phase = Constants.Ok;
                     while (gameActionProtocolRec.Phase != Constants.StartGame)
                     {
-                        _logger.LogInformation("Waiting for remaining players to join");
+                        // Receive the response from the remote device.  
+                        int bytesRec = sender.Receive(bytes);
+                        _logger.LogTrace("Received {0} bytes.", bytesRec);
+                        gameActionProtocolRec = bytes.ToGameActionProtocol();
+                        OnMessageReceive(gameActionProtocol);
                         //send ok
                         msg = GameActionProtocolFactory(Constants.Ok).ToByteArray();
                         bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
                         _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                         bytes = new byte[1024];
-                        bytesRec = sender.Receive(bytes);
-                        _logger.LogTrace("Received {0} bytes.", bytesRec);
-                        gameActionProtocolRec = bytes.ToGameActionProtocol();
-                        OnMessageReceive(gameActionProtocol);
                     }
                     while (gameActionProtocol.Phase != Constants.PlayerWon)
                     {

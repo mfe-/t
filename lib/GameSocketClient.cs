@@ -17,7 +17,21 @@ namespace t.lib
         {
             this.serverIpAdress = serverIpAdress;
             this.serverPort = serverPort;
+            ActionDictionary.Add(Constants.NewPlayer, OnNewPlayer);
         }
+
+        private void OnNewPlayer(GameActionProtocol gameActionProtocol)
+        {
+            if (gameActionProtocol.Phase != Constants.NewPlayer) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(Constants.RegisterPlayer)}");
+
+            Player player = GetPlayer(gameActionProtocol);
+            if (!_game.Players.Any(a => a.PlayerId == player.PlayerId))
+            {
+                _logger.LogInformation($"Adding {(_guid != player.PlayerId ? "new" : "")} PlayerId {{PlayerId)}} {{Name}}", player.PlayerId, player.Name);
+                _game.RegisterPlayer(player);
+            }
+        }
+
         public GameSocketClient(IPAddress serverIpAdress, int serverPort, ILogger logger, string playerName)
             : this(serverIpAdress, serverPort, logger)
         {

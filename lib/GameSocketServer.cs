@@ -33,6 +33,10 @@ namespace t.lib.Server
         }
         private void Game_NewPlayerRegisteredEvent(object? sender, EventArgs<Player> e)
         {
+            Task.Factory.StartNew(OnNewPlayer, TaskCreationOptions.DenyChildAttach);
+        }
+        private void OnNewPlayer()
+        {
             //broadcast the "new player and all existing players" to all other players
             foreach (var player in _game.Players)
             {
@@ -47,6 +51,7 @@ namespace t.lib.Server
                 BroadcastMessage(gameActionProtocol);
             }
         }
+
         public int ServerPort { get; }
         public string ServerIpAdress { get; }
 
@@ -155,7 +160,7 @@ namespace t.lib.Server
                 {
                     _logger.LogTrace("Received {0} bytes.", bytesRead);
 
-                    GameActionProtocol gameActionProtocol = state.Buffer.ToGameActionProtocol(bytesRead);
+                    GameActionProtocol gameActionProtocol = state.Buffer.AsSpan().Slice(0, bytesRead).ToArray().ToGameActionProtocol(bytesRead);
                     if (gameActionProtocol.Phase == Constants.RegisterPlayer && !_playerConnections.ContainsKey(gameActionProtocol.PlayerId))
                     {
                         connectionState.Player = GetPlayer(gameActionProtocol);
@@ -163,6 +168,7 @@ namespace t.lib.Server
                         _logger.LogInformation("Client {connectionWithPlayerId} {PlayerName} connected and added to Clientlist={addResult}", gameActionProtocol.PlayerId, connectionState.Player?.Name ?? "", addResult);
                     }
                     OnMessageReceive(gameActionProtocol);
+                    //Task.Factory.StartNew(() => OnMessageReceive(gameActionProtocol), TaskCreationOptions.DenyChildAttach);
                 }
             }
             else
@@ -170,13 +176,13 @@ namespace t.lib.Server
                 _logger.LogInformation("Received something unknown");
             }
         }
-        protected void Send(Socket handler, GameActionProtocol gameActionProtocol)
+        protected void Send(ConnectionState connectionState, GameActionProtocol gameActionProtocol)
         {
             // Convert the data to byte data
             byte[] byteData = gameActionProtocol.ToByteArray();
 
             // Begin sending the data to the remote device.  
-            handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), handler);
+            connectionState.SocketClient.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), connectionState);
         }
 
         private void SendCallback(IAsyncResult ar)
@@ -184,11 +190,11 @@ namespace t.lib.Server
             try
             {
                 // Retrieve the socket from the state object.
-                if (ar.AsyncState is Socket handler)
+                if (ar.AsyncState is ConnectionState connectionState)
                 {
-                    var connectionState = _playerConnections.Values.First(a => a.SocketClient == handler);
+                    connectionState.SocketClient.EndSend(ar);
                     connectionState.Buffer = new byte[ConnectionState.BufferSize];
-                    int bytesSent = handler.Receive(connectionState.Buffer);
+                    int bytesSent = connectionState.SocketClient.Receive(connectionState.Buffer);
                     GameActionProtocol gameActionProtocol = connectionState.Buffer.AsSpan().Slice(0, bytesSent).ToArray().ToGameActionProtocol(bytesSent);
                     OnMessageReceive(gameActionProtocol);
 
@@ -240,7 +246,7 @@ namespace t.lib.Server
             foreach (var connectionState in _playerConnections.Values)
             {
                 _logger.LogInformation("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", gameActionProtocol.Phase);
-                Send(connectionState.SocketClient, gameActionProtocol);
+                Send(connectionState, gameActionProtocol);
             }
         }
     }

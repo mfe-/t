@@ -55,7 +55,7 @@ namespace t.lib
                     // Encode the data string into a byte array.  
                     byte[] msg = gameActionProtocol.ToByteArray();
                     // Send the data through the socket.  
-                    _logger.LogInformation("PlayerId {gamePlayerId} generated", gameActionProtocol.PlayerId);
+                    _logger.LogInformation("PlayerId {gamePlayerId} for {playerName} generated", gameActionProtocol.PlayerId, GetPlayer(gameActionProtocol).Name);
                     int bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
                     _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                     _logger.LogInformation("Waiting for remaining players to join");
@@ -68,8 +68,8 @@ namespace t.lib
                         bytes = new byte[1024];
                         int bytesRec = sender.Receive(bytes);
                         _logger.LogTrace("Received {0} bytes.", bytesRec);
-                        gameActionProtocolRec = bytes.AsSpan().Slice(0,bytesRec).ToArray().ToGameActionProtocol(bytesRec);
-                        OnMessageReceive(gameActionProtocol);
+                        gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
+                        OnMessageReceive(gameActionProtocolRec);
                         //send ok
                         msg = GameActionProtocolFactory(Constants.Ok).ToByteArray();
                         bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
@@ -87,7 +87,14 @@ namespace t.lib
                 }
                 catch (SocketException se)
                 {
-                    _logger.LogCritical(se, "Could not connect to {0} SocketException : {1}", serverIpAdress, se.ToString());
+                    if (se.ErrorCode == 10054)
+                    {
+                        _logger.LogCritical(se, "Lost connection to {0} SocketException : {1}", serverIpAdress, se.ToString());
+                    }
+                    else
+                    {
+                        _logger.LogCritical(se, "Could not connect to {0} SocketException : {1}", serverIpAdress, se.ToString());
+                    }
                 }
                 catch (Exception e)
                 {

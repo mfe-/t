@@ -23,17 +23,17 @@ namespace t.TestProject1
                 game.Cards.Add(new Card(3));
                 game.Cards.Add(new Card(4));
             });
-            game.NewGame();
+            game.NewGame(4);
 
             Player player1 = new Player("martin", Guid.NewGuid());
             Player player2 = new Player("simon", Guid.NewGuid());
             Player player3 = new Player("katharina", Guid.NewGuid());
             Player player4 = new Player("renate", Guid.NewGuid());
 
-            game.RegisterPlayer(player2);
-            game.RegisterPlayer(player1);
-            game.RegisterPlayer(player3);
-            game.RegisterPlayer(player4);
+            game.Players.Add(player2);
+            game.Players.Add(player1);
+            game.Players.Add(player3);
+            game.Players.Add(player4);
             game.Start(10);
 
             Assert.NotNull(game.CurrentCard);
@@ -70,7 +70,7 @@ namespace t.TestProject1
             const int secondHighestPlayedValueCard = 3;
 
             GameLogic game = new GameLogic();
-            game.NewGame();
+            game.NewGame(4);
 
             Player player1 = new Player("martin", Guid.NewGuid());
             Player player2 = new Player("simon", Guid.NewGuid());
@@ -112,17 +112,18 @@ namespace t.TestProject1
                 game.Cards.Add(new Card(cardToWin));
                 game.Cards.Add(new Card(2));
             });
-            game.NewGame();
+            game.NewGame(4);
 
             Player player1 = new Player("martin", Guid.NewGuid());
             Player player2 = new Player("simon", Guid.NewGuid());
             Player player3 = new Player("katharina", Guid.NewGuid());
             Player player4 = new Player("renate", Guid.NewGuid());
 
-            game.RegisterPlayer(player2);
-            game.RegisterPlayer(player1);
-            game.RegisterPlayer(player3);
-            game.RegisterPlayer(player4);
+            // add players to list instead of calling game.RegisterPlayer because the Mock doesnt call the original method game.RegisterPlayer
+            game.Players.Add(player2);
+            game.Players.Add(player1);
+            game.Players.Add(player3);
+            game.Players.Add(player4);
 
             game.Start(10);
 
@@ -150,17 +151,21 @@ namespace t.TestProject1
                 game.Cards.Add(new Card(cardToWin));
                 game.Cards.Add(new Card(2));
             });
-            game.NewGame();
+            game.NewGame(4);
 
             Player player1 = new Player("martin", Guid.NewGuid()); ;
             Player player2 = new Player("simon", Guid.NewGuid());
             Player player3 = new Player("katharina", Guid.NewGuid());
             Player player4 = new Player("renate", Guid.NewGuid());
 
-            game.RegisterPlayer(player2);
-            game.RegisterPlayer(player1);
-            game.RegisterPlayer(player3);
-            game.RegisterPlayer(player4);
+            //game.RegisterPlayer(player2);
+            //game.RegisterPlayer(player1);
+            //game.RegisterPlayer(player3);
+            //game.RegisterPlayer(player4);
+            game.Players.Add(player2);
+            game.Players.Add(player1);
+            game.Players.Add(player3);
+            game.Players.Add(player4);
 
             game.Start(10);
 
@@ -186,17 +191,19 @@ namespace t.TestProject1
                 game.Cards.Add(new Card(cardToWin));
                 game.Cards.Add(new Card(2));
             });
-            game.NewGame();
+            game.NewGame(4);
 
             Player player1 = new Player("martin", Guid.NewGuid());
             Player player2 = new Player("simon", Guid.NewGuid());
             Player player3 = new Player("katharina", Guid.NewGuid());
             Player player4 = new Player("renate", Guid.NewGuid());
 
-            game.RegisterPlayer(player2);
-            game.RegisterPlayer(player1);
-            game.RegisterPlayer(player3);
-            game.RegisterPlayer(player4);
+
+            // add players to list instead of calling game.RegisterPlayer because the Mock doesnt call the original method game.RegisterPlayer
+            game.Players.Add(player2);
+            game.Players.Add(player1);
+            game.Players.Add(player3);
+            game.Players.Add(player4);
 
             game.Start(10);
 

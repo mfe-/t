@@ -76,7 +76,8 @@ namespace t.lib
             gameActionProtocol.Phase = phase;
             if (gameActionProtocol.Phase == Constants.NewPlayer)
             {
-                if (player == null) throw new ArgumentNullException($"{nameof(Constants.NewPlayer)} requires argument {nameof(player)}");
+                if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(Constants.NewPlayer)} requires argument {nameof(player)}");
+                if (number == null) throw new ArgumentNullException(nameof(number), $"The parameter {nameof(number)} is required as it is used as {nameof(GameLogic.RequiredAmountOfPlayers)}");
                 //encode playerid and playername into payload
                 var playerid = player.PlayerId.ToByteArray();
                 if (!player.Name.Contains(Environment.NewLine))
@@ -84,15 +85,22 @@ namespace t.lib
                     player.Name = $"{player.Name}{Environment.NewLine}";
                 }
                 var playername = Encoding.ASCII.GetBytes(player.Name);
-                byte[] paypload = new byte[playerid.Length + playername.Length];
+                var nbytes = BitConverter.GetBytes(number.Value);
+                gameActionProtocol.PayloadSize = (byte)nbytes.Length;
+                byte[] paypload = new byte[playerid.Length + playername.Length + nbytes.Length];
                 int i = 0;
                 for (; i < playerid.Length; i++)
                 {
                     paypload[i] = playerid[i];
                 }
-                for (int a = 0; a < playername.Length; i++, a++)
+                int a = 0;
+                for (; a < playername.Length; i++, a++)
                 {
                     paypload[i] = playername[a];
+                }
+                for (int b = 0; b < nbytes.Length; i++, b++)
+                {
+                    paypload[i] = nbytes[b];
                 }
                 gameActionProtocol.PayloadSize = (byte)paypload.Length;
                 gameActionProtocol.Payload = paypload;
@@ -108,12 +116,12 @@ namespace t.lib
             }
             else if (gameActionProtocol.Phase == Constants.RegisterPlayer)
             {
-                if (player == null) throw new ArgumentNullException($"{nameof(Constants.NewPlayer)} requires argument {nameof(player)}");
+                if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(Constants.NewPlayer)} requires argument {nameof(player)}");
                 gameActionProtocol.Payload = Encoding.ASCII.GetBytes($"{player.Name}{Environment.NewLine}");
             }
             else if (gameActionProtocol.Phase == Constants.StartGame)
             {
-                if (number == null) throw new ArgumentNullException($"{nameof(Constants.StartGame)} requires argument {nameof(number)}");
+                if (number == null) throw new ArgumentNullException(nameof(number), $"{nameof(Constants.StartGame)} requires argument {nameof(number)}");
                 var nbytes = BitConverter.GetBytes(number.Value);
                 gameActionProtocol.PayloadSize = (byte)nbytes.Length;
                 gameActionProtocol.Payload = nbytes;
@@ -130,6 +138,19 @@ namespace t.lib
             if (gameActionProtocol.Phase != Constants.StartGame) throw new ArgumentException($"{nameof(Constants.StartGame)} required for argument {nameof(gameActionProtocol.Phase)}");
             int a = BitConverter.ToInt32(gameActionProtocol.Payload.AsSpan().Slice(0, gameActionProtocol.PayloadSize));
             return a;
+        }
+        internal int GetNumber(GameActionProtocol gameActionProtocol)
+        {
+            if (gameActionProtocol.Phase == Constants.NewPlayer)
+            {
+                var span = gameActionProtocol.Payload.AsSpan();
+
+                int playerNameLength = GetPlayerNameLength(gameActionProtocol.PayloadSize, span);
+                //slice from guid+playername position to the end of byte array
+                var numberBytes = span.Slice(Marshal.SizeOf(typeof(Guid)) + playerNameLength, gameActionProtocol.PayloadSize - (Marshal.SizeOf(typeof(Guid)) + playerNameLength));
+                return BitConverter.ToInt32(numberBytes.ToArray());
+            }
+            throw new NotImplementedException($"Not implemented {gameActionProtocol.Phase}");
         }
         public virtual Player GetPlayer(GameActionProtocol gameActionProtocol)
         {
@@ -149,10 +170,50 @@ namespace t.lib
             var span = gameActionProtocol.Payload.AsSpan();
 
             Guid playerId = new Guid(span.Slice(0, Marshal.SizeOf<Guid>()));
-            var playerNameBytes = span.Slice(Marshal.SizeOf(typeof(Guid)), gameActionProtocol.PayloadSize - Marshal.SizeOf(typeof(Guid)));
+
+            int playerNameLength = GetPlayerNameLength(gameActionProtocol.PayloadSize, span);
+            var playerNameBytes = span.Slice(Marshal.SizeOf(typeof(Guid)), playerNameLength);
             var playername = Encoding.ASCII.GetString(playerNameBytes);
+
             return new Player(playername, playerId);
         }
+
+        private static int GetPlayerNameLength(int payloadSize, Span<byte> span)
+        {
+            //first part of payload is Guid - followed by name and number which is seperated by NewLine
+            var playerNameAndNumberBytes = span.Slice(Marshal.SizeOf(typeof(Guid)), payloadSize - Marshal.SizeOf(typeof(Guid)));
+            //look up Enviroment.NewLine
+            Span<byte> bufferNewLine = stackalloc byte[2];
+            int playerNameLength = 0;
+            int newLineIterationHit = 0;
+            do
+            {
+                if (playerNameAndNumberBytes[playerNameLength] == 13)
+                {
+                    bufferNewLine[0] = playerNameAndNumberBytes[playerNameLength];
+                    newLineIterationHit = playerNameLength + 1;
+                }
+                else if (newLineIterationHit == playerNameLength && playerNameAndNumberBytes[playerNameLength] == 10)
+                {
+                    bufferNewLine[1] = playerNameAndNumberBytes[playerNameLength];
+                }
+                else
+                {
+                    //reset if new line not found
+                    bufferNewLine[0] = 0;
+                    newLineIterationHit = 0;
+                }
+                playerNameLength++;
+            } while (playerNameLength < playerNameAndNumberBytes.Length && !IsNewLine(bufferNewLine));
+            return playerNameLength;
+        }
+
+        private static bool IsNewLine(Span<byte> bufferNewLine)
+        {
+            //Encoding.UTF8.GetBytes(System.Environment.NewLine)
+            return (bufferNewLine[0] == 13 && bufferNewLine[1] == 10);
+        }
+
         /// <summary>
         /// Gets the <see cref="Player"/> if <see cref="GameActionProtocol.Phase"/> is <see cref="Constants.RegisterPlayer"/>
         /// </summary>

@@ -44,6 +44,7 @@ namespace t.lib
         /// player reported - contains the number of the played card
         /// next round - the card which can be won
         /// player scored - the amount of points the player scored
+        /// new player - playerguid|palyername\r\n|requiredplayer
         /// </summary>
         public byte[] Payload;
     }

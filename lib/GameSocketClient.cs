@@ -27,6 +27,13 @@ namespace t.lib
             Player player = GetPlayer(gameActionProtocol);
             if (!_game.Players.Any(a => a.PlayerId == player.PlayerId))
             {
+                if (!_game.Players.Any())
+                {
+                    //start game before register new players
+                    int requiredPlayers = GetNumber(gameActionProtocol);
+                    _game.NewGame(requiredPlayers);
+                }
+
                 _logger.LogInformation($"Adding {(_guid != player.PlayerId ? "new" : "")} PlayerId {{PlayerId)}} {{Name}}", player.PlayerId, player.Name);
                 _game.RegisterPlayer(player);
             }
@@ -42,7 +49,6 @@ namespace t.lib
         public async Task JoinGameAsync(string name)
         {
             _guid = Guid.NewGuid();
-            _game.NewGame();
             // Data buffer for incoming data.  
             byte[] bytes = new byte[1024];
 
@@ -67,10 +73,10 @@ namespace t.lib
 
                     GameActionProtocol gameActionProtocol = GameActionProtocolFactory(Constants.RegisterPlayer, new Player(name, _guid));
                     // Encode the data string into a byte array.  
-                    byte[] msg = gameActionProtocol.ToByteArray();
+                    byte[] sendPayLoad = gameActionProtocol.ToByteArray();
                     // Send the data through the socket.  
                     _logger.LogInformation("PlayerId {gamePlayerId} for {playerName} generated", gameActionProtocol.PlayerId, GetPlayer(gameActionProtocol).Name);
-                    int bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
+                    int bytesSent = await sender.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
                     _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                     _logger.LogInformation("Waiting for remaining players to join");
                     //wait until all players joined
@@ -85,8 +91,8 @@ namespace t.lib
                         gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
                         OnMessageReceive(gameActionProtocolRec);
                         //send ok
-                        msg = GameActionProtocolFactory(Constants.Ok).ToByteArray();
-                        bytesSent = await sender.SendAsync(new ArraySegment<byte>(msg), SocketFlags.None);
+                        sendPayLoad = GameActionProtocolFactory(Constants.Ok).ToByteArray();
+                        bytesSent = await sender.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
                         _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                     }
                     while (gameActionProtocol.Phase != Constants.PlayerWon)

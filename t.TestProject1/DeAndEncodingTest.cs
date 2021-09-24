@@ -35,19 +35,24 @@ namespace t.TestProject1
 
 
         }
-        [Fact]
-        public void GameActionProtocol_ToPlayer_test()
+        [Theory]
+        [InlineData("martin", 4)]
+        [InlineData("katharina", 6)]
+        [InlineData("asdf\ro\n", 6)]
+        public void GameActionProtocol_ToPlayer_test(string expectedPlayerName, int expectedRequiredPlayer)
         {
+            byte[] byteArray = new byte[] { 4, 5, 6, 13, 0, 10 };
             Guid guid = Guid.Parse("6d88b7c1-5b8b-4068-b510-b4ff01309670");
-            Player expectedPlayer = new Player("martin", guid);
+            Player expectedPlayer = new Player(expectedPlayerName, guid);
             GameSocketServer gameSocketServer = GameSocketFactory();
-            var gameActionProtocol = gameSocketServer.GameActionProtocolFactory(Constants.NewPlayer, expectedPlayer);
+            var gameActionProtocol = gameSocketServer.GameActionProtocolFactory(Constants.NewPlayer, expectedPlayer, number: expectedRequiredPlayer);
 
             Player player = gameSocketServer.GetPlayer(gameActionProtocol);
+            int requiredPlayer = gameSocketServer.GetNumber(gameActionProtocol);
 
             Assert.Equal(expectedPlayer.PlayerId, player.PlayerId);
             Assert.Equal(expectedPlayer.Name, player.Name);
-
+            Assert.Equal(expectedRequiredPlayer, requiredPlayer);
         }
 
         [Theory]

@@ -17,12 +17,14 @@ namespace t.lib
         public event EventHandler<EventArgs>? NextRoundEvent;
         public event EventHandler<EventArgs>? GameEndEvent;
         public event EventHandler<EventArgs<Player>>? NewPlayerRegisteredEvent;
+        public event EventHandler<EventArgs>? RequiredAmountOfPlayersReachedEvent;
         public GameLogic()
         {
             random = new Random();
             Cards = new List<Card>(CardCapacity);
             Players = new List<Player>();
         }
+        public int RequiredAmountOfPlayers { get; private set; } = 0;
         public IList<Player> Players { get; private set; }
 
         public IList<Card> Cards { get; private set; }
@@ -38,6 +40,10 @@ namespace t.lib
             if (Players.Count == CardCapacity) throw new InvalidOperationException($"Game only designed for {CardCapacity} players");
             Players.Add(player);
             NewPlayerRegisteredEvent?.Invoke(this, new EventArgs<Player>(player));
+            if (Players.Count == RequiredAmountOfPlayers)
+            {
+                RequiredAmountOfPlayersReachedEvent?.Invoke(this, EventArgs.Empty);
+            }
         }
         public void OnLeavePlayerEvent(Player player)
         {
@@ -56,9 +62,10 @@ namespace t.lib
             }
             while (Cards.Count != CardCapacity);
         }
-
-        public void NewGame()
+        public void NewGame(int requiredAmountOfPlayers)
         {
+            if (requiredAmountOfPlayers < 1) throw new ArgumentException("At least two players are required to play the game!");
+            RequiredAmountOfPlayers = requiredAmountOfPlayers;
             TotalPointsToPlay = 0;
             Round = 0;
             CurrentCard = null;

@@ -24,8 +24,10 @@ namespace t.lib.Server
             ServerPort = serverPort;
             ServerIpAdress = serverIpAdress;
             _game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
+            _game.RequiredAmountOfPlayersReachedEvent += Game_RequiredAmountOfPlayersReached;
             _guid = Guid.NewGuid();
         }
+
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger, Guid guid)
             : this(appConfig, serverIpAdress, serverPort, logger)
         {
@@ -33,23 +35,30 @@ namespace t.lib.Server
         }
         private void Game_NewPlayerRegisteredEvent(object? sender, EventArgs<Player> e)
         {
+            //make sure the event is not blocking any processing tcp event
             Task.Factory.StartNew(OnNewPlayer, TaskCreationOptions.DenyChildAttach);
+        }
+        private void Game_RequiredAmountOfPlayersReached(object? sender, EventArgs e)
+        {
+            //make sure the event is not blocking any processing tcp event
+            Task.Factory.StartNew(OnStartGame, TaskCreationOptions.DenyChildAttach);
         }
         private void OnNewPlayer()
         {
             //broadcast the "new player and all existing players" to all other players
             foreach (var player in _game.Players)
             {
-                var protocol = GameActionProtocolFactory(Constants.NewPlayer, player);
+                var protocol = GameActionProtocolFactory(Constants.NewPlayer, player, number: RequiredAmountOfPlayers);
                 _logger.LogTrace($"Created {nameof(GameActionProtocol)} with {nameof(GameActionProtocol.Phase)}={{Phase}} for Player {{player}} {{PlayerId}} ", protocol.Phase, player.Name, player.PlayerId);
                 BroadcastMessage(protocol);
             }
-            if (_game.Players.Count == RequiredAmountOfPlayers)
-            {
-                var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
-                OnStart(gameActionProtocol);
-                BroadcastMessage(gameActionProtocol);
-            }
+        }
+
+        private void OnStartGame()
+        {
+            var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
+            OnStart(gameActionProtocol);
+            BroadcastMessage(gameActionProtocol);
         }
 
         public int ServerPort { get; }
@@ -100,7 +109,7 @@ namespace t.lib.Server
                     listener.Bind(localEndPoint);
                     listener.Listen(10);
 
-                    _game.NewGame();
+                    _game.NewGame(RequiredAmountOfPlayers);
 
                     _logger.LogInformation("Waiting for a connection...");
                     // Start listening for connections.  

@@ -24,7 +24,6 @@ namespace t.lib.Server
             ServerPort = serverPort;
             ServerIpAdress = serverIpAdress;
             _game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
-            _game.RequiredAmountOfPlayersReachedEvent += Game_RequiredAmountOfPlayersReached;
             _guid = Guid.NewGuid();
         }
 
@@ -38,11 +37,6 @@ namespace t.lib.Server
             //make sure the event is not blocking any processing tcp event
             Task.Factory.StartNew(OnNewPlayer, TaskCreationOptions.DenyChildAttach);
         }
-        private void Game_RequiredAmountOfPlayersReached(object? sender, EventArgs e)
-        {
-            //make sure the event is not blocking any processing tcp event
-            Task.Factory.StartNew(OnStartGame, TaskCreationOptions.DenyChildAttach);
-        }
         private void OnNewPlayer()
         {
             //broadcast the "new player and all existing players" to all other players
@@ -51,6 +45,10 @@ namespace t.lib.Server
                 var protocol = GameActionProtocolFactory(Constants.NewPlayer, player, number: RequiredAmountOfPlayers);
                 _logger.LogTrace($"Created {nameof(GameActionProtocol)} with {nameof(GameActionProtocol.Phase)}={{Phase}} for Player {{player}} {{PlayerId}} ", protocol.Phase, player.Name, player.PlayerId);
                 BroadcastMessage(protocol);
+            }
+            if (_game.Players.Count == RequiredAmountOfPlayers)
+            {
+                OnStartGame();
             }
         }
 
@@ -249,7 +247,7 @@ namespace t.lib.Server
             StopListening();
             return Task.CompletedTask;
         }
-
+        TaskCompletionSource? TaskCompletionBroadcastMessageSource;
         protected override void BroadcastMessage(GameActionProtocol gameActionProtocol)
         {
             foreach (var connectionState in _playerConnections.Values)

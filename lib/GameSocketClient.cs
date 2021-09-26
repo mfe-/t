@@ -165,6 +165,7 @@ namespace t.lib
         private async Task<int> GetPlayerCardChoiceAsync(Func<Task<string>> onChoiceCommandFuncAsync)
         {
             int cardValue = 0;
+            int empty = 0;
             do
             {
                 string playerChoice = await onChoiceCommandFuncAsync.Invoke();
@@ -174,6 +175,11 @@ namespace t.lib
                 }
                 else
                 {
+                    if (empty > 0)
+                    {
+                        throw new OperationCanceledException("User aborted current operation!");
+                    }
+                    if (playerChoice == String.Empty) empty++;
                     System.Console.WriteLine("Enter a valid card number!");
                 }
             } while (cardValue == 0);

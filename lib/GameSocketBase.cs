@@ -70,7 +70,7 @@ namespace t.lib
         /// Broadcasts a <see cref="GameActionProtocol"/> to every recipient
         /// </summary>
         /// <param name="gameActionProtocol">The protocol which should be broadcastet</param>
-        protected abstract void BroadcastMessage(GameActionProtocol gameActionProtocol);
+        protected abstract Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol);
 
         internal virtual GameActionProtocol GameActionProtocolFactory(byte phase, Player? player = null, string? message = null, int? number = null, NextRoundEventArgs? nextRoundEventArgs = null)
         {

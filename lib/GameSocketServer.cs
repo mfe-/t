@@ -24,7 +24,27 @@ namespace t.lib.Server
             ServerPort = serverPort;
             ServerIpAdress = serverIpAdress;
             Game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
+            Game.NextRoundEvent += Game_NextRoundEvent;
+            Game.GameStartedEvent += Game_GameStartedEvent;
             _guid = Guid.NewGuid();
+        }
+
+        private void Game_GameStartedEvent(object? sender, EventArgs e)
+        {
+            async Task BroadCastStartGame()
+            {
+                await _SemaphoreSlimBroadcastMessage.WaitAsync();
+                var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
+                await OnStartAsync(gameActionProtocol);
+                await BroadcastMessageAsync(gameActionProtocol);
+                _SemaphoreSlimBroadcastMessage.Release();
+            }
+            Task.Factory.StartNew(BroadCastStartGame, TaskCreationOptions.DenyChildAttach);
+        }
+
+        private void Game_NextRoundEvent(object? sender, NextRoundEventArgs e)
+        {
+
         }
 
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger, Guid guid)
@@ -35,28 +55,23 @@ namespace t.lib.Server
         private void Game_NewPlayerRegisteredEvent(object? sender, EventArgs<Player> e)
         {
             //make sure the event is not blocking any processing tcp event
-            Task.Factory.StartNew(OnNewPlayer, TaskCreationOptions.DenyChildAttach);
+            Task.Factory.StartNew(OnNewPlayerAsync, TaskCreationOptions.DenyChildAttach);
         }
-        private void OnNewPlayer()
+        private async Task OnNewPlayerAsync()
         {
             //broadcast the "new player and all existing players" to all other players
             foreach (var player in Game.Players)
             {
                 var protocol = GameActionProtocolFactory(Constants.NewPlayer, player, number: RequiredAmountOfPlayers);
                 _logger.LogTrace($"Created {nameof(GameActionProtocol)} with {nameof(GameActionProtocol.Phase)}={{Phase}} for Player {{player}} {{PlayerId}} ", protocol.Phase, player.Name, player.PlayerId);
-                BroadcastMessage(protocol);
+                await BroadcastMessageAsync(protocol);
             }
-            if (Game.Players.Count == RequiredAmountOfPlayers)
-            {
-                OnStartGame();
-            }
-        }
-
-        private void OnStartGame()
-        {
-            var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
-            OnStartAsync(gameActionProtocol);
-            BroadcastMessage(gameActionProtocol);
+            //if (Game.Players.Count == RequiredAmountOfPlayers)
+            //{
+            //    var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
+            //    await OnStartAsync(gameActionProtocol);
+            //    await BroadcastMessageAsync(gameActionProtocol);
+            //}
         }
 
         public int ServerPort { get; }
@@ -257,13 +272,16 @@ namespace t.lib.Server
             StopListening();
             return Task.CompletedTask;
         }
-        protected override void BroadcastMessage(GameActionProtocol gameActionProtocol)
+        private readonly SemaphoreSlim _SemaphoreSlimBroadcastMessage = new SemaphoreSlim(1, 1);
+        protected override async Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol)
         {
+            await _SemaphoreSlimBroadcastMessage.WaitAsync();
             foreach (var connectionState in _playerConnections.Values)
             {
                 _logger.LogInformation("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", gameActionProtocol.Phase);
                 Send(connectionState, gameActionProtocol);
             }
+            _SemaphoreSlimBroadcastMessage.Release();
         }
     }
 }

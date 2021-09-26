@@ -168,12 +168,8 @@ namespace t.lib
 
             return cardValue;
         }
-
         /// <inheritdoc/>
-        protected override void BroadcastMessage(GameActionProtocol gameActionProtocol)
-        {
-
-        }
+        protected override Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol) => Task.CompletedTask;
         public void ExitGame()
         {
             // Release the socket.  

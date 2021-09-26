@@ -53,9 +53,9 @@ namespace t.lib
         private void AddPlayerCards(Player player)
         {
             var playerCards = new List<Card>();
-            for (int i = 0; i < CardCapacity; i++)
+            for (int i = 1; i < CardCapacity + 1; i++)
             {
-                Card card = new Card(i++);
+                Card card = new Card(i);
                 playerCards.Add(card);
             }
             PlayerCards.Add(player, playerCards);

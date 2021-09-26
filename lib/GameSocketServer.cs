@@ -33,7 +33,7 @@ namespace t.lib.Server
             Task GenerateNextRoundBroadcast()
             {
                 var gameActionProtocol = GameActionProtocolFactory(Constants.NextRound, nextRoundEventArgs: e);
-                return BroadcastMessageAsync(gameActionProtocol);
+                return BroadcastMessageAsync(gameActionProtocol, null);
             }
             _EventQueue.Enqueue(GenerateNextRoundBroadcast);
         }
@@ -55,13 +55,13 @@ namespace t.lib.Server
             {
                 var protocol = GameActionProtocolFactory(Constants.NewPlayer, player, number: RequiredAmountOfPlayers);
                 _logger.LogTrace($"Created {nameof(GameActionProtocol)} with {nameof(GameActionProtocol.Phase)}={{Phase}} for Player {{player}} {{PlayerId}} ", protocol.Phase, player.Name, player.PlayerId);
-                await BroadcastMessageAsync(protocol);
+                await BroadcastMessageAsync(protocol, null);
             }
             if (Game.Players.Count == RequiredAmountOfPlayers)
             {
                 var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
-                await OnStartAsync(gameActionProtocol);
-                await BroadcastMessageAsync(gameActionProtocol);
+                await OnStartAsync(gameActionProtocol, null);
+                await BroadcastMessageAsync(gameActionProtocol, null);
             }
         }
 
@@ -182,7 +182,7 @@ namespace t.lib.Server
                             _logger.LogInformation("Client {connectionWithPlayerId} {PlayerName} connected and added to Clientlist={addResult}", gameActionProtocol.PlayerId, connectionState.Player?.Name ?? "", addResult);
                         }
 
-                        await OnMessageReceiveAsync(gameActionProtocol);
+                        await OnMessageReceiveAsync(gameActionProtocol, null);
 
                         //Task.Factory.StartNew(() => OnMessageReceive(gameActionProtocol), TaskCreationOptions.DenyChildAttach);
                     }
@@ -218,7 +218,7 @@ namespace t.lib.Server
                     connectionState.Buffer = new byte[ConnectionState.BufferSize];
                     int bytesSent = connectionState.SocketClient.Receive(connectionState.Buffer);
                     GameActionProtocol gameActionProtocol = connectionState.Buffer.AsSpan().Slice(0, bytesSent).ToArray().ToGameActionProtocol(bytesSent);
-                    await OnMessageReceiveAsync(gameActionProtocol);
+                    await OnMessageReceiveAsync(gameActionProtocol, null);
 
                     // Complete sending the data to the remote device.  
                     //int bytesSent = handler.EndSend(ar);
@@ -263,7 +263,7 @@ namespace t.lib.Server
             StopListening();
             return Task.CompletedTask;
         }
-        protected override async Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol)
+        protected override async Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             foreach (var connectionState in _playerConnections.Values)
             {

@@ -116,5 +116,12 @@ namespace t.lib.Console
             return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
         }
 
+        public override Task OnNextRoundAsync(NextRoundEventArgs e)
+        {
+            System.Console.ForegroundColor = ConsoleColor.Green;
+            System.Console.WriteLine($"Round: {e.Round} Playing for card: {e.Card.Value}");
+            System.Console.ResetColor();
+            return Task.CompletedTask;
+        }
     }
 }

@@ -34,10 +34,10 @@ namespace t.lib
 
             GameSocketClient gameSocketClient = new GameSocketClient(iPAddress, port, logger);
             await gameSocketClient.JoinGameAsync(playerName);
-            await gameSocketClient.PlayGameAsync(onChoiceCommandFunc, ShowAvailableCardsAsync);
+            await gameSocketClient.PlayGameAsync(onChoiceCommandFunc, ShowAvailableCardsAsync, OnNextRoundAsync);
         }
         protected TaskCompletionSource? TaskCompletionSource;
-
+        public abstract Task OnNextRoundAsync(NextRoundEventArgs e);
         public abstract Task ShowAvailableCardsAsync(IEnumerable<Card> cards);
         public abstract Task OnShowMenueAsync();
 

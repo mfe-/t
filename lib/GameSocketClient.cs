@@ -23,7 +23,7 @@ namespace t.lib
             ActionDictionary.Add(Constants.NextRound, OnNextRoundAsync);
         }
         protected virtual ISocket? SenderSocket => _senderSocket;
-        private Task OnNewPlayerAsync(GameActionProtocol gameActionProtocol)
+        private Task OnNewPlayerAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             if (gameActionProtocol.Phase != Constants.NewPlayer) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(Constants.RegisterPlayer)}");
 
@@ -86,7 +86,7 @@ namespace t.lib
                     int bytesRec = SenderSocket.Receive(bytes);
                     _logger.LogTrace("Received {0} bytes.", bytesRec);
                     gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
-                    await OnMessageReceiveAsync(gameActionProtocolRec);
+                    await OnMessageReceiveAsync(gameActionProtocolRec, null);
                     //send ok
                     sendPayLoad = GameActionProtocolFactory(Constants.Ok).ToByteArray();
                     bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
@@ -113,12 +113,14 @@ namespace t.lib
             }
         }
 
-        public async Task PlayGameAsync(Func<Task<string>> onChoiceCommandFuncAsync, Func<IEnumerable<Card>, Task> showAvailableCardsAsync)
+        public async Task PlayGameAsync(Func<Task<string>> onChoiceCommandFuncAsync, Func<IEnumerable<Card>, Task> showAvailableCardsAsync, Func<NextRoundEventArgs, Task> onNextRoundAsyncFunc)
         {
             if (onChoiceCommandFuncAsync == null) throw new ArgumentNullException(nameof(onChoiceCommandFuncAsync));
             if (showAvailableCardsAsync == null) throw new ArgumentNullException(nameof(showAvailableCardsAsync));
             if (_player == null) throw new InvalidOperationException($"{nameof(_player)} not set!");
             if (SenderSocket == null) throw new InvalidOperationException($"{nameof(_senderSocket)} is not set! Make sure you called {nameof(JoinGameAsync)}");
+            if (onNextRoundAsyncFunc == null) throw new ArgumentNullException(nameof(onNextRoundAsyncFunc));
+
             try
             {
                 GameActionProtocol gameActionProtocolRec = new GameActionProtocol();
@@ -131,22 +133,25 @@ namespace t.lib
                     sendPayLoad = GameActionProtocolFactory(Constants.Ok).ToByteArray();
                     bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
                     _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
-                    // server should send next round
                     // Receive the response from the remote device.  
                     bytes = new byte[1024];
                     int bytesRec = SenderSocket.Receive(bytes);
                     _logger.LogTrace("Received {0} bytes.", bytesRec);
                     gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
-                    await OnMessageReceiveAsync(gameActionProtocolRec);
+                    // server should send next round or annaounce the winner
+                    await OnMessageReceiveAsync(gameActionProtocolRec, onNextRoundAsyncFunc);
 
-                    var player = Game.PlayerCards.First(a => a.Key.PlayerId == _guid).Key;
+                    if (gameActionProtocolRec.Phase == Constants.NextRound)
+                    {
+                        var player = Game.PlayerCards.First(a => a.Key.PlayerId == _guid).Key;
+                        //display available cards
+                        await showAvailableCardsAsync(Game.PlayerCards[player]);
+                        //get picked card
+                        int pickedCard = await GetPlayerCardChoiceAsync(onChoiceCommandFuncAsync);
+                        //send server picked card
+                        sendPayLoad = GameActionProtocolFactory(Constants.PlayerReported, number: pickedCard).ToByteArray();
+                    }
 
-                    //display available cards
-                    await showAvailableCardsAsync(Game.PlayerCards[player]);
-                    //get picked card
-                    int pickedCard = await GetPlayerCardChoiceAsync(onChoiceCommandFuncAsync);
-                    //send server picked card
-                    sendPayLoad = GameActionProtocolFactory(Constants.PlayerReported, number: pickedCard).ToByteArray();
                     bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
                     _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                 }
@@ -176,7 +181,7 @@ namespace t.lib
             return cardValue;
         }
         /// <inheritdoc/>
-        protected override Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol) => Task.CompletedTask;
+        protected override Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj) => Task.CompletedTask;
         public void ExitGame()
         {
             // Release the socket.  
@@ -190,6 +195,14 @@ namespace t.lib
             ExitGame();
         }
 
-        protected virtual Task OnNextRoundAsync(GameActionProtocol gameActionProtocol) => Task.CompletedTask;
+        protected virtual async Task OnNextRoundAsync(GameActionProtocol gameActionProtocol, object? obj)
+        {
+            if (gameActionProtocol.Phase != Constants.NextRound) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(Constants.NextRound)}");
+            var nextRoundEventArgs = GetNextRoundEventArgs(gameActionProtocol);
+            if (obj is Func<NextRoundEventArgs, Task> nextRoundClientDisplayFunc)
+            {
+                await nextRoundClientDisplayFunc.Invoke(nextRoundEventArgs);
+            }
+        }
     }
 }

@@ -57,7 +57,7 @@ namespace t.TestProject1
                 return Task.FromResult("1");
             }
             Task showAvailableCards(IEnumerable<Card> cards) => Task.CompletedTask;
-            await client.PlayGameAsync(SimulateInputAsync, showAvailableCards);
+            await client.PlayGameAsync(SimulateInputAsync, showAvailableCards, null);
         }
     }
 }

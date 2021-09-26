@@ -14,7 +14,7 @@ namespace t.lib
 {
     public abstract class GameSocketBase
     {
-        protected Dictionary<byte, Func<GameActionProtocol, Task>> ActionDictionary = new();
+        protected Dictionary<byte, Func<GameActionProtocol, object?, Task>> ActionDictionary = new();
         protected readonly GameLogic _game;
         protected readonly ILogger _logger;
         protected Guid _guid;
@@ -28,7 +28,7 @@ namespace t.lib
             ActionDictionary.Add(Constants.StartGame, OnStartAsync);
         }
         protected virtual GameLogic Game => _game;
-        protected virtual Task OnPlayerRegisterAsync(GameActionProtocol gameActionProtocol)
+        protected virtual Task OnPlayerRegisterAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             if (gameActionProtocol.Phase != Constants.RegisterPlayer) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(Constants.RegisterPlayer)}");
 
@@ -39,15 +39,15 @@ namespace t.lib
             }
             return Task.CompletedTask;
         }
-        protected virtual Task OnStartAsync(GameActionProtocol gameActionProtocol)
+        protected virtual Task OnStartAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             int totalPoints = GetTotalPoints(gameActionProtocol);
             Game.Start(totalPoints);
             return Task.CompletedTask;
         }
-        protected virtual Task OnOkAsync(GameActionProtocol gameActionProtocol) => Task.CompletedTask;
+        protected virtual Task OnOkAsync(GameActionProtocol gameActionProtocol, object? obj) => Task.CompletedTask;
 
-        protected virtual async Task OnMessageReceiveAsync(GameActionProtocol gameActionProtocol)
+        protected virtual async Task OnMessageReceiveAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             _logger.LogInformation("OnMessageReceive from {player} with Phase {Phase}", gameActionProtocol.PlayerId, gameActionProtocol.Phase);
             using (_logger.BeginScope(new Dictionary<string, object> {
@@ -57,20 +57,20 @@ namespace t.lib
             {
                 if (ActionDictionary.ContainsKey(gameActionProtocol.Phase))
                 {
-                    await ActionDictionary[gameActionProtocol.Phase].Invoke(gameActionProtocol);
+                    await ActionDictionary[gameActionProtocol.Phase].Invoke(gameActionProtocol, obj);
                 }
                 else
                 {
-                    await ActionDictionary[Constants.ErrorOccoured].Invoke(gameActionProtocol);
+                    await ActionDictionary[Constants.ErrorOccoured].Invoke(gameActionProtocol, obj);
                 }
             }
         }
-        protected virtual Task OnProtocolErrorAsync(GameActionProtocol gameActionProtocol) => Task.CompletedTask;
+        protected virtual Task OnProtocolErrorAsync(GameActionProtocol gameActionProtocol, object? obj) => Task.CompletedTask;
         /// <summary>
         /// Broadcasts a <see cref="GameActionProtocol"/> to every recipient
         /// </summary>
         /// <param name="gameActionProtocol">The protocol which should be broadcastet</param>
-        protected abstract Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol);
+        protected abstract Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal virtual GameActionProtocol GameActionProtocolFactory(byte phase, Player? player = null, string? message = null, int? number = null, NextRoundEventArgs? nextRoundEventArgs = null)

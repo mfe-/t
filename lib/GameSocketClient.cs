@@ -125,8 +125,12 @@ namespace t.lib
                 gameActionProtocolRec.Phase = Constants.Ok;
                 int bytesSent;
                 var bytes = new byte[1024];
+                byte[] sendPayLoad = new byte[0];
                 while (gameActionProtocolRec.Phase != Constants.PlayerWon)
                 {
+                    sendPayLoad = GameActionProtocolFactory(Constants.Ok).ToByteArray();
+                    bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
+                    _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                     // server should send next round
                     // Receive the response from the remote device.  
                     bytes = new byte[1024];
@@ -134,12 +138,15 @@ namespace t.lib
                     _logger.LogTrace("Received {0} bytes.", bytesRec);
                     gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
                     await OnMessageReceiveAsync(gameActionProtocolRec);
+
+                    var player = Game.PlayerCards.First(a => a.Key.PlayerId == _guid).Key;
+
                     //display available cards
-                    await showAvailableCardsAsync(Game.PlayerCards[_player]);
+                    await showAvailableCardsAsync(Game.PlayerCards[player]);
                     //get picked card
                     int pickedCard = await GetPlayerCardChoiceAsync(onChoiceCommandFuncAsync);
                     //send server picked card
-                    var sendPayLoad = GameActionProtocolFactory(Constants.PlayerReported, number: pickedCard).ToByteArray();
+                    sendPayLoad = GameActionProtocolFactory(Constants.PlayerReported, number: pickedCard).ToByteArray();
                     bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
                     _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                 }

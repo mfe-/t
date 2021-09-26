@@ -9,5 +9,7 @@
         public static readonly byte Ok = 0b000001;
         public static readonly byte StartGame = 0b000110;
         public static readonly byte PlayerWon = 0b001010;
+        public static readonly byte NextRound = 0b001000;
+        public static readonly byte PlayerReported = 0b000111;
     }
 }

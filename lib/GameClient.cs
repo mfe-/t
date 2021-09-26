@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -32,9 +34,11 @@ namespace t.lib
 
             GameSocketClient gameSocketClient = new GameSocketClient(iPAddress, port, logger);
             await gameSocketClient.JoinGameAsync(playerName);
+            await gameSocketClient.PlayGameAsync(onChoiceCommandFunc, ShowAvailableCardsAsync);
         }
         protected TaskCompletionSource? TaskCompletionSource;
 
+        public abstract Task ShowAvailableCardsAsync(IEnumerable<Card> cards);
         public abstract Task OnShowMenueAsync();
 
         public abstract Task ParseStartArgumentsAsync(string[] args);

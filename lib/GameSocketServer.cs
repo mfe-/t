@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace t.lib.Server
 {
-    public partial class GameSocketServer : GameBase, IHostedService
+    public partial class GameSocketServer : GameSocketBase, IHostedService
     {
         private readonly int RequiredAmountOfPlayers;
         private readonly int TotalPoints;
@@ -23,7 +23,7 @@ namespace t.lib.Server
             TotalPoints = appConfig.TotalPoints;
             ServerPort = serverPort;
             ServerIpAdress = serverIpAdress;
-            _game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
+            Game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
             _guid = Guid.NewGuid();
         }
 
@@ -40,13 +40,13 @@ namespace t.lib.Server
         private void OnNewPlayer()
         {
             //broadcast the "new player and all existing players" to all other players
-            foreach (var player in _game.Players)
+            foreach (var player in Game.Players)
             {
                 var protocol = GameActionProtocolFactory(Constants.NewPlayer, player, number: RequiredAmountOfPlayers);
                 _logger.LogTrace($"Created {nameof(GameActionProtocol)} with {nameof(GameActionProtocol.Phase)}={{Phase}} for Player {{player}} {{PlayerId}} ", protocol.Phase, player.Name, player.PlayerId);
                 BroadcastMessage(protocol);
             }
-            if (_game.Players.Count == RequiredAmountOfPlayers)
+            if (Game.Players.Count == RequiredAmountOfPlayers)
             {
                 OnStartGame();
             }
@@ -55,7 +55,7 @@ namespace t.lib.Server
         private void OnStartGame()
         {
             var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
-            OnStart(gameActionProtocol);
+            OnStartAsync(gameActionProtocol);
             BroadcastMessage(gameActionProtocol);
         }
 
@@ -90,7 +90,6 @@ namespace t.lib.Server
 
         }
 
-
         private CancellationTokenSource? cancellationTokenSource;
         // Thread signal.  
         protected readonly ManualResetEvent allDone = new ManualResetEvent(false);
@@ -107,7 +106,7 @@ namespace t.lib.Server
                     listener.Bind(localEndPoint);
                     listener.Listen(10);
 
-                    _game.NewGame(RequiredAmountOfPlayers);
+                    Game.NewGame(RequiredAmountOfPlayers);
 
                     _logger.LogInformation("Waiting for a connection...");
                     // Start listening for connections.  
@@ -140,10 +139,10 @@ namespace t.lib.Server
             allDone.Set();
 
             // Get the socket that handles the client request.  
-            if (ar.AsyncState is Socket socket)
+            if (ar.AsyncState is ISocket socket)
             {
-                Socket listener = socket;
-                Socket handler = listener.EndAccept(ar);
+                ISocket listener = socket;
+                ISocket handler = listener.EndAccept(ar);
 
                 // Create the state object.  
                 ConnectionState state = new ConnectionState(handler);
@@ -151,37 +150,47 @@ namespace t.lib.Server
             }
         }
 
-        private void ReadResult(IAsyncResult ar)
+        private async void ReadResult(IAsyncResult ar)
         {
-            // Retrieve the state object and the handler socket  
-            // from the asynchronous state object.  
-            if (ar.AsyncState is ConnectionState connectionState)
+            try
             {
-                ConnectionState state = connectionState;
-                Socket handler = state.SocketClient;
-
-                // Read data from the client socket.
-                int bytesRead = handler.EndReceive(ar);
-
-                if (bytesRead > 0)
+                // Retrieve the state object and the handler socket  
+                // from the asynchronous state object.  
+                if (ar.AsyncState is ConnectionState connectionState)
                 {
-                    _logger.LogTrace("Received {0} bytes.", bytesRead);
+                    ConnectionState state = connectionState;
+                    ISocket handler = state.SocketClient;
 
-                    GameActionProtocol gameActionProtocol = state.Buffer.AsSpan().Slice(0, bytesRead).ToArray().ToGameActionProtocol(bytesRead);
-                    if (gameActionProtocol.Phase == Constants.RegisterPlayer && !_playerConnections.ContainsKey(gameActionProtocol.PlayerId))
+                    // Read data from the client socket.
+                    int bytesRead = handler.EndReceive(ar);
+
+                    if (bytesRead > 0)
                     {
-                        connectionState.Player = GetPlayer(gameActionProtocol);
-                        var addResult = _playerConnections.TryAdd(gameActionProtocol.PlayerId, connectionState);
-                        _logger.LogInformation("Client {connectionWithPlayerId} {PlayerName} connected and added to Clientlist={addResult}", gameActionProtocol.PlayerId, connectionState.Player?.Name ?? "", addResult);
+                        _logger.LogTrace("Received {0} bytes.", bytesRead);
+
+                        GameActionProtocol gameActionProtocol = state.Buffer.AsSpan().Slice(0, bytesRead).ToArray().ToGameActionProtocol(bytesRead);
+                        if (gameActionProtocol.Phase == Constants.RegisterPlayer && !_playerConnections.ContainsKey(gameActionProtocol.PlayerId))
+                        {
+                            connectionState.Player = GetPlayer(gameActionProtocol);
+                            var addResult = _playerConnections.TryAdd(gameActionProtocol.PlayerId, connectionState);
+                            _logger.LogInformation("Client {connectionWithPlayerId} {PlayerName} connected and added to Clientlist={addResult}", gameActionProtocol.PlayerId, connectionState.Player?.Name ?? "", addResult);
+                        }
+
+                        await OnMessageReceiveAsync(gameActionProtocol);
+
+                        //Task.Factory.StartNew(() => OnMessageReceive(gameActionProtocol), TaskCreationOptions.DenyChildAttach);
                     }
-                    OnMessageReceive(gameActionProtocol);
-                    //Task.Factory.StartNew(() => OnMessageReceive(gameActionProtocol), TaskCreationOptions.DenyChildAttach);
+                }
+                else
+                {
+                    _logger.LogInformation("Received something unknown");
                 }
             }
-            else
+            catch (Exception e)
             {
-                _logger.LogInformation("Received something unknown");
+                _logger.LogCritical(e, nameof(ReadResult));
             }
+
         }
         protected void Send(ConnectionState connectionState, GameActionProtocol gameActionProtocol)
         {
@@ -192,7 +201,7 @@ namespace t.lib.Server
             connectionState.SocketClient.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), connectionState);
         }
 
-        private void SendCallback(IAsyncResult ar)
+        private async void SendCallback(IAsyncResult ar)
         {
             try
             {
@@ -203,7 +212,7 @@ namespace t.lib.Server
                     connectionState.Buffer = new byte[ConnectionState.BufferSize];
                     int bytesSent = connectionState.SocketClient.Receive(connectionState.Buffer);
                     GameActionProtocol gameActionProtocol = connectionState.Buffer.AsSpan().Slice(0, bytesSent).ToArray().ToGameActionProtocol(bytesSent);
-                    OnMessageReceive(gameActionProtocol);
+                    await OnMessageReceiveAsync(gameActionProtocol);
 
                     // Complete sending the data to the remote device.  
                     //int bytesSent = handler.EndSend(ar);
@@ -218,6 +227,7 @@ namespace t.lib.Server
             {
                 //System.Net.Sockets.SocketException: 'An existing connection was forcibly closed by the remote host.'
                 //client ist tot
+                _logger.LogError(e, nameof(SendCallback));
             }
             catch (Exception e)
             {
@@ -247,7 +257,6 @@ namespace t.lib.Server
             StopListening();
             return Task.CompletedTask;
         }
-        TaskCompletionSource? TaskCompletionBroadcastMessageSource;
         protected override void BroadcastMessage(GameActionProtocol gameActionProtocol)
         {
             foreach (var connectionState in _playerConnections.Values)

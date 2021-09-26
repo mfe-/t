@@ -9,12 +9,12 @@ namespace t.lib
     public class GameLogic
     {
         private int TotalPointsToPlay = 0;
-        private const int CardCapacity = 10;
+        public const int CardCapacity = 10;
         private const string InitializeAndStartNewGameMessage = $"Start a new Game with {nameof(NewGame)} and {nameof(Start)}";
         private readonly Random random;
         internal readonly List<GameAction> gameActions = new List<GameAction>();
         public event EventHandler<EventArgs>? GameStartedEvent;
-        public event EventHandler<EventArgs>? NextRoundEvent;
+        public event EventHandler<NextRoundEventArgs>? NextRoundEvent;
         public event EventHandler<EventArgs>? GameEndEvent;
         public event EventHandler<EventArgs<Player>>? NewPlayerRegisteredEvent;
         public event EventHandler<EventArgs>? RequiredAmountOfPlayersReachedEvent;
@@ -22,12 +22,15 @@ namespace t.lib
         {
             random = new Random();
             Cards = new List<Card>(CardCapacity);
+            PlayerCards = new Dictionary<Player, IList<Card>>();
             Players = new List<Player>();
         }
         public int RequiredAmountOfPlayers { get; private set; } = 0;
         public IList<Player> Players { get; private set; }
 
         public IList<Card> Cards { get; private set; }
+
+        public IDictionary<Player, IList<Card>> PlayerCards { get; private set; }
 
         public int Round { get; private set; }
 
@@ -39,12 +42,25 @@ namespace t.lib
             if (Cards.Count == 0) throw new InvalidOperationException(InitializeAndStartNewGameMessage);
             if (Players.Count == CardCapacity) throw new InvalidOperationException($"Game only designed for {CardCapacity} players");
             Players.Add(player);
+            AddPlayerCards(player);
             NewPlayerRegisteredEvent?.Invoke(this, new EventArgs<Player>(player));
             if (Players.Count == RequiredAmountOfPlayers)
             {
                 RequiredAmountOfPlayersReachedEvent?.Invoke(this, EventArgs.Empty);
             }
         }
+
+        private void AddPlayerCards(Player player)
+        {
+            var playerCards = new List<Card>();
+            for (int i = 0; i < CardCapacity; i++)
+            {
+                Card card = new Card(i);
+                playerCards.Add(card);
+            }
+            PlayerCards.Add(player, playerCards);
+        }
+
         public void OnLeavePlayerEvent(Player player)
         {
             Players.Remove(player);
@@ -70,6 +86,7 @@ namespace t.lib
             Round = 0;
             CurrentCard = null;
             Players.Clear();
+            PlayerCards.Clear();
             gameActions.Clear();
             MixCards();
         }
@@ -91,9 +108,9 @@ namespace t.lib
                 CalculateAndAssignPointsOfPreviousRound();
                 nextRound = !IsLastRound();
             }
-            OnNextRoundEvent(EventArgs.Empty);
             Round++;
             CurrentCard = Cards[Round - 1];
+            OnNextRoundEvent(new NextRoundEventArgs(Round,CurrentCard));
             return nextRound;
         }
 
@@ -168,16 +185,16 @@ namespace t.lib
             return finishedRound;
         }
 
-        private void OnNextRoundEvent(EventArgs e)
+        private void OnNextRoundEvent(NextRoundEventArgs e)
         {
             NextRoundEvent?.Invoke(this, e);
         }
         public void PlayerReport(Player player, Card card)
         {
             if (CurrentCard == null) throw new InvalidOperationException(InitializeAndStartNewGameMessage);
-            if (gameActions.Where(a => a.Player == player).Any(a => a.Offered == card.Value)) throw new InvalidOperationException("Card used by player twice");
             //check if this card (v) was already used!
-
+            if (gameActions.Where(a => a.Player == player).Any(a => a.Offered == card.Value)) throw new InvalidOperationException("Card used by player twice");
+            PlayerCards[player].Remove(card);
             GameAction gameAction = new GameAction(Round, player, card.Value, CurrentCard, false);
             gameActions.Add(gameAction);
         }

@@ -69,6 +69,20 @@ namespace t.TestProject1
             Assert.Equal(totalpoints, points);
 
         }
+        [Theory]
+        [InlineData(1,4)]
+        [InlineData(int.MaxValue, int.MaxValue)]
+        [InlineData(int.MinValue, int.MinValue)]
+        [InlineData(int.MinValue, int.MaxValue)]
+        public void Serialize_NextRound_And_Deserialze(int expectedRound,int expectedCardnumber)
+        {
+            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.NextRound, nextRoundEventArgs: new NextRoundEventArgs(expectedRound, new Card(expectedCardnumber)));
+            var nextRoundEventArgs = GameSocketFactory().GetNextRoundEventArgs(gameActionProtocol);
+
+            Assert.Equal(expectedRound,nextRoundEventArgs.Round);
+            Assert.Equal(expectedCardnumber, nextRoundEventArgs.Card.Value);
+        }
+
         private static GameSocketServer GameSocketFactory()
         {
             return new GameSocketServer(new AppConfig() { TotalPoints = 10, RequiredAmountOfPlayers = 2 }, "", 0, new Mock<ILogger>().Object);

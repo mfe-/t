@@ -91,6 +91,18 @@ namespace t.TestProject1
 
             Assert.Equal(expectedPickedCard,pickedCard);
         }
+        [Fact]
+        public void Serialize_PlayerScroed_AndDeserialze()
+        {
+            Player expectedPlayer = new Player("martin", Guid.NewGuid());
+            int offeredExpected = 5;
+            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.PlayerScored, player: expectedPlayer, number: offeredExpected);
+            int offered = GameSocketFactory().GetNumber(gameActionProtocol);
+            Assert.Equal(offeredExpected, offered);
+            var player = GameSocketFactory().GetPlayer(gameActionProtocol);
+
+            Assert.Equal(player.PlayerId, player.PlayerId);
+        }
 
         private static GameSocketServer GameSocketFactory()
         {

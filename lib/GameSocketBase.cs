@@ -127,6 +127,19 @@ namespace t.lib
                 gameActionProtocol.PayloadSize = (byte)nbytes.Length;
                 gameActionProtocol.Payload = nbytes;
             }
+            else if (gameActionProtocol.Phase == Constants.PlayerScored)
+            {
+                if (number == null) throw new ArgumentNullException(nameof(number), $"{nameof(Constants.PlayerScored)} requires argument {nameof(number)}");
+                if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(Constants.PlayerScored)} requires argument {nameof(player)}");
+                var playerid = player.PlayerId.ToByteArray();
+                var nbytes = BitConverter.GetBytes(number.Value);
+                var payload = new byte[nbytes.Length + playerid.Length];
+                playerid.CopyTo(payload, 0);
+                nbytes.CopyTo(payload, Marshal.SizeOf(typeof(Guid)));
+                gameActionProtocol.Payload = payload;
+                gameActionProtocol.PayloadSize = (byte)payload.Length;
+                return gameActionProtocol;
+            }
             return gameActionProtocol;
         }
 
@@ -180,10 +193,16 @@ namespace t.lib
                 var numberBytes = span.Slice(Marshal.SizeOf(typeof(Guid)) + playerNameLength, gameActionProtocol.PayloadSize - (Marshal.SizeOf(typeof(Guid)) + playerNameLength));
                 return BitConverter.ToInt32(numberBytes.ToArray());
             }
-            if(gameActionProtocol.Phase == Constants.StartGame || gameActionProtocol.Phase == Constants.PlayerReported)
+            if (gameActionProtocol.Phase == Constants.StartGame || gameActionProtocol.Phase == Constants.PlayerReported)
             {
                 var span = gameActionProtocol.Payload.AsSpan();
                 return BitConverter.ToInt32(span);
+            }
+            if (gameActionProtocol.Phase == Constants.PlayerScored)
+            {
+                //int 4*8(bit)=32bit
+                var numberBytes = gameActionProtocol.Payload.AsSpan().Slice(gameActionProtocol.PayloadSize - 4, 4);
+                return BitConverter.ToInt32(numberBytes.ToArray());
             }
             throw new NotImplementedException($"Not implemented {gameActionProtocol.Phase}");
         }
@@ -191,6 +210,14 @@ namespace t.lib
         {
             if (gameActionProtocol.Phase == Constants.NewPlayer) return GetNewPlayer(ref gameActionProtocol);
             if (gameActionProtocol.Phase == Constants.RegisterPlayer) return GetRegisterePlayer(ref gameActionProtocol);
+            if (gameActionProtocol.Phase == Constants.PlayerScored)
+            {
+                if (gameActionProtocol.Phase != Constants.PlayerScored) throw new ArgumentException($"{nameof(Constants.PlayerScored)} required for argument {nameof(gameActionProtocol.Phase)}");
+                var span = gameActionProtocol.Payload.AsSpan();
+                Guid guid = new Guid(span.Slice(0, Marshal.SizeOf(typeof(Guid))));
+                Player player = new Player("", guid);
+                return player;
+            }
             throw new NotImplementedException($"Not implemented {gameActionProtocol.Phase}");
         }
 

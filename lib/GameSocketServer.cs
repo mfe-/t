@@ -44,7 +44,7 @@ namespace t.lib.Server
             _EventQueue.Enqueue(GenerateNextRoundBroadcast);
         }
 
-        protected virtual Task OnPlayerReportedAsync(GameActionProtocol gameActionProtocol, object? obj)
+        protected virtual async Task OnPlayerReportedAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             int pickedNumber = GetNumber(gameActionProtocol);
             Card pickedCard = new Card(pickedNumber);
@@ -52,9 +52,14 @@ namespace t.lib.Server
             Game.PlayerReport(player, pickedCard);
             if (!Game.GetRemainingPickCardPlayers().Any())
             {
+                //finally tell every player which cards they took
+                foreach (var gameAction in Game.gameActions.Where(a => a.Round == Game.Round).ToArray())
+                {
+                    var gameActionPro = GameActionProtocolFactory(Constants.PlayerScored, player: gameAction.Player, number: gameAction.Offered);
+                    await BroadcastMessageAsync(gameActionPro, null);
+                }
                 Game.NextRound();
             }
-            return Task.CompletedTask;
         }
 
         private void Game_NewPlayerRegisteredEvent(object? sender, EventArgs<Player> e)

@@ -216,6 +216,12 @@ namespace t.lib
         {
             if (gameActionProtocol.Phase != Constants.NextRound) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(Constants.NextRound)}");
             var nextRoundEventArgs = GetNextRoundEventArgs(gameActionProtocol);
+            if (nextRoundEventArgs.Round != 1)
+            {
+                Game.NextRound();
+            }
+            //because the Cards are randomly mixed we set the card value from the server manual
+            Game.Cards[nextRoundEventArgs.Round - 1].Value = nextRoundEventArgs.Card.Value;
             if (obj is Func<NextRoundEventArgs, Task> nextRoundClientDisplayFunc)
             {
                 await nextRoundClientDisplayFunc.Invoke(nextRoundEventArgs);

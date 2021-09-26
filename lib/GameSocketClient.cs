@@ -21,6 +21,7 @@ namespace t.lib
             this.serverPort = serverPort;
             ActionDictionary.Add(Constants.NewPlayer, OnNewPlayerAsync);
             ActionDictionary.Add(Constants.NextRound, OnNextRoundAsync);
+            ActionDictionary.Add(Constants.PlayerScored, OnPlayerScoredAsync);
         }
         protected virtual ISocket? SenderSocket => _senderSocket;
         private Task OnNewPlayerAsync(GameActionProtocol gameActionProtocol, object? obj)
@@ -150,6 +151,13 @@ namespace t.lib
                         //send server picked card
                         sendPayLoad = GameActionProtocolFactory(Constants.PlayerReported, number: pickedCard).ToByteArray();
                     }
+                    else if (gameActionProtocolRec.Phase == Constants.PlayerScored)
+                    {
+                        //send ok
+                        sendPayLoad = GameActionProtocolFactory(Constants.Ok).ToByteArray();
+                        bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
+                        _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
+                    }
 
                     bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
                     _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
@@ -199,7 +207,13 @@ namespace t.lib
         {
             ExitGame();
         }
-
+        protected virtual Task OnPlayerScoredAsync(GameActionProtocol gameActionProtocol, object? obj)
+        {
+            var player = Game.Players.First(a => a.PlayerId == GetPlayer(gameActionProtocol).PlayerId);
+            var offeredCardNumber = GetNumber(gameActionProtocol);
+            Game.PlayerReport(player, new Card(offeredCardNumber));
+            return Task.CompletedTask;
+        }
         protected virtual async Task OnNextRoundAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             if (gameActionProtocol.Phase != Constants.NextRound) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(Constants.NextRound)}");

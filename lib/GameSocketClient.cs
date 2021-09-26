@@ -146,8 +146,6 @@ namespace t.lib
                         await showAvailableCardsAsync(Game.PlayerCards[player]);
                         //get picked card
                         int pickedCard = await GetPlayerCardChoiceAsync(onChoiceCommandFuncAsync);
-                        //report card so it will get unavailable for the next player turn
-                        Game.PlayerReport(player, new Card(pickedCard));
                         //send server picked card
                         sendPayLoad = GameActionProtocolFactory(Constants.PlayerReported, number: pickedCard).ToByteArray();
                     }

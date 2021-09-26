@@ -122,8 +122,10 @@ namespace t.lib
             }
             else if (gameActionProtocol.Phase == Constants.PlayerReported)
             {
-                gameActionProtocol.Payload = new byte[0];
-                gameActionProtocol.PayloadSize = (byte)gameActionProtocol.Payload.Length;
+                if (number == null) throw new ArgumentNullException(nameof(number), $"{nameof(Constants.PlayerReported)} requires argument {nameof(number)}");
+                var nbytes = BitConverter.GetBytes(number.Value);
+                gameActionProtocol.PayloadSize = (byte)nbytes.Length;
+                gameActionProtocol.Payload = nbytes;
             }
             return gameActionProtocol;
         }

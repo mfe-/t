@@ -72,6 +72,7 @@ namespace t.lib
         /// <param name="gameActionProtocol">The protocol which should be broadcastet</param>
         protected abstract Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal virtual GameActionProtocol GameActionProtocolFactory(byte phase, Player? player = null, string? message = null, int? number = null, NextRoundEventArgs? nextRoundEventArgs = null)
         {
             GameActionProtocol gameActionProtocol = new GameActionProtocol();

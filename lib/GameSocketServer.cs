@@ -25,26 +25,17 @@ namespace t.lib.Server
             ServerIpAdress = serverIpAdress;
             Game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
             Game.NextRoundEvent += Game_NextRoundEvent;
-            Game.GameStartedEvent += Game_GameStartedEvent;
             _guid = Guid.NewGuid();
         }
-
-        private void Game_GameStartedEvent(object? sender, EventArgs e)
-        {
-            async Task BroadCastStartGame()
-            {
-                await _SemaphoreSlimBroadcastMessage.WaitAsync();
-                var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
-                await OnStartAsync(gameActionProtocol);
-                await BroadcastMessageAsync(gameActionProtocol);
-                _SemaphoreSlimBroadcastMessage.Release();
-            }
-            Task.Factory.StartNew(BroadCastStartGame, TaskCreationOptions.DenyChildAttach);
-        }
-
+        private readonly Queue<Func<Task>> _EventQueue = new Queue<Func<Task>>();
         private void Game_NextRoundEvent(object? sender, NextRoundEventArgs e)
         {
-
+            Task GenerateNextRoundBroadcast()
+            {
+                var gameActionProtocol = GameActionProtocolFactory(Constants.NextRound, nextRoundEventArgs: e);
+                return BroadcastMessageAsync(gameActionProtocol);
+            }
+            _EventQueue.Enqueue(GenerateNextRoundBroadcast);
         }
 
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger, Guid guid)
@@ -66,12 +57,12 @@ namespace t.lib.Server
                 _logger.LogTrace($"Created {nameof(GameActionProtocol)} with {nameof(GameActionProtocol.Phase)}={{Phase}} for Player {{player}} {{PlayerId}} ", protocol.Phase, player.Name, player.PlayerId);
                 await BroadcastMessageAsync(protocol);
             }
-            //if (Game.Players.Count == RequiredAmountOfPlayers)
-            //{
-            //    var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
-            //    await OnStartAsync(gameActionProtocol);
-            //    await BroadcastMessageAsync(gameActionProtocol);
-            //}
+            if (Game.Players.Count == RequiredAmountOfPlayers)
+            {
+                var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
+                await OnStartAsync(gameActionProtocol);
+                await BroadcastMessageAsync(gameActionProtocol);
+            }
         }
 
         public int ServerPort { get; }
@@ -272,16 +263,18 @@ namespace t.lib.Server
             StopListening();
             return Task.CompletedTask;
         }
-        private readonly SemaphoreSlim _SemaphoreSlimBroadcastMessage = new SemaphoreSlim(1, 1);
         protected override async Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol)
         {
-            await _SemaphoreSlimBroadcastMessage.WaitAsync();
             foreach (var connectionState in _playerConnections.Values)
             {
                 _logger.LogInformation("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", gameActionProtocol.Phase);
                 Send(connectionState, gameActionProtocol);
             }
-            _SemaphoreSlimBroadcastMessage.Release();
+            //process events which occoured during broadcasting
+            while (_EventQueue.Count != 0)
+            {
+                await _EventQueue.Dequeue().Invoke();
+            }
         }
     }
 }

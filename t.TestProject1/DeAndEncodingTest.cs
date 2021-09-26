@@ -82,6 +82,15 @@ namespace t.TestProject1
             Assert.Equal(expectedRound,nextRoundEventArgs.Round);
             Assert.Equal(expectedCardnumber, nextRoundEventArgs.Card.Value);
         }
+        [Theory]
+        [InlineData(4)]
+        public void Serialize_PlayerReport_AndDeserialze(int expectedPickedCard)
+        {
+            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.PlayerReported, number: expectedPickedCard);
+            var pickedCard = GameSocketFactory().GetNumber(gameActionProtocol);
+
+            Assert.Equal(expectedPickedCard,pickedCard);
+        }
 
         private static GameSocketServer GameSocketFactory()
         {

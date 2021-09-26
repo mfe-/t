@@ -15,10 +15,12 @@ namespace t.lib.Server
     {
         private readonly int RequiredAmountOfPlayers;
         private readonly int TotalPoints;
+        private readonly Queue<Func<Task>> _EventQueue = new Queue<Func<Task>>();
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger) : base(logger)
         {
             if (appConfig.RequiredAmountOfPlayers < 1) throw new ArgumentException("At least two players are required to play the game!");
             if (appConfig.TotalPoints < 10) throw new ArgumentException("At least ten points are expected!");
+            ActionDictionary.Add(Constants.PlayerReported, OnPlayerReportedAsync);
             RequiredAmountOfPlayers = appConfig.RequiredAmountOfPlayers;
             TotalPoints = appConfig.TotalPoints;
             ServerPort = serverPort;
@@ -27,7 +29,11 @@ namespace t.lib.Server
             Game.NextRoundEvent += Game_NextRoundEvent;
             _guid = Guid.NewGuid();
         }
-        private readonly Queue<Func<Task>> _EventQueue = new Queue<Func<Task>>();
+        public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger, Guid guid)
+            : this(appConfig, serverIpAdress, serverPort, logger)
+        {
+            _guid = guid;
+        }
         private void Game_NextRoundEvent(object? sender, NextRoundEventArgs e)
         {
             Task GenerateNextRoundBroadcast()
@@ -38,11 +44,19 @@ namespace t.lib.Server
             _EventQueue.Enqueue(GenerateNextRoundBroadcast);
         }
 
-        public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger, Guid guid)
-            : this(appConfig, serverIpAdress, serverPort, logger)
+        protected virtual Task OnPlayerReportedAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
-            _guid = guid;
+            int pickedNumber = GetNumber(gameActionProtocol);
+            Card pickedCard = new Card(pickedNumber);
+            var player = Game.Players.First(a => a.PlayerId == gameActionProtocol.PlayerId);
+            Game.PlayerReport(player, pickedCard);
+            if (!Game.GetRemainingPickCardPlayers().Any())
+            {
+                Game.NextRound();
+            }
+            return Task.CompletedTask;
         }
+
         private void Game_NewPlayerRegisteredEvent(object? sender, EventArgs<Player> e)
         {
             //make sure the event is not blocking any processing tcp event
@@ -51,7 +65,7 @@ namespace t.lib.Server
         private async Task OnNewPlayerAsync()
         {
             //broadcast the "new player and all existing players" to all other players
-            foreach (var player in Game.Players)
+            foreach (var player in Game.Players.ToArray())
             {
                 var protocol = GameActionProtocolFactory(Constants.NewPlayer, player, number: RequiredAmountOfPlayers);
                 _logger.LogTrace($"Created {nameof(GameActionProtocol)} with {nameof(GameActionProtocol.Phase)}={{Phase}} for Player {{player}} {{PlayerId}} ", protocol.Phase, player.Name, player.PlayerId);
@@ -200,6 +214,7 @@ namespace t.lib.Server
         }
         protected void Send(ConnectionState connectionState, GameActionProtocol gameActionProtocol)
         {
+            connectionState.LastPayload = gameActionProtocol;
             // Convert the data to byte data
             byte[] byteData = gameActionProtocol.ToByteArray();
 

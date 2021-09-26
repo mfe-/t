@@ -25,17 +25,37 @@ namespace t.lib
             PlayerCards = new Dictionary<Player, IList<Card>>();
             Players = new List<Player>();
         }
+        /// <summary>
+        /// The amount of players.
+        /// As the long the amount of required players is not fulfilled, the game cant be started
+        /// </summary>
         public int RequiredAmountOfPlayers { get; private set; } = 0;
+        /// <summary>
+        /// a list of all players
+        /// </summary>
         public IList<Player> Players { get; private set; }
-
+        /// <summary>
+        /// the list of cards which are played for
+        /// </summary>
         public IList<Card> Cards { get; private set; }
-
+        /// <summary>
+        /// contains the list of cards which the player can use. 
+        /// </summary>
         public IDictionary<Player, IList<Card>> PlayerCards { get; private set; }
-
+        /// <summary>
+        /// the current round
+        /// </summary>
         public int Round { get; private set; }
-
+        /// <summary>
+        /// the card to play for (from <see cref="Cards"/>
+        /// </summary>
         public Card? CurrentCard { get; private set; }
-
+        /// <summary>
+        /// register a player for the upcoming game
+        /// </summary>
+        /// <param name="player"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public virtual void RegisterPlayer(Player player)
         {
             if (player == null) throw new ArgumentNullException();
@@ -49,7 +69,10 @@ namespace t.lib
                 RequiredAmountOfPlayersReachedEvent?.Invoke(this, EventArgs.Empty);
             }
         }
-
+        /// <summary>
+        /// adds the card for a player
+        /// </summary>
+        /// <param name="player"></param>
         private void AddPlayerCards(Player player)
         {
             var playerCards = new List<Card>();
@@ -65,6 +88,9 @@ namespace t.lib
         {
             Players.Remove(player);
         }
+        /// <summary>
+        /// Mixes the cards from <see cref="Cards"/>
+        /// </summary>
         public virtual void MixCards()
         {
             Cards.Clear();
@@ -78,6 +104,11 @@ namespace t.lib
             }
             while (Cards.Count != CardCapacity);
         }
+        /// <summary>
+        /// prepares a new game. In this phase player can use <see cref="RegisterPlayer(Player)"/> 
+        /// </summary>
+        /// <param name="requiredAmountOfPlayers"></param>
+        /// <exception cref="ArgumentException"></exception>
         public void NewGame(int requiredAmountOfPlayers)
         {
             if (requiredAmountOfPlayers < 1) throw new ArgumentException("At least two players are required to play the game!");
@@ -90,6 +121,10 @@ namespace t.lib
             gameActions.Clear();
             MixCards();
         }
+        /// <summary>
+        /// Starts the game
+        /// </summary>
+        /// <param name="totalPoints"></param>
         public void Start(int totalPoints)
         {
             TotalPointsToPlay = totalPoints;
@@ -197,6 +232,19 @@ namespace t.lib
             PlayerCards[player].Remove(card);
             GameAction gameAction = new GameAction(Round, player, card.Value, CurrentCard, false);
             gameActions.Add(gameAction);
+        }
+        /// <summary>
+        /// returns the list of players which should pick a card for the current round
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Player> GetRemainingPickCardPlayers()
+        {
+            var gameActionsCurrent = gameActions.Where(a => a.Round == Round);
+            foreach (var player in Players)
+            {
+                if (!gameActionsCurrent.Any(a => a.Player == player))
+                    yield return player;
+            }
         }
         public IEnumerable<Player> EndGame()
         {

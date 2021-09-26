@@ -180,6 +180,11 @@ namespace t.lib
                 var numberBytes = span.Slice(Marshal.SizeOf(typeof(Guid)) + playerNameLength, gameActionProtocol.PayloadSize - (Marshal.SizeOf(typeof(Guid)) + playerNameLength));
                 return BitConverter.ToInt32(numberBytes.ToArray());
             }
+            if(gameActionProtocol.Phase == Constants.StartGame || gameActionProtocol.Phase == Constants.PlayerReported)
+            {
+                var span = gameActionProtocol.Payload.AsSpan();
+                return BitConverter.ToInt32(span);
+            }
             throw new NotImplementedException($"Not implemented {gameActionProtocol.Phase}");
         }
         public virtual Player GetPlayer(GameActionProtocol gameActionProtocol)

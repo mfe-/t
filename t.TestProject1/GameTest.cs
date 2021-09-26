@@ -263,5 +263,54 @@ namespace t.TestProject1
                 }
             }
         }
+        [Fact]
+        public void GetRemainingPlayerForRound_Test()
+        {
+            var game = new GameLogic();
+            game.NewGame(4);
+
+            Player player1 = new Player("martin", Guid.NewGuid()); ;
+            Player player2 = new Player("simon", Guid.NewGuid());
+            Player player3 = new Player("katharina", Guid.NewGuid());
+            Player player4 = new Player("renate", Guid.NewGuid());
+
+            game.RegisterPlayer(player2);
+            game.RegisterPlayer(player1);
+            game.RegisterPlayer(player3);
+            game.RegisterPlayer(player4);
+
+            game.Start(15);
+
+            game.PlayerReport(player1, new Card(5));
+
+            var remainingPlayers = game.GetRemainingPickCardPlayers();
+
+
+            Assert.Contains(player2,remainingPlayers);
+            Assert.Contains(player3, remainingPlayers);
+            Assert.Contains(player4, remainingPlayers);
+
+            game.PlayerReport(player2, new Card(5));
+            game.PlayerReport(player3, new Card(4));
+
+            remainingPlayers = game.GetRemainingPickCardPlayers();
+            Assert.Contains(player4, remainingPlayers);
+
+            game.NextRound();
+
+            remainingPlayers = game.GetRemainingPickCardPlayers();
+            Assert.Contains(player1, remainingPlayers);
+            Assert.Contains(player2, remainingPlayers);
+            Assert.Contains(player3, remainingPlayers);
+            Assert.Contains(player4, remainingPlayers);
+
+            game.PlayerReport(player1, new Card(2));
+
+
+            Assert.Contains(player2, remainingPlayers);
+            Assert.Contains(player3, remainingPlayers);
+            Assert.Contains(player4, remainingPlayers);
+
+        }
     }
 }

@@ -22,11 +22,12 @@ namespace t.lib.Server
             set
             {
                 _buffer = value;
-                LastAction = DateTime.Now;
+                LastModified = DateTime.Now;
             }
         }
         internal ISocket SocketClient;
         internal Player? Player;
-        public DateTime LastAction { get; private set; }
+        public DateTime LastModified { get; private set; }
+        public GameActionProtocol LastPayload { get; internal set; }
 }
 }

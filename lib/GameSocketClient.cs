@@ -130,9 +130,6 @@ namespace t.lib
                 byte[] sendPayLoad = new byte[0];
                 while (gameActionProtocolRec.Phase != Constants.PlayerWon)
                 {
-                    sendPayLoad = GameActionProtocolFactory(Constants.Ok).ToByteArray();
-                    bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
-                    _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                     // Receive the response from the remote device.  
                     bytes = new byte[1024];
                     int bytesRec = SenderSocket.Receive(bytes);

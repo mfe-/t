@@ -44,20 +44,6 @@ namespace t.TestProject1
             mockGameSocketClient.Protected().SetupGet<GameLogic>("Game").Returns(game);
 
             GameSocketClient client = mockGameSocketClient.Object;
-
-            client._player = localPlayer;
-            int i = 0;
-            Task<string> SimulateInputAsync()
-            {
-                if (i == 0)
-                {
-                    i = +1;
-                    return Task.FromResult("asdf");
-                }
-                return Task.FromResult("1");
-            }
-            Task showAvailableCards(IEnumerable<Card> cards) => Task.CompletedTask;
-            await client.PlayGameAsync(SimulateInputAsync, showAvailableCards, null);
         }
     }
 }

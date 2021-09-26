@@ -55,7 +55,7 @@ namespace t.lib
             var playerCards = new List<Card>();
             for (int i = 0; i < CardCapacity; i++)
             {
-                Card card = new Card(i);
+                Card card = new Card(i++);
                 playerCards.Add(card);
             }
             PlayerCards.Add(player, playerCards);
@@ -110,7 +110,7 @@ namespace t.lib
             }
             Round++;
             CurrentCard = Cards[Round - 1];
-            OnNextRoundEvent(new NextRoundEventArgs(Round,CurrentCard));
+            OnNextRoundEvent(new NextRoundEventArgs(Round, CurrentCard));
             return nextRound;
         }
 

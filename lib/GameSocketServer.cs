@@ -287,7 +287,7 @@ namespace t.lib.Server
         {
             foreach (var connectionState in _playerConnections.Values)
             {
-                _logger.LogInformation("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", gameActionProtocol.Phase);
+                _logger.LogInformation("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase));
                 Send(connectionState, gameActionProtocol);
             }
             //process events which occoured during broadcasting

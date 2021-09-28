@@ -49,7 +49,7 @@ namespace t.lib
 
         protected virtual async Task OnMessageReceiveAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
-            _logger.LogInformation("OnMessageReceive from {player} with Phase {Phase}", gameActionProtocol.PlayerId, gameActionProtocol.Phase);
+            _logger.LogInformation("OnMessageReceive from {player} with Phase {Phase}", gameActionProtocol.PlayerId, Constants.ToString(gameActionProtocol.Phase));
             using (_logger.BeginScope(new Dictionary<string, object> {
                 { nameof(gameActionProtocol.Phase), gameActionProtocol.Phase }
                ,{ nameof(gameActionProtocol.PlayerId), gameActionProtocol.PlayerId}

@@ -177,6 +177,13 @@ namespace t.lib
                 string playerChoice = await onChoiceCommandFuncAsync.Invoke();
                 if (int.TryParse(playerChoice, out cardValue))
                 {
+                    if (!Game.PlayerCards[Game.Players.First(a => a.PlayerId == _player?.PlayerId)].Any(b => b.Value == cardValue))
+                    {
+                        System.Console.ForegroundColor = ConsoleColor.Red;
+                        System.Console.WriteLine("Selected card is not available! Enter a valid card number!");
+                        System.Console.ResetColor();
+                        continue;
+                    }
                     break;
                 }
                 else

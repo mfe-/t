@@ -1,5 +1,6 @@
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using t.lib;
 using Xunit;
@@ -34,6 +35,10 @@ namespace t.TestProject1
             game.Players.Add(player1);
             game.Players.Add(player3);
             game.Players.Add(player4);
+            game.PlayerCards.Add(player2, new List<Card>());
+            game.PlayerCards.Add(player1, new List<Card>());
+            game.PlayerCards.Add(player3, new List<Card>());
+            game.PlayerCards.Add(player4, new List<Card>());
             game.Start(10);
 
             Assert.NotNull(game.CurrentCard);
@@ -125,6 +130,11 @@ namespace t.TestProject1
             game.Players.Add(player3);
             game.Players.Add(player4);
 
+            game.PlayerCards.Add(player2, new List<Card>());
+            game.PlayerCards.Add(player1, new List<Card>());
+            game.PlayerCards.Add(player3, new List<Card>());
+            game.PlayerCards.Add(player4, new List<Card>());
+
             game.Start(10);
 
             game.PlayerReport(player1, new Card(1));
@@ -166,7 +176,10 @@ namespace t.TestProject1
             game.Players.Add(player1);
             game.Players.Add(player3);
             game.Players.Add(player4);
-
+            game.PlayerCards.Add(player2, new List<Card>());
+            game.PlayerCards.Add(player1, new List<Card>());
+            game.PlayerCards.Add(player3, new List<Card>());
+            game.PlayerCards.Add(player4, new List<Card>());
             game.Start(10);
 
             game.PlayerReport(player1, new Card(1));
@@ -204,7 +217,10 @@ namespace t.TestProject1
             game.Players.Add(player1);
             game.Players.Add(player3);
             game.Players.Add(player4);
-
+            game.PlayerCards.Add(player2, new List<Card>());
+            game.PlayerCards.Add(player1, new List<Card>());
+            game.PlayerCards.Add(player3, new List<Card>());
+            game.PlayerCards.Add(player4, new List<Card>());
             game.Start(10);
 
             game.PlayerReport(player1, new Card(1));
@@ -217,6 +233,84 @@ namespace t.TestProject1
             var winnerPlayer = game.Players.FirstOrDefault(a => a == player4);
 
             Assert.Equal(cardToWin * 2, winnerPlayer?.Points);
+        }
+        [Fact]
+        public void Does_remaingin_cards_returned_correctly()
+        {
+            var game = new GameLogic();
+            Player player = new Player("martin", Guid.NewGuid());
+            game.NewGame(2);
+            game.RegisterPlayer(player);
+            var playerCard = game.PlayerCards[player];
+            //player should have all 10 cards
+            for (int i = 0; i < 10; i++)
+            {
+                Assert.True(playerCard.Contains(new Card(i)));
+            }
+            game.Start(10);
+            game.PlayerReport(player, new Card(5));
+
+            //player should have all 10 cards except 5
+            for (int i = 0; i < 10; i++)
+            {
+                if (i == 5)
+                {
+                    Assert.False(playerCard.Contains(new Card(5)));
+                }
+                else
+                {
+                    Assert.True(playerCard.Contains(new Card(i)));
+                }
+            }
+        }
+        [Fact]
+        public void GetRemainingPlayerForRound_Test()
+        {
+            var game = new GameLogic();
+            game.NewGame(4);
+
+            Player player1 = new Player("martin", Guid.NewGuid()); ;
+            Player player2 = new Player("simon", Guid.NewGuid());
+            Player player3 = new Player("katharina", Guid.NewGuid());
+            Player player4 = new Player("renate", Guid.NewGuid());
+
+            game.RegisterPlayer(player2);
+            game.RegisterPlayer(player1);
+            game.RegisterPlayer(player3);
+            game.RegisterPlayer(player4);
+
+            game.Start(15);
+
+            game.PlayerReport(player1, new Card(5));
+
+            var remainingPlayers = game.GetRemainingPickCardPlayers();
+
+
+            Assert.Contains(player2,remainingPlayers);
+            Assert.Contains(player3, remainingPlayers);
+            Assert.Contains(player4, remainingPlayers);
+
+            game.PlayerReport(player2, new Card(5));
+            game.PlayerReport(player3, new Card(4));
+
+            remainingPlayers = game.GetRemainingPickCardPlayers();
+            Assert.Contains(player4, remainingPlayers);
+
+            game.NextRound();
+
+            remainingPlayers = game.GetRemainingPickCardPlayers();
+            Assert.Contains(player1, remainingPlayers);
+            Assert.Contains(player2, remainingPlayers);
+            Assert.Contains(player3, remainingPlayers);
+            Assert.Contains(player4, remainingPlayers);
+
+            game.PlayerReport(player1, new Card(2));
+
+
+            Assert.Contains(player2, remainingPlayers);
+            Assert.Contains(player3, remainingPlayers);
+            Assert.Contains(player4, remainingPlayers);
+
         }
     }
 }

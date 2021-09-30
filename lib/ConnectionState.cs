@@ -7,7 +7,7 @@ namespace t.lib.Server
     [DebuggerDisplay("Ip={SocketClient.RemoteEndPoint} Id={Player.PlayerId} Player={Player.Name} ")]
     public sealed class ConnectionState
     {
-        public ConnectionState(Socket socket)
+        public ConnectionState(ISocket socket)
         {
             SocketClient = socket;
         }
@@ -22,11 +22,12 @@ namespace t.lib.Server
             set
             {
                 _buffer = value;
-                LastAction = DateTime.Now;
+                LastModified = DateTime.Now;
             }
         }
-        internal Socket SocketClient;
+        internal ISocket SocketClient;
         internal Player? Player;
-        public DateTime LastAction { get; private set; }
+        public DateTime LastModified { get; private set; }
+        public GameActionProtocol LastPayload { get; internal set; }
 }
 }

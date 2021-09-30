@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -47,7 +49,15 @@ namespace t.lib.Console
             } while (command != "exit");
 
         }
-
+        public override Task ShowAvailableCardsAsync(IEnumerable<Card> availableCards)
+        {
+            foreach (var card in availableCards)
+            {
+                System.Console.WriteLine($"Card {card.Value}");
+            }
+            System.Console.WriteLine("Press the number of the card you want to play.");
+            return Task.CompletedTask;
+        }
         private async Task ProcessEntertedCommand(string enteredCommand, string[] param)
         {
             switch (enteredCommand)
@@ -104,6 +114,14 @@ namespace t.lib.Console
                 return text;
             }
             return text.Substring(0, pos) + replace + text.Substring(pos + search.Length);
+        }
+
+        public override Task OnNextRoundAsync(NextRoundEventArgs e)
+        {
+            System.Console.ForegroundColor = ConsoleColor.Green;
+            System.Console.WriteLine($"Round: {e.Round} Playing for card: {e.Card.Value}");
+            System.Console.ResetColor();
+            return Task.CompletedTask;
         }
     }
 }

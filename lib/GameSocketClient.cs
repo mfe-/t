@@ -142,6 +142,14 @@ namespace t.lib
 
                     if (gameActionProtocolRec.Phase == Constants.NextRound)
                     {
+                        //show from last game results
+                        if (Game.Round != 1)
+                        {
+                            foreach (var p in Game.GetPlayerStats())
+                            {
+                                System.Console.WriteLine($"{p.Name,10} {$"{p.Points,2}"}");
+                            }
+                        }
                         var player = Game.PlayerCards.First(a => a.Key.PlayerId == _guid).Key;
                         //display available cards
                         await showAvailableCardsAsync(Game.PlayerCards[player]);
@@ -153,6 +161,8 @@ namespace t.lib
                     }
                     else if (gameActionProtocolRec.Phase == Constants.PlayerScored)
                     {
+                        //int number = GetNumber(gameActionProtocolRec);
+                        //Player player = Game.Players.First(a => a.PlayerId == GetPlayer(gameActionProtocolRec).PlayerId);
                         //send ok
                         gameActionProtocolSend = GameActionProtocolFactory(Constants.Ok);
                         sendPayLoad = gameActionProtocolSend.ToByteArray();

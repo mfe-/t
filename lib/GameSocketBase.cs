@@ -140,6 +140,13 @@ namespace t.lib
                 gameActionProtocol.PayloadSize = (byte)payload.Length;
                 return gameActionProtocol;
             }
+            else if (gameActionProtocol.Phase == Constants.PlayerWon)
+            {
+                if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(Constants.PlayerWon)} requires argument {nameof(player)}");
+                var playerid = player.PlayerId.ToByteArray();
+                gameActionProtocol.Payload = playerid;
+                gameActionProtocol.PayloadSize = (byte)gameActionProtocol.Payload.Length;
+            }
             return gameActionProtocol;
         }
 

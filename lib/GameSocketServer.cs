@@ -48,7 +48,7 @@ namespace t.lib.Server
         {
             Task GenerateGameEndWinner()
             {
-                var gameActionProtocol = GameActionProtocolFactory(Constants.PlayerWon, null);
+                var gameActionProtocol = GameActionProtocolFactory(Constants.PlayerWon, e.Data.First());
                 return BroadcastMessageAsync(gameActionProtocol, null);
             }
             _EventQueue.Enqueue(GenerateGameEndWinner);

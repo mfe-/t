@@ -184,7 +184,10 @@ namespace t.lib
                         System.Console.ResetColor();
                         continue;
                     }
-                    break;
+                    else
+                    {
+                        break;
+                    }
                 }
                 else
                 {

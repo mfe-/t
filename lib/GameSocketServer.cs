@@ -27,6 +27,7 @@ namespace t.lib.Server
             ServerIpAdress = serverIpAdress;
             Game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
             Game.NextRoundEvent += Game_NextRoundEvent;
+            Game.PlayerWonEvent += Game_EndPlayerWonEvent;
             _guid = Guid.NewGuid();
         }
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger, Guid guid)
@@ -43,7 +44,15 @@ namespace t.lib.Server
             }
             _EventQueue.Enqueue(GenerateNextRoundBroadcast);
         }
-
+        private void Game_EndPlayerWonEvent(object? sender, EventArgs<IEnumerable<Player>> e)
+        {
+            Task GenerateGameEndWinner()
+            {
+                var gameActionProtocol = GameActionProtocolFactory(Constants.PlayerWon, null);
+                return BroadcastMessageAsync(gameActionProtocol, null);
+            }
+            _EventQueue.Enqueue(GenerateGameEndWinner);
+        }
         protected virtual async Task OnPlayerReportedAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             int pickedNumber = GetNumber(gameActionProtocol);

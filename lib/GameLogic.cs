@@ -15,7 +15,7 @@ namespace t.lib
         internal readonly List<GameAction> gameActions = new List<GameAction>();
         public event EventHandler<EventArgs>? GameStartedEvent;
         public event EventHandler<NextRoundEventArgs>? NextRoundEvent;
-        public event EventHandler<EventArgs>? GameEndEvent;
+        public event EventHandler<EventArgs<IEnumerable<Player>>>? PlayerWonEvent;
         public event EventHandler<EventArgs<Player>>? NewPlayerRegisteredEvent;
         public event EventHandler<EventArgs>? RequiredAmountOfPlayersReachedEvent;
         public GameLogic()
@@ -154,7 +154,7 @@ namespace t.lib
             var winners = Players.Where(a => a.Points >= TotalPointsToPlay);
             if (winners.Any())
             {
-                GameEndEvent?.Invoke(this, EventArgs.Empty);
+                PlayerWonEvent?.Invoke(this, new EventArgs<IEnumerable<Player>>(winners));
                 return true;
             }
             return false;

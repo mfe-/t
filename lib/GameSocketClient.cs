@@ -182,6 +182,7 @@ namespace t.lib
                         System.Console.ForegroundColor = ConsoleColor.Red;
                         System.Console.WriteLine("Selected card is not available! Enter a valid card number!");
                         System.Console.ResetColor();
+                        cardValue = 0;
                         continue;
                     }
                     else

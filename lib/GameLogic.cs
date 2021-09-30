@@ -143,9 +143,12 @@ namespace t.lib
                 CalculateAndAssignPointsOfPreviousRound();
                 nextRound = !IsLastRound();
             }
-            Round++;
-            CurrentCard = Cards[Round - 1];
-            OnNextRoundEvent(new NextRoundEventArgs(Round, CurrentCard));
+            if (nextRound)
+            {
+                Round++;
+                CurrentCard = Cards[Round - 1];
+                OnNextRoundEvent(new NextRoundEventArgs(Round, CurrentCard));
+            }
             return nextRound;
         }
 
@@ -246,7 +249,7 @@ namespace t.lib
                     yield return player;
             }
         }
-        public IEnumerable<Player> EndGame()
+        public IEnumerable<Player> GetPlayerStats()
         {
             return Players.OrderBy(a => a.Points);
         }

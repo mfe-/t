@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using t.lib.EventArgs;
 
 namespace t.lib.Console
 {
@@ -121,6 +122,24 @@ namespace t.lib.Console
             System.Console.ForegroundColor = ConsoleColor.Green;
             System.Console.WriteLine($"Round: {e.Round} Playing for card: {e.Card.Value}");
             System.Console.ResetColor();
+            return Task.CompletedTask;
+        }
+
+        public override Task ShowPlayerWon(IEnumerable<Player> playerStats)
+        {
+            System.Console.ForegroundColor = ConsoleColor.Green;
+            System.Console.WriteLine($"Player: {playerStats.First().Name} won with: {playerStats.First().Points}");
+            ShowPlayerStats(playerStats);
+            System.Console.ResetColor();
+            return Task.CompletedTask;
+        }
+
+        public override Task ShowPlayerStats(IEnumerable<Player> playerStats)
+        {
+            foreach (var p in playerStats)
+            {
+                System.Console.WriteLine($"{p.Name,10} {$"{p.Points,2}"}");
+            }
             return Task.CompletedTask;
         }
     }

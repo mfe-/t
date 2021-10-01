@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using t.lib.EventArgs;
 
 namespace t.lib
 {
@@ -34,14 +35,18 @@ namespace t.lib
 
             GameSocketClient gameSocketClient = new GameSocketClient(iPAddress, port, logger);
             await gameSocketClient.JoinGameAsync(playerName);
-            await gameSocketClient.PlayGameAsync(onChoiceCommandFunc, ShowAvailableCardsAsync, OnNextRoundAsync);
+
+            MessageReceiveArgs messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, onChoiceCommandFunc, ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats);
+
+            await gameSocketClient.PlayGameAsync(messageReceiveArgs);
         }
         protected TaskCompletionSource? TaskCompletionSource;
         public abstract Task OnNextRoundAsync(NextRoundEventArgs e);
         public abstract Task ShowAvailableCardsAsync(IEnumerable<Card> cards);
         public abstract Task OnShowMenueAsync();
-
         public abstract Task ParseStartArgumentsAsync(string[] args);
+        public abstract Task ShowPlayerWon(IEnumerable<Player> playerStats);
+        public abstract Task ShowPlayerStats(IEnumerable<Player> playerStats);
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {

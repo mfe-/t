@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using t.lib.EventArgs;
 
 namespace t.lib
 {
@@ -22,7 +23,9 @@ namespace t.lib
             ActionDictionary.Add(Constants.NewPlayer, OnNewPlayerAsync);
             ActionDictionary.Add(Constants.NextRound, OnNextRoundAsync);
             ActionDictionary.Add(Constants.PlayerScored, OnPlayerScoredAsync);
+            ActionDictionary.Add(Constants.PlayerWon, OnPlayerWonAsync);
         }
+
         protected virtual ISocket? SenderSocket => _senderSocket;
         private Task OnNewPlayerAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
@@ -114,13 +117,12 @@ namespace t.lib
             }
         }
 
-        public async Task PlayGameAsync(Func<Task<string>> onChoiceCommandFuncAsync, Func<IEnumerable<Card>, Task> showAvailableCardsAsync, Func<NextRoundEventArgs, Task> onNextRoundAsyncFunc)
+        public async Task PlayGameAsync(MessageReceiveArgs messageReceiveArgs)
         {
-            if (onChoiceCommandFuncAsync == null) throw new ArgumentNullException(nameof(onChoiceCommandFuncAsync));
-            if (showAvailableCardsAsync == null) throw new ArgumentNullException(nameof(showAvailableCardsAsync));
+            if (messageReceiveArgs == null) throw new ArgumentNullException(nameof(messageReceiveArgs));
             if (_player == null) throw new InvalidOperationException($"{nameof(_player)} not set!");
             if (SenderSocket == null) throw new InvalidOperationException($"{nameof(_senderSocket)} is not set! Make sure you called {nameof(JoinGameAsync)}");
-            if (onNextRoundAsyncFunc == null) throw new ArgumentNullException(nameof(onNextRoundAsyncFunc));
+
 
             try
             {
@@ -138,23 +140,15 @@ namespace t.lib
                     gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
                     // server should send next round or annaounce the winner
                     _logger.LogTrace("Received {0} bytes.", bytesRec);
-                    await OnMessageReceiveAsync(gameActionProtocolRec, onNextRoundAsyncFunc);
+
+                    await OnMessageReceiveAsync(gameActionProtocolRec, messageReceiveArgs);
+                    gameActionProtocolSend = GameActionProtocolFactory(Constants.Ok);
+                    sendPayLoad = gameActionProtocolSend.ToByteArray();
 
                     if (gameActionProtocolRec.Phase == Constants.NextRound)
                     {
-                        //show from last game results
-                        if (Game.Round != 1)
-                        {
-                            foreach (var p in Game.GetPlayerStats())
-                            {
-                                System.Console.WriteLine($"{p.Name,10} {$"{p.Points,2}"}");
-                            }
-                        }
-                        var player = Game.PlayerCards.First(a => a.Key.PlayerId == _guid).Key;
-                        //display available cards
-                        await showAvailableCardsAsync(Game.PlayerCards[player]);
                         //get picked card
-                        int pickedCard = await GetPlayerCardChoiceAsync(onChoiceCommandFuncAsync);
+                        int pickedCard = await GetPlayerCardChoiceAsync(messageReceiveArgs.OnChoiceCommandFuncAsync);
                         //send server picked card
                         gameActionProtocolSend = GameActionProtocolFactory(Constants.PlayerReported, number: pickedCard);
                         sendPayLoad = gameActionProtocolSend.ToByteArray();
@@ -164,8 +158,6 @@ namespace t.lib
                         //int number = GetNumber(gameActionProtocolRec);
                         //Player player = Game.Players.First(a => a.PlayerId == GetPlayer(gameActionProtocolRec).PlayerId);
                         //send ok
-                        gameActionProtocolSend = GameActionProtocolFactory(Constants.Ok);
-                        sendPayLoad = gameActionProtocolSend.ToByteArray();
                     }
                     _logger.LogDebug("Send as {ClientId} {PlayerName} Phase={Phase}", gameActionProtocolSend.PlayerId, _player.Name, Constants.ToString(gameActionProtocolSend.Phase));
                     bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
@@ -244,10 +236,27 @@ namespace t.lib
             }
             //because the Cards are randomly mixed we set the card value from the server manual
             Game.Cards[nextRoundEventArgs.Round - 1].Value = nextRoundEventArgs.Card.Value;
-            if (obj is Func<NextRoundEventArgs, Task> nextRoundClientDisplayFunc)
+            if (obj is MessageReceiveArgs messageReceiveArgs)
             {
-                await nextRoundClientDisplayFunc.Invoke(nextRoundEventArgs);
+                await messageReceiveArgs.OnNextRoundAsyncFunc.Invoke(nextRoundEventArgs);
+
+                //show from last game results
+                if (Game.Round != 1)
+                {
+                    await messageReceiveArgs.ShowPlayerStats(Game.GetPlayerStats());
+                }
+                var player = Game.PlayerCards.First(a => a.Key.PlayerId == _guid).Key;
+                //display available cards
+                await messageReceiveArgs.ShowAvailableCardsAsync(Game.PlayerCards[player]);
             }
+        }
+        private Task OnPlayerWonAsync(GameActionProtocol gameActionProtocol, object? arg2)
+        {
+            if (arg2 is MessageReceiveArgs messageReceiveArgs)
+            {
+                return messageReceiveArgs.ShowPlayerWonFunc(Game.GetPlayerStats());
+            }
+            throw new NotImplementedException();
         }
     }
 }

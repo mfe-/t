@@ -16,7 +16,7 @@ namespace t.lib
     public abstract class GameSocketBase
     {
         protected Dictionary<byte, Func<GameActionProtocol, object?, Task>> ActionDictionary = new();
-        protected readonly GameLogic _game;
+        protected volatile GameLogic _game;
         protected readonly ILogger _logger;
         protected Guid _guid;
         public GameSocketBase(ILogger logger)

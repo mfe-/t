@@ -167,7 +167,7 @@ namespace t.lib.Server
             }
             cancellationTokenSource = null;
         }
-
+        ConcurrentBag<SocketWorker> _SocketWorkers = new();
         private void AcceptClientConnection(IAsyncResult ar)
         {
             // Signal the main thread to continue.  
@@ -179,10 +179,18 @@ namespace t.lib.Server
                 ISocket listener = socket;
                 ISocket handler = listener.EndAccept(ar);
 
+                SocketWorker socketWorker = new SocketWorker(handler, _logger);
+                Task.Run(() => socketWorker.RunAsync);
+
                 // Create the state object.  
                 ConnectionState state = new ConnectionState(handler);
                 handler.BeginReceive(state.Buffer, 0, ConnectionState.BufferSize, 0, new AsyncCallback(ReadResult), state);
             }
+        }
+
+        private void ProtocolMessaging()
+        {
+
         }
 
         private async void ReadResult(IAsyncResult ar)

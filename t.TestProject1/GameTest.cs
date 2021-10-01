@@ -245,7 +245,7 @@ namespace t.TestProject1
             //player should have all 10 cards
             for (int i = 0; i < 10; i++)
             {
-                Assert.True(playerCard.Contains(new Card(i)));
+                Assert.True(playerCard.Contains(new Card(i + 1)));
             }
             game.Start(10);
             game.PlayerReport(player, new Card(5));
@@ -253,13 +253,13 @@ namespace t.TestProject1
             //player should have all 10 cards except 5
             for (int i = 0; i < 10; i++)
             {
-                if (i == 5)
+                if (i + 1 == 5)
                 {
                     Assert.False(playerCard.Contains(new Card(5)));
                 }
                 else
                 {
-                    Assert.True(playerCard.Contains(new Card(i)));
+                    Assert.True(playerCard.Contains(new Card(i + 1)));
                 }
             }
         }
@@ -286,7 +286,7 @@ namespace t.TestProject1
             var remainingPlayers = game.GetRemainingPickCardPlayers();
 
 
-            Assert.Contains(player2,remainingPlayers);
+            Assert.Contains(player2, remainingPlayers);
             Assert.Contains(player3, remainingPlayers);
             Assert.Contains(player4, remainingPlayers);
 

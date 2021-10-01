@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using t.lib.EventArgs;
 
 [assembly: InternalsVisibleTo("t.TestProject1")]
 namespace t.lib
@@ -13,11 +14,11 @@ namespace t.lib
         private const string InitializeAndStartNewGameMessage = $"Start a new Game with {nameof(NewGame)} and {nameof(Start)}";
         private readonly Random random;
         internal readonly List<GameAction> gameActions = new List<GameAction>();
-        public event EventHandler<EventArgs>? GameStartedEvent;
+        public event EventHandler<System.EventArgs>? GameStartedEvent;
         public event EventHandler<NextRoundEventArgs>? NextRoundEvent;
         public event EventHandler<EventArgs<IEnumerable<Player>>>? PlayerWonEvent;
         public event EventHandler<EventArgs<Player>>? NewPlayerRegisteredEvent;
-        public event EventHandler<EventArgs>? RequiredAmountOfPlayersReachedEvent;
+        public event EventHandler<System.EventArgs>? RequiredAmountOfPlayersReachedEvent;
         public GameLogic()
         {
             random = new Random();
@@ -66,7 +67,7 @@ namespace t.lib
             NewPlayerRegisteredEvent?.Invoke(this, new EventArgs<Player>(player));
             if (Players.Count == RequiredAmountOfPlayers)
             {
-                RequiredAmountOfPlayersReachedEvent?.Invoke(this, EventArgs.Empty);
+                RequiredAmountOfPlayersReachedEvent?.Invoke(this, System.EventArgs.Empty);
             }
         }
         /// <summary>
@@ -128,10 +129,10 @@ namespace t.lib
         public void Start(int totalPoints)
         {
             TotalPointsToPlay = totalPoints;
-            OnStartEvent(EventArgs.Empty);
+            OnStartEvent(System.EventArgs.Empty);
             NextRound();
         }
-        private void OnStartEvent(EventArgs e)
+        private void OnStartEvent(System.EventArgs e)
         {
             GameStartedEvent?.Invoke(this, e);
         }

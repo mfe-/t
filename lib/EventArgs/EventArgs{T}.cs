@@ -1,4 +1,4 @@
-﻿namespace t.lib
+﻿namespace t.lib.EventArgs
 {
     public class EventArgs<T>
     {

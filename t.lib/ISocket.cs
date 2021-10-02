@@ -7,6 +7,17 @@ namespace t.lib
 {
     public interface ISocket : IDisposable
     {
+        /// <summary>
+        /// Summary:
+        ///    Gets a value that indicates whether a System.Net.Sockets.Socket is connected
+        ///    to a remote host as of the last Overload:System.Net.Sockets.Socket.Send or Overload:System.Net.Sockets.Socket.Receive
+        ///    operation.
+        ///
+        /// Returns:
+        ///    true if the System.Net.Sockets.Socket was connected to a remote resource as of
+        ///    the most recent operation; otherwise, false.
+        /// </summary>
+        public bool Connected { get; }
         //
         // Summary:
         //     Ends a pending asynchronous send.
@@ -262,31 +273,14 @@ namespace t.lib
         //     Windows NT is required for this method.
         public ISocket EndAccept(IAsyncResult asyncResult);
 
-        //
-        // Summary:
-        //     Sends data to a connected System.Net.Sockets.Socket using the specified System.Net.Sockets.SocketFlags.
-        //
-        // Parameters:
-        //   buffer:
-        //     A span of bytes that contains the data to be sent.
-        //
-        //   socketFlags:
-        //     A bitwise combination of the enumeration values that specifies send and receive
-        //     behaviors.
-        //
-        //   errorCode:
-        //     When this method returns, contains one of the enumeration values that defines
-        //     error codes for the socket.
-        //
-        // Returns:
-        //     The number of bytes sent to the System.Net.Sockets.Socket.
-        //
-        // Exceptions:
-        //   T:System.Net.Sockets.SocketException:
-        //     An error occurred when attempting to access the socket.
-        //
-        //   T:System.ObjectDisposedException:
-        //     The System.Net.Sockets.Socket has been closed.
+        /// <summary>
+        /// Sends data to a connected System.Net.Sockets.Socket using the specified System.Net.Sockets.SocketFlags.
+        /// </summary>
+        /// <param name="buffer">A span of bytes that contains the data to be sent.</param>
+        /// <param name="socketFlags">A bitwise combination of the enumeration values that specifies send and receive behaviors.</param>
+        /// <returns>The number of bytes sent to the System.Net.Sockets.Socket.</returns>
+        /// <exception cref="SocketException">An error occurred when attempting to access the socket.</exception>
+        /// <exception cref="ObjectDisposedException">The System.Net.Sockets.Socket has been closed.</exception>
         Task<int> SendAsync(ArraySegment<byte> buffer, SocketFlags socketFlags);
 
         //

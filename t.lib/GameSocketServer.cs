@@ -140,7 +140,7 @@ namespace t.lib.Server
                 {
                     listener.Bind(localEndPoint);
                     listener.Listen(10);
-
+                    //start a new game
                     Game.NewGame(RequiredAmountOfPlayers);
 
                     _logger.LogInformation("Waiting for a connection...");

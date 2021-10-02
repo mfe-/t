@@ -22,6 +22,8 @@ namespace t.lib
         /// <inheritdoc />
         public EndPoint? RemoteEndPoint => _socket.RemoteEndPoint;
 
+        public bool Connected => _socket.Connected;
+
         /// <inheritdoc />
         public void Connect(EndPoint remoteEP) => _socket.Connect(remoteEP);
         /// <inheritdoc />

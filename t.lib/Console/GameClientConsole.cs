@@ -143,5 +143,11 @@ namespace t.lib.Console
             }
             return Task.CompletedTask;
         }
+
+        public override Task ShowPlayerOffered(Player player, int offered, int forCard)
+        {
+            System.Console.WriteLine($"{player.Name} offered {offered} for {forCard}");
+            return Task.CompletedTask;
+        }
     }
 }

@@ -70,13 +70,13 @@ namespace t.lib
             {
                 SenderSocket.Connect(remoteEP);
 
-                _logger.LogInformation("Socket connected to {0}", SenderSocket.RemoteEndPoint?.ToString() ?? $"Could not determine {nameof(_senderSocket.RemoteEndPoint)}");
+                _logger.LogTrace("Socket connected to {0}", SenderSocket.RemoteEndPoint?.ToString() ?? $"Could not determine {nameof(_senderSocket.RemoteEndPoint)}");
 
                 GameActionProtocol gameActionProtocol = GameActionProtocolFactory(Constants.RegisterPlayer, _player);
                 // Encode the data string into a byte array.  
                 byte[] sendPayLoad = gameActionProtocol.ToByteArray();
                 // Send the data through the socket.  
-                _logger.LogInformation("PlayerId {gamePlayerId} for {playerName} generated", gameActionProtocol.PlayerId, GetPlayer(gameActionProtocol).Name);
+                _logger.LogTrace("PlayerId {gamePlayerId} for {playerName} generated", gameActionProtocol.PlayerId, GetPlayer(gameActionProtocol).Name);
                 int bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
                 _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                 _logger.LogInformation("Waiting for remaining players to join");

@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using t.lib.EventArgs;
+using t.lib.Game;
 
 namespace t.lib
 {

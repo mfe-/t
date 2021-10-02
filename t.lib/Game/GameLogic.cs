@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using t.lib.EventArgs;
 
 [assembly: InternalsVisibleTo("t.TestProject1")]
-namespace t.lib
+namespace t.lib.Game
 {
     public class GameLogic
     {

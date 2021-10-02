@@ -11,6 +11,7 @@ using t.lib;
 using t.lib.EventArgs;
 using Xunit;
 using Xunit.Abstractions;
+using t.lib.Game;
 
 namespace t.TestProject1
 {

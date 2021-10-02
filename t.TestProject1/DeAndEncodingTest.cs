@@ -5,6 +5,7 @@ using System.Text;
 using t.lib;
 using t.lib.EventArgs;
 using t.lib.Server;
+using t.lib.Game;
 using Xunit;
 
 namespace t.TestProject1

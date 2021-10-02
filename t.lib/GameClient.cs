@@ -37,8 +37,7 @@ namespace t.lib
             GameSocketClient gameSocketClient = new GameSocketClient(iPAddress, port, logger);
             await gameSocketClient.JoinGameAsync(playerName);
 
-            MessageReceiveArgs messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, onChoiceCommandFunc,
-                ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats, ShowPlayerOffered);
+            MessageReceiveArgs messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, onChoiceCommandFunc, ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats);
 
             await gameSocketClient.PlayGameAsync(messageReceiveArgs);
         }
@@ -47,7 +46,6 @@ namespace t.lib
         public abstract Task ShowAvailableCardsAsync(IEnumerable<Card> cards);
         public abstract Task OnShowMenueAsync();
         public abstract Task ParseStartArgumentsAsync(string[] args);
-        public abstract Task ShowPlayerOffered(Player player, int offered, int forCard);
         public abstract Task ShowPlayerWon(IEnumerable<Player> playerStats);
         public abstract Task ShowPlayerStats(IEnumerable<Player> playerStats);
 

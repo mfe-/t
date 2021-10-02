@@ -220,15 +220,12 @@ namespace t.lib
         {
             ExitGame();
         }
-        protected virtual async Task OnPlayerScoredAsync(GameActionProtocol gameActionProtocol, object? obj)
+        protected virtual Task OnPlayerScoredAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             var player = Game.Players.First(a => a.PlayerId == GetPlayer(gameActionProtocol).PlayerId);
             var offeredCardNumber = GetNumber(gameActionProtocol);
             Game.PlayerReport(player, new Card(offeredCardNumber));
-            if (obj is MessageReceiveArgs messageReceiveArgs)
-            {
-                await messageReceiveArgs.ShowOfferedByPlayerFunc(player, offeredCardNumber, Game.CurrentCard?.Value ?? 0);
-            }
+            return Task.CompletedTask;
         }
         protected virtual async Task OnNextRoundAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
@@ -258,8 +255,6 @@ namespace t.lib
         {
             if (arg2 is MessageReceiveArgs messageReceiveArgs)
             {
-                //force to calculate current points from last round
-                Game.NextRound();
                 return messageReceiveArgs.ShowPlayerWonFunc(Game.GetPlayerStats());
             }
             throw new NotImplementedException();

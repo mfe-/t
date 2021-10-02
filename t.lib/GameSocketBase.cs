@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using t.lib.EventArgs;
@@ -244,7 +246,7 @@ namespace t.lib
             var playerNameBytes = span.Slice(Marshal.SizeOf(typeof(Guid)), playerNameLength);
             var playername = Encoding.ASCII.GetString(playerNameBytes);
 
-            return new Player(playername.Replace(System.Environment.NewLine, String.Empty), playerId);
+            return new Player(playername, playerId);
         }
 
         private static int GetPlayerNameLength(int payloadSize, Span<byte> span)
@@ -292,7 +294,7 @@ namespace t.lib
         {
             if (gameActionProtocol.Phase != Constants.RegisterPlayer) throw new ArgumentException($"{nameof(Constants.RegisterPlayer)} required for argument {nameof(gameActionProtocol.Phase)}");
             string playername = Encoding.ASCII.GetString(gameActionProtocol.Payload).Replace(Environment.NewLine, String.Empty);
-            Player player = new Player(playername.Replace(System.Environment.NewLine, String.Empty), gameActionProtocol.PlayerId);
+            Player player = new Player(playername, gameActionProtocol.PlayerId);
             return player;
         }
         public NextRoundEventArgs GetNextRoundEventArgs(GameActionProtocol gameActionPRotocol)

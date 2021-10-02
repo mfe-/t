@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <StartArguments>-join -ip=10.51.51.140 -port=11000 -name=stefan</StartArguments>
+    <StartArguments>-join -ip=10.51.51.140 -port=11000 -name=martin</StartArguments>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 

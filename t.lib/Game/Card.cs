@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace t.lib
+namespace t.lib.Game
 {
     [DebuggerDisplay("Value={Value}")]
     public record Card

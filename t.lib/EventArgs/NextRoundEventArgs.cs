@@ -1,4 +1,6 @@
-﻿namespace t.lib.EventArgs
+﻿using t.lib.Game;
+
+namespace t.lib.EventArgs
 {
     public record NextRoundEventArgs
     {

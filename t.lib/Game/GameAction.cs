@@ -1,4 +1,4 @@
-﻿namespace t.lib
+﻿namespace t.lib.Game
 {
     public class GameAction
     {

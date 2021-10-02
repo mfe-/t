@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using t.lib.EventArgs;
+using t.lib.Game;
 
 namespace t.lib.Console
 {
@@ -140,6 +141,12 @@ namespace t.lib.Console
             {
                 System.Console.WriteLine($"{p.Name,10} {$"{p.Points,2}"}");
             }
+            return Task.CompletedTask;
+        }
+
+        public override Task ShowPlayerOffered(Player player, int offered, int forCard)
+        {
+            System.Console.WriteLine($"{player.Name} offered {offered} for {forCard}");
             return Task.CompletedTask;
         }
     }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace t.lib
+namespace t.lib.Game
 {
     [DebuggerDisplay("Name={Name}, Points={Points}")]
     public class Player

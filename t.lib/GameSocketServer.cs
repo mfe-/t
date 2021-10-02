@@ -228,48 +228,35 @@ namespace t.lib.Server
             }
 
         }
-        protected void Send(ConnectionState connectionState, GameActionProtocol gameActionProtocol)
-        {
-            connectionState.LastPayload = gameActionProtocol;
-            // Convert the data to byte data
-            byte[] byteData = gameActionProtocol.ToByteArray();
-
-            // Begin sending the data to the remote device.  
-            connectionState.SocketClient.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), connectionState);
-        }
-
-        private async void SendCallback(IAsyncResult ar)
+        protected async Task SendAsync(ConnectionState connectionState, GameActionProtocol gameActionProtocol)
         {
             try
             {
-                // Retrieve the socket from the state object.
-                if (ar.AsyncState is ConnectionState connectionState)
-                {
-                    connectionState.SocketClient.EndSend(ar);
-                    connectionState.Buffer = new byte[ConnectionState.BufferSize];
-                    int bytesSent = connectionState.SocketClient.Receive(connectionState.Buffer);
-                    GameActionProtocol gameActionProtocol = connectionState.Buffer.AsSpan().Slice(0, bytesSent).ToArray().ToGameActionProtocol(bytesSent);
-                    await OnMessageReceiveAsync(gameActionProtocol, null);
+                connectionState.LastPayload = gameActionProtocol;
+                // Convert the data to byte data
+                byte[] byteData = gameActionProtocol.ToByteArray();
 
-                    // Complete sending the data to the remote device.  
-                    //int bytesSent = handler.EndSend(ar);
-                    //int bytesSent = handler.Send(connectionState.Buffer);
-                    //_logger.LogTrace("Sent {0} bytes to client.", bytesSent);
+                // Begin sending the data to the remote device.  
+                await connectionState.SocketClient.SendAsync(new ArraySegment<byte>(byteData), SocketFlags.None);
+                //connectionState.SocketClient.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), connectionState);
 
-                    //handler.Shutdown(SocketShutdown.Both);
-                    //handler.Close();
-                }
+                //connectionState.SocketClient.EndSend(ar);
+                connectionState.Buffer = new byte[ConnectionState.BufferSize];
+                int bytesSent = connectionState.SocketClient.Receive(connectionState.Buffer);
+                gameActionProtocol = connectionState.Buffer.AsSpan().Slice(0, bytesSent).ToArray().ToGameActionProtocol(bytesSent);
+                await OnMessageReceiveAsync(gameActionProtocol, null);
             }
             catch (SocketException e)
             {
                 //System.Net.Sockets.SocketException: 'An existing connection was forcibly closed by the remote host.'
                 //client ist tot
-                _logger.LogError(e, nameof(SendCallback));
+                _logger.LogError(e, nameof(SendAsync));
             }
             catch (Exception e)
             {
-                _logger.LogError(e, nameof(SendCallback));
+                _logger.LogError(e, nameof(SendAsync));
             }
+            
         }
 
         private void StopListening()
@@ -299,7 +286,7 @@ namespace t.lib.Server
             foreach (var connectionState in _playerConnections.Values)
             {
                 _logger.LogDebug("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase));
-                Send(connectionState, gameActionProtocol);
+                await SendAsync(connectionState, gameActionProtocol);
             }
             //process events which occoured during broadcasting
             while (_EventQueue.Count != 0)

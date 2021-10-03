@@ -6,7 +6,7 @@ namespace t.lib
     {
         public static readonly byte Ok =             0b000001;
         public static readonly byte Version =        0b000010;
-        public static readonly byte KickedPlayer =   0b000011;
+        public static readonly byte WaitingPlayer =  0b000011;
         public static readonly byte RegisterPlayer = 0b000100;
         public static readonly byte NewPlayer =      0b000101;
         public static readonly byte StartGame =      0b000110;
@@ -25,7 +25,7 @@ namespace t.lib
             {
                  { Constants.Ok,nameof(Constants.Ok) }
                 ,{ Constants.Version,nameof(Constants.Version) }
-                ,{ Constants.KickedPlayer,nameof(Constants.KickedPlayer) }
+                ,{ Constants.WaitingPlayer,nameof(Constants.WaitingPlayer) }
                 ,{ Constants.RegisterPlayer,nameof(Constants.RegisterPlayer) }
                 ,{ Constants.NewPlayer,nameof(Constants.NewPlayer) }
                 ,{ Constants.StartGame,nameof(Constants.StartGame) }

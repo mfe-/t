@@ -11,10 +11,10 @@ namespace t.lib
 {
     public class SocketWorkerServer : SocketWorker<GameActionServerProtocol, GameActionProtocol>
     {
-        public Player? Player { get; set; }
+        public Player? Player => Protocol.Player;
+
         public SocketWorkerServer(ISocket socket, GameActionServerProtocol protocol, ILogger logger) : base(socket, protocol, logger)
         {
-
         }
     }
 }

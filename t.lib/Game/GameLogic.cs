@@ -14,10 +14,10 @@ namespace t.lib.Game
         private const string InitializeAndStartNewGameMessage = $"Start a new Game with {nameof(NewGame)} and {nameof(Start)}";
         private readonly Random random;
         internal readonly List<GameAction> gameActions = new List<GameAction>();
-        public event EventHandler<System.EventArgs>? GameStartedEvent;
+        public event EventHandler<GameStartedEventArgs>? GameStartedEvent;
         public event EventHandler<NextRoundEventArgs>? NextRoundEvent;
         public event EventHandler<EventArgs<IEnumerable<Player>>>? PlayerWonEvent;
-        public event EventHandler<EventArgs<Player>>? NewPlayerRegisteredEvent;
+        public event EventHandler<PlayerRegisterEventArgs>? NewPlayerRegisteredEvent;
         public event EventHandler<System.EventArgs>? RequiredAmountOfPlayersReachedEvent;
         public GameLogic()
         {
@@ -64,7 +64,7 @@ namespace t.lib.Game
             if (Players.Count == CardCapacity) throw new InvalidOperationException($"Game only designed for {CardCapacity} players");
             Players.Add(player);
             AddPlayerCards(player);
-            NewPlayerRegisteredEvent?.Invoke(this, new EventArgs<Player>(player));
+            NewPlayerRegisteredEvent?.Invoke(this, new PlayerRegisterEventArgs(player));
             if (Players.Count == RequiredAmountOfPlayers)
             {
                 RequiredAmountOfPlayersReachedEvent?.Invoke(this, System.EventArgs.Empty);
@@ -121,18 +121,21 @@ namespace t.lib.Game
             PlayerCards.Clear();
             gameActions.Clear();
             MixCards();
+            GameStarted = false;
         }
+        public bool GameStarted { get; private set; } = false;
         /// <summary>
         /// Starts the game
         /// </summary>
         /// <param name="totalPoints"></param>
         public void Start(int totalPoints)
         {
+            GameStarted = true;
             TotalPointsToPlay = totalPoints;
-            OnStartEvent(System.EventArgs.Empty);
+            OnStartEvent(new GameStartedEventArgs(TotalPointsToPlay));
             NextRound();
         }
-        private void OnStartEvent(System.EventArgs e)
+        private void OnStartEvent(GameStartedEventArgs e)
         {
             GameStartedEvent?.Invoke(this, e);
         }

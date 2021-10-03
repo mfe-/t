@@ -12,8 +12,8 @@ namespace t.lib
     public interface IProtocol<TProtocolType, TContext>
     {
         Task<TProtocolType> ByteToProtocolTypeAsync(Span<byte> buffer, int receivedBytes);
-        Task OnMessageReceivedAsync(TProtocolType protocolTypeReceived, TProtocolType lastProtocolType, TContext? obj);
-        Task<TProtocolType> GenerateMessageAsync(TProtocolType protocolTypeReceived, TProtocolType lastProtocolType, TContext? obj);
+        Task OnMessageReceivedAsync(TProtocolType protocolTypeReceived, TProtocolType lastProtocolType, TProtocolType lastProtocolTypeSent, TContext? obj);
+        Task<TProtocolType> GenerateMessageAsync(TProtocolType protocolTypeReceived, TProtocolType lastProtocolTypeReceived, TContext? obj);
         Task<byte[]> ProtocolToByteArrayAsync(TProtocolType protocolType);
         TProtocolType DefaultFactory();
 

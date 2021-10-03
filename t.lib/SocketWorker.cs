@@ -13,14 +13,13 @@ namespace t.lib
     {
         private readonly ILogger _logger;
         protected readonly Queue<TProtocolType> _queue = new Queue<TProtocolType>();
-        public event EventHandler<TProtocolType>? MessageReceivedEvent;
+        public readonly Queue<TProtocolType> _historyQueue = new Queue<TProtocolType>();
         public SocketWorker(ISocket socket, TProtocol protocol, ILogger logger)
         {
             Socket = socket;
             Protocol = protocol;
             Buffer = new byte[BufferSize];
             _logger = logger;
-            _protocolTypeReplacement = Protocol.DefaultFactory();
         }
 
         public ISocket Socket { get; }
@@ -29,36 +28,37 @@ namespace t.lib
         public int BufferSize { get; set; } = 1024;
 
         protected byte[] Buffer { get; set; }
-        TaskCompletionSource? WaitTask { get; set; }
-        public async Task RunAsync(CancellationToken cancellationToken)
+        TaskCompletionSource? WaitBeforeSendingTask { get; set; }
+        public Task? RunAsyncTask { get; set; }
+        public async Task RunAsync(CancellationToken? cancellationToken = null)
         {
             try
             {
-                TProtocolType lastGameActionProtocol = Protocol.DefaultFactory();
+                _logger.LogTrace("ManagedThreadId {ManagedThreadId}", Thread.CurrentThread.ManagedThreadId);
+                TProtocolType lastGameActionProtocolReceived = Protocol.DefaultFactory();
+                TProtocolType lastGameActionProtocolSent = Protocol.DefaultFactory();
+
                 while (Socket.Connected)
                 {
                     Buffer = new byte[BufferSize];
-                    if (cancellationToken.IsCancellationRequested)
+                    if (cancellationToken != null && cancellationToken.Value.IsCancellationRequested)
                     {
                         break;
                     }
                     var byteReceive = Socket.Receive(Buffer);
                     _logger.LogTrace("Received {0} bytes.", byteReceive);
                     var protocolReceived = await Protocol.ByteToProtocolTypeAsync(Buffer.AsSpan(), byteReceive);
-                    await Protocol.OnMessageReceivedAsync(protocolReceived, lastGameActionProtocol, this);
+                    //wait
+                    await Protocol.OnMessageReceivedAsync(protocolReceived, lastGameActionProtocolReceived, lastGameActionProtocolSent, this);
 
-                    var protocolToSend = await Protocol.GenerateMessageAsync(protocolReceived, lastGameActionProtocol, this);
-                    
-                    if (WaitTask != null)
-                    {
-                        await WaitTask.Task;
-                    }
-                    protocolToSend = await OnBeforeSendingProtocolAsync(protocolToSend, lastGameActionProtocol);
-
+                    var protocolToSend = await Protocol.GenerateMessageAsync(protocolReceived, lastGameActionProtocolReceived, this);
+                    protocolToSend = await OverrideGeneratedMessageAsync(protocolToSend);
                     var payload = await Protocol.ProtocolToByteArrayAsync(protocolToSend);
 
                     await Socket.SendAsync(new ArraySegment<byte>(payload), SocketFlags.None);
-                    lastGameActionProtocol = protocolReceived;
+                    _historyQueue.Enqueue(protocolToSend);
+                    lastGameActionProtocolReceived = protocolReceived;
+                    lastGameActionProtocolSent = protocolToSend;
                 }
             }
             catch (SocketException e)
@@ -66,20 +66,23 @@ namespace t.lib
                 _logger.LogCritical(nameof(RunAsync), e);
             }
         }
-        TProtocolType _protocolTypeReplacement;
-        public void OverrideGenerateMessage(TProtocolType protocolTypeReplacement)
+        private readonly Stack<TProtocolType> protocolTypeStack = new Stack<TProtocolType>();
+        public Task<TProtocolType> OverrideGeneratedMessageAsync(TProtocolType protocolToSend)
         {
-            _protocolTypeReplacement = protocolTypeReplacement;
-        }
-        protected virtual Task<TProtocolType> OnBeforeSendingProtocolAsync(TProtocolType protocolTypeGenerated, TProtocolType lastProtocolTypeFromReceived)
-        {
-            //return the value from OverrideGenerateMessage()
-            var defaultproto = Protocol.DefaultFactory();
-            if (defaultproto != null && !defaultproto.Equals(_protocolTypeReplacement) || defaultproto == null)
+            if (protocolTypeStack.Count == 0)
             {
-                return Task.FromResult(_protocolTypeReplacement);
+                return Task.FromResult(protocolToSend);
             }
-            return Task.FromResult(protocolTypeGenerated);
+            var protocolReplacement = protocolTypeStack.Pop();
+            return Task.FromResult(protocolReplacement);
         }
+        public void SetOverrideMessage(IEnumerable<TProtocolType> protocolTypes)
+        {
+            foreach (var item in protocolTypes)
+            {
+                protocolTypeStack.Push(item);
+            }
+        }
+
     }
 }

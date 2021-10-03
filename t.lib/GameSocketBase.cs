@@ -47,6 +47,12 @@ namespace t.lib
             Game.Start(totalPoints);
             return Task.CompletedTask;
         }
+        internal int GetTotalPoints(GameActionProtocol gameActionProtocol)
+        {
+            if (gameActionProtocol.Phase != Constants.StartGame) throw new ArgumentException($"{nameof(Constants.StartGame)} required for argument {nameof(gameActionProtocol.Phase)}");
+            int a = BitConverter.ToInt32(gameActionProtocol.Payload.AsSpan().Slice(0, gameActionProtocol.PayloadSize));
+            return a;
+        }
         protected virtual Task OnOkAsync(GameActionProtocol gameActionProtocol, object? obj) => Task.CompletedTask;
 
         protected virtual async Task OnMessageReceiveAsync(GameActionProtocol gameActionProtocol, object? obj)
@@ -183,13 +189,6 @@ namespace t.lib
             gameActionProtocol.PayloadSize = (byte)paypload.Length;
             gameActionProtocol.Payload = paypload;
             return gameActionProtocol;
-        }
-
-        internal int GetTotalPoints(GameActionProtocol gameActionProtocol)
-        {
-            if (gameActionProtocol.Phase != Constants.StartGame) throw new ArgumentException($"{nameof(Constants.StartGame)} required for argument {nameof(gameActionProtocol.Phase)}");
-            int a = BitConverter.ToInt32(gameActionProtocol.Payload.AsSpan().Slice(0, gameActionProtocol.PayloadSize));
-            return a;
         }
         internal int GetNumber(GameActionProtocol gameActionProtocol)
         {

@@ -225,7 +225,7 @@ namespace t.lib.Server
         TaskCompletionSource TaskCompletionWaitNewPlayer = new TaskCompletionSource();
         private GameActionServerProtocol GameActionServerProtocolFactory()
         {
-            return new GameActionServerProtocol(_eventAggregator, new(), _guid, _logger);
+            return new GameActionServerProtocol(_eventAggregator, _guid, _logger, null);
         }
 
         private void StopListening()

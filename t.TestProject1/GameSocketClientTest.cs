@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using t.lib;
 using t.lib.EventArgs;
+using t.lib.Game;
 using Xunit;
 using Xunit.Abstractions;
 

@@ -4,6 +4,7 @@ using System;
 using System.Text;
 using t.lib;
 using t.lib.EventArgs;
+using t.lib.Game;
 using t.lib.Server;
 using Xunit;
 
@@ -45,7 +46,7 @@ namespace t.TestProject1
             byte[] byteArray = new byte[] { 4, 5, 6, 13, 0, 10 };
             Guid guid = Guid.Parse("6d88b7c1-5b8b-4068-b510-b4ff01309670");
             Player expectedPlayer = new Player(expectedPlayerName, guid);
-            GameSocketServer gameSocketServer = GameSocketFactory();
+            var gameSocketServer = GameSocketFactory();
             var gameActionProtocol = gameSocketServer.GameActionProtocolFactory(Constants.NewPlayer, expectedPlayer, number: expectedRequiredPlayer);
 
             Player player = gameSocketServer.GetPlayer(gameActionProtocol);
@@ -105,9 +106,10 @@ namespace t.TestProject1
             Assert.Equal(player.PlayerId, player.PlayerId);
         }
 
-        private static GameSocketServer GameSocketFactory()
+        private static GameActionServerProtocol GameSocketFactory()
         {
-            return new GameSocketServer(new AppConfig() { TotalPoints = 10, RequiredAmountOfPlayers = 2 }, "", 0, new Mock<ILogger>().Object);
+            return new GameActionServerProtocol(new lib.Messaging.EventAggregator(), Guid.Empty, null, null);
+            //return new GameSocketServer(new AppConfig() { TotalPoints = 10, RequiredAmountOfPlayers = 2 }, "", 0, new Mock<ILogger>().Object);
         }
     }
 }

@@ -258,7 +258,19 @@ namespace t.lib.Server
             }
             
         }
-
+        protected override async Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj)
+        {
+            foreach (var connectionState in _playerConnections.Values)
+            {
+                _logger.LogDebug("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase));
+                await SendAsync(connectionState, gameActionProtocol);
+            }
+            //process events which occoured during broadcasting
+            while (_EventQueue.Count != 0)
+            {
+                await _EventQueue.Dequeue().Invoke();
+            }
+        }
         private void StopListening()
         {
             try
@@ -280,19 +292,6 @@ namespace t.lib.Server
         {
             StopListening();
             return Task.CompletedTask;
-        }
-        protected override async Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj)
-        {
-            foreach (var connectionState in _playerConnections.Values)
-            {
-                _logger.LogDebug("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase));
-                await SendAsync(connectionState, gameActionProtocol);
-            }
-            //process events which occoured during broadcasting
-            while (_EventQueue.Count != 0)
-            {
-                await _EventQueue.Dequeue().Invoke();
-            }
         }
     }
 }

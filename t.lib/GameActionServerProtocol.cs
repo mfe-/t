@@ -16,13 +16,22 @@ namespace t.lib
     {
         protected Dictionary<byte, Func<GameActionProtocol, GameActionProtocol, GameActionProtocol, object?, Task>> ActionOnMessageReceivedDictionary = new();
         private readonly ILogger _logger;
+        private readonly Func<Task<PlayerJoinedEventArgs>> _playerJoinedfunc;
         private readonly EventAggregator _eventAggregator;
+        private readonly Guid guid;
+
         internal Player? Player { get; private set; }
-        public GameActionServerProtocol(EventAggregator eventAggregator, Dictionary<byte, Func<GameActionProtocol, GameActionProtocol, GameActionProtocol, object?, Task>> actionOnMessageReceivedDictionary, Guid guid, ILogger logger) : base(guid)
+        public GameActionServerProtocol(EventAggregator eventAggregator, Guid guid, ILogger logger, Func<Task<PlayerJoinedEventArgs>> playerJoinedfunc) : base(guid)
         {
+
+            //http://www.albahari.com/threading/part4.aspx#_Wait_and_Pulse
+            //queue thread bauen der in while loop schaut ob es ein item (publish) gibt, wenn ja spezifische methode ausführen z.b -> Game.PlayerJoined() -> löst event aus -> selber publish ausführen und auf queue legen die von externen threads gelesen wird
+            //2ter thread (worker?) schaut ob es auf externe queue was gibt und führt dann je nach dem ein 
+            //possible impementation https://docs.microsoft.com/en-us/dotnet/standard/collections/thread-safe/blockingcollection-overview?redirectedfrom=MSDN
             _logger = logger;
+            _playerJoinedfunc = playerJoinedfunc;
             _eventAggregator = eventAggregator;
-            ActionOnMessageReceivedDictionary = actionOnMessageReceivedDictionary;
+            this.guid = guid;
             ActionOnMessageReceivedDictionary.Add(Constants.RegisterPlayer, OnRegisterPlayerAsync);
             ActionOnMessageReceivedDictionary.Add(Constants.PlayerReported, OnPlayerReportedAsync);
             ActionOnMessageReceivedDictionary.Add(Constants.Ok, OnOkAsync);
@@ -63,9 +72,6 @@ namespace t.lib
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             Task.Run(() => _eventAggregator.PublishAsync(new PlayerRegisterEventArgs(Player)));
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-
-            //wait until new player event releases the wait operation
-            await TaskCompletionWaitPlayer.Task;
         }
         public Task<GameActionProtocol> ByteToProtocolTypeAsync(Span<byte> buffer, int receivedBytes)
         {
@@ -77,15 +83,19 @@ namespace t.lib
             return new GameActionProtocol() { Payload = new byte[0], PayloadSize = 0 };
         }
 
-        public Task<GameActionProtocol> GenerateMessageAsync(GameActionProtocol protocolTypeReceived, GameActionProtocol lastProtocolTypeReceived, object? obj)
+        public async Task<GameActionProtocol> GenerateMessageAsync(GameActionProtocol protocolTypeReceived, GameActionProtocol lastProtocolTypeReceived, object? obj)
         {
             GameActionProtocol protocol = DefaultFactory();
+
             if (protocolTypeReceived.Phase == Constants.RegisterPlayer)
             {
-                protocol = GameActionProtocolFactory(Constants.WaitingPlayer);
+                //wait until new player event releases the wait operation
+                var playerJoined = await _playerJoinedfunc.Invoke();
+
+                GameActionProtocolFactory(Constants.NewPlayer, playerJoined.JoinedPlayer, number: playerJoined.RequiredAmountOfPlayers);
             }
             _logger.LogTrace($"Created {nameof(GameActionProtocol)} with {nameof(GameActionProtocol.Phase)}={{Phase}}", protocol.Phase);
-            return Task.FromResult(protocolTypeReceived);
+            return protocolTypeReceived;
         }
 
         public async Task OnMessageReceivedAsync(GameActionProtocol protocolTypeReceived, GameActionProtocol lastProtocolTypeReceived, GameActionProtocol gameActionProtocolLastSent, object? obj)

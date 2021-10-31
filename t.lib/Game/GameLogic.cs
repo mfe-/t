@@ -255,7 +255,7 @@ namespace t.lib.Game
         }
         public IEnumerable<Player> GetPlayerStats()
         {
-            return Players.OrderBy(a => a.Points);
+            return Players.OrderByDescending(a => a.Points);
         }
     }
 }

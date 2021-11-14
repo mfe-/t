@@ -129,7 +129,7 @@ namespace t.lib.Server
         private CancellationTokenSource? cancellationTokenSource;
         // Thread signal.  
         protected readonly ManualResetEvent allDone = new ManualResetEvent(false);
-        private void Listening(IPEndPoint localEndPoint, Socket listener)
+        private async void Listening(IPEndPoint localEndPoint, Socket listener)
         {
             _logger.LogInformation($"{nameof(Listening)} on {localEndPoint.Address}:{ServerPort}", localEndPoint.Address, ServerPort);
             _logger.LogInformation("ServerId {ServerId} generated", _guid);
@@ -140,7 +140,7 @@ namespace t.lib.Server
                 try
                 {
                     listener.Bind(localEndPoint);
-                    listener.Listen(10);
+                    listener.Listen(RequiredAmountOfPlayers + 2);
 
                     Game.NewGame(RequiredAmountOfPlayers);
 
@@ -150,16 +150,29 @@ namespace t.lib.Server
                     {
                         if (cancellationTokenSource != null && cancellationTokenSource.IsCancellationRequested)
                             break;
-                        // Set the event to nonsignaled state.  
-                        allDone.Reset();
+                        var connection = await listener.AcceptAsync();
 
-                        // Start an asynchronous socket to listen for connections.
-                        listener.BeginAccept(new AsyncCallback(AcceptClientConnection), listener);
-
-                        // Wait until a connection is made before continuing.  
-                        allDone.WaitOne();
+                        _ = Task.Run(async () =>
+                        {
+                            var buffer = new byte[4096];
+                            try
+                            {
+                                while (true)
+                                {
+                                    int read = await connection.ReceiveAsync(buffer, SocketFlags.None);
+                                    if (read == 0)
+                                    {
+                                        break;
+                                    }
+                                    await connection.SendAsync(buffer[..read], SocketFlags.None);
+                                }
+                            }
+                            finally
+                            {
+                                connection.Dispose();
+                            }
+                        });
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -169,108 +182,12 @@ namespace t.lib.Server
             cancellationTokenSource = null;
         }
 
-        private void AcceptClientConnection(IAsyncResult ar)
+
+        protected override Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
-            // Signal the main thread to continue.  
-            allDone.Set();
-
-            // Get the socket that handles the client request.  
-            if (ar.AsyncState is ISocket socket)
-            {
-                ISocket listener = socket;
-                ISocket handler = listener.EndAccept(ar);
-
-                // Create the state object.  
-                ConnectionState state = new ConnectionState(handler);
-                handler.BeginReceive(state.Buffer, 0, ConnectionState.BufferSize, 0, new AsyncCallback(ReadResult), state);
-            }
+            throw new NotImplementedException();
         }
 
-        private async void ReadResult(IAsyncResult ar)
-        {
-            try
-            {
-                // Retrieve the state object and the handler socket  
-                // from the asynchronous state object.  
-                if (ar.AsyncState is ConnectionState connectionState)
-                {
-                    ConnectionState state = connectionState;
-                    ISocket handler = state.SocketClient;
-
-                    // Read data from the client socket.
-                    int bytesRead = handler.EndReceive(ar);
-
-                    if (bytesRead > 0)
-                    {
-                        _logger.LogTrace("Received {0} bytes.", bytesRead);
-
-                        GameActionProtocol gameActionProtocol = state.Buffer.AsSpan().Slice(0, bytesRead).ToArray().ToGameActionProtocol(bytesRead);
-                        if (gameActionProtocol.Phase == Constants.RegisterPlayer && !_playerConnections.ContainsKey(gameActionProtocol.PlayerId))
-                        {
-                            connectionState.Player = GetPlayer(gameActionProtocol);
-                            var addResult = _playerConnections.TryAdd(gameActionProtocol.PlayerId, connectionState);
-                            _logger.LogInformation("Client {connectionWithPlayerId} {PlayerName} connected and added to Clientlist={addResult}", gameActionProtocol.PlayerId, connectionState.Player?.Name ?? "", addResult);
-                        }
-
-                        await OnMessageReceiveAsync(gameActionProtocol, null);
-
-                        //Task.Factory.StartNew(() => OnMessageReceive(gameActionProtocol), TaskCreationOptions.DenyChildAttach);
-                    }
-                }
-                else
-                {
-                    _logger.LogInformation("Received something unknown");
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogCritical(e, nameof(ReadResult));
-            }
-
-        }
-        protected async Task SendAsync(ConnectionState connectionState, GameActionProtocol gameActionProtocol)
-        {
-            try
-            {
-                connectionState.LastPayload = gameActionProtocol;
-                // Convert the data to byte data
-                byte[] byteData = gameActionProtocol.ToByteArray();
-
-                // Begin sending the data to the remote device.  
-                await connectionState.SocketClient.SendAsync(new ArraySegment<byte>(byteData), SocketFlags.None);
-                //connectionState.SocketClient.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), connectionState);
-
-                //connectionState.SocketClient.EndSend(ar);
-                connectionState.Buffer = new byte[ConnectionState.BufferSize];
-                int bytesSent = connectionState.SocketClient.Receive(connectionState.Buffer);
-                gameActionProtocol = connectionState.Buffer.AsSpan().Slice(0, bytesSent).ToArray().ToGameActionProtocol(bytesSent);
-                await OnMessageReceiveAsync(gameActionProtocol, null);
-            }
-            catch (SocketException e)
-            {
-                //System.Net.Sockets.SocketException: 'An existing connection was forcibly closed by the remote host.'
-                //client ist tot
-                _logger.LogError(e, nameof(SendAsync));
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, nameof(SendAsync));
-            }
-            
-        }
-        protected override async Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj)
-        {
-            foreach (var connectionState in _playerConnections.Values)
-            {
-                _logger.LogDebug("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase));
-                await SendAsync(connectionState, gameActionProtocol);
-            }
-            //process events which occoured during broadcasting
-            while (_EventQueue.Count != 0)
-            {
-                await _EventQueue.Dequeue().Invoke();
-            }
-        }
         private void StopListening()
         {
             try

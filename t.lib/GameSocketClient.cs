@@ -25,6 +25,7 @@ namespace t.lib
             ActionDictionary.Add(Constants.NextRound, OnNextRoundAsync);
             ActionDictionary.Add(Constants.PlayerScored, OnPlayerScoredAsync);
             ActionDictionary.Add(Constants.PlayerWon, OnPlayerWonAsync);
+            ActionDictionary.Add(Constants.StartGame, OnStartAsync);
         }
 
         protected virtual ISocket? SenderSocket => _senderSocket;
@@ -45,6 +46,12 @@ namespace t.lib
                 _logger.LogInformation($"Adding {(_guid != player.PlayerId ? "new" : "")} PlayerId {{PlayerId)}} {{Name}}", player.PlayerId, player.Name);
                 Game.RegisterPlayer(player);
             }
+            return Task.CompletedTask;
+        }
+        private Task OnStartAsync(GameActionProtocol gameActionProtocol, object? obj)
+        {
+            int totalPoints = GetTotalPoints(gameActionProtocol);
+            Game.Start(totalPoints);
             return Task.CompletedTask;
         }
 

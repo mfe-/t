@@ -14,10 +14,11 @@ namespace t.lib
         /// <summary>
         /// player scored (can occour multiple times for each player)
         /// </summary>
-        public static readonly byte PlayerScored =   0b001001;
         public static readonly byte NextRound =      0b001000;
+        public static readonly byte PlayerScored =   0b001001;
         public static readonly byte PlayerWon =      0b001010;
         public static readonly byte ErrorOccoured =  0b111111;
+        public static readonly byte WaitingPlayers = 0b001011;
 
         public static string ToString(byte phase)
         {
@@ -34,6 +35,8 @@ namespace t.lib
                 ,{ Constants.NextRound,nameof(Constants.NextRound) }
                 ,{ Constants.PlayerWon,nameof(Constants.PlayerWon) }
                 ,{ Constants.ErrorOccoured,nameof(Constants.ErrorOccoured) }
+                ,{ Constants.WaitingPlayers,nameof(Constants.WaitingPlayers) }
+
             };
             if (keyValuePairs.ContainsKey(phase)) return keyValuePairs[phase];
             return phase.ToString();

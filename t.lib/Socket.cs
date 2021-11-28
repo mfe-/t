@@ -29,7 +29,7 @@ namespace t.lib
         public void Dispose() => _socket.Dispose();
         /// <inheritdoc />
         public int Receive(byte[] buffer) => _socket.Receive(buffer);
-
+        /// <inheritdoc />
         public Task<int> ReceiveAsync(byte[] buffers, SocketFlags socketFlags) => _socket.ReceiveAsync(buffers, socketFlags);
 
         /// <inheritdoc />

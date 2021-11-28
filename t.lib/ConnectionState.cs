@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Sockets;
 using t.lib.Game;
@@ -11,6 +12,7 @@ namespace t.lib.Server
         public ConnectionState(ISocket socket)
         {
             SocketClient = socket;
+            MessageQueue = new Queue<GameActionProtocol>();
         }
         // Size of receive buffer.  
         public const int BufferSize = 1024;
@@ -30,5 +32,6 @@ namespace t.lib.Server
         internal Player? Player;
         public DateTime LastModified { get; private set; }
         public GameActionProtocol LastPayload { get; internal set; }
-}
+        internal Queue<GameActionProtocol> MessageQueue { get; set; }
+    }
 }

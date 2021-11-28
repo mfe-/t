@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using t.lib.EventArgs;
 using t.lib.Game;
@@ -25,24 +26,19 @@ namespace t.lib
             ActionDictionary.Add(Constants.Ok, OnOkAsync);
             ActionDictionary.Add(Constants.ErrorOccoured, OnProtocolErrorAsync);
             ActionDictionary.Add(Constants.RegisterPlayer, OnPlayerRegisterAsync);
-            ActionDictionary.Add(Constants.StartGame, OnStartAsync);
         }
         protected virtual GameLogic Game => _game;
         protected virtual Task OnPlayerRegisterAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             if (gameActionProtocol.Phase != Constants.RegisterPlayer) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(Constants.RegisterPlayer)}");
-
-            Player player = GetPlayer(gameActionProtocol);
-            if (!Game.Players.Any(a => a.PlayerId == player.PlayerId))
+            lock (Game)
             {
-                Game.RegisterPlayer(player);
+                Player player = GetPlayer(gameActionProtocol);
+                if (!Game.Players.Any(a => a.PlayerId == player.PlayerId))
+                {
+                    Game.RegisterPlayer(player);
+                }
             }
-            return Task.CompletedTask;
-        }
-        protected virtual Task OnStartAsync(GameActionProtocol gameActionProtocol, object? obj)
-        {
-            int totalPoints = GetTotalPoints(gameActionProtocol);
-            Game.Start(totalPoints);
             return Task.CompletedTask;
         }
         protected virtual Task OnOkAsync(GameActionProtocol gameActionProtocol, object? obj) => Task.CompletedTask;
@@ -146,6 +142,10 @@ namespace t.lib
                 var playerid = player.PlayerId.ToByteArray();
                 gameActionProtocol.Payload = playerid;
                 gameActionProtocol.PayloadSize = (byte)gameActionProtocol.Payload.Length;
+            }
+            else if (gameActionProtocol.Phase == Constants.WaitingPlayers)
+            {
+                gameActionProtocol.Payload = new byte[0];
             }
             return gameActionProtocol;
         }

@@ -299,7 +299,7 @@ namespace t.lib.Server
                             }
 
                             //make sure Game.NextRound ist not called multiple times
-                            if (connectionState.Player?.PlayerId == _FirstPlayerJoined)
+                            if (connectionState.Player?.PlayerId == _FirstPlayerJoined && AllQueueEmpty())
                             {
                                 //finally tell every player which cards they took
                                 foreach (var gameAction in gameActions)
@@ -358,8 +358,8 @@ namespace t.lib.Server
                 {
                     if (_playerConnections.TryGetValue(key, out var connectionState))
                     {
-                        _logger.LogDebug("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase));
                         connectionState.MessageQueue.Enqueue(gameActionProtocol);
+                        _logger.LogDebug("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase} QueueSize={size}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase), connectionState.MessageQueue.Count);
                         tryGetValue = true;
                     }
                     else

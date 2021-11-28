@@ -17,7 +17,7 @@ namespace t.lib.Server
     {
         private readonly int RequiredAmountOfPlayers;
         private readonly int? TotalPoints;
-        private int GamesToPlay;
+        private int GameRound;
         private int GamesPlayed = 0;
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger) : base(logger)
         {
@@ -28,7 +28,7 @@ namespace t.lib.Server
             ActionDictionary.Add(Constants.PlayerReported, OnPlayerReportedAsync);
             RequiredAmountOfPlayers = appConfig.RequiredAmountOfPlayers;
             TotalPoints = appConfig.TotalPoints;
-            GamesToPlay = appConfig.GamesToPlay;
+            GameRound = appConfig.GamesToPlay;
             ServerPort = serverPort;
             ServerIpAdress = serverIpAdress;
             _guid = Guid.NewGuid();
@@ -116,7 +116,7 @@ namespace t.lib.Server
                     listener.Bind(localEndPoint);
                     listener.Listen(RequiredAmountOfPlayers + 2);
 
-                    Game.NewGame(RequiredAmountOfPlayers, GamesToPlay);
+                    Game.NewGame(RequiredAmountOfPlayers, GameRound);
 
                     _logger.LogInformation("Waiting for a connection...");
                     // Start listening for connections.  
@@ -301,9 +301,9 @@ namespace t.lib.Server
         }
         private async Task QueueStartGameAndNextRoundAsync()
         {
-            if (GamesPlayed != GamesToPlay)
+            if (GamesPlayed != GameRound)
             {
-                var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints ?? 0, number2: GamesToPlay);
+                var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints ?? 0, number2: GameRound);
                 //start new game
                 await OnStartAsync(gameActionProtocol);
                 await BroadcastMessageAsync(gameActionProtocol, null);

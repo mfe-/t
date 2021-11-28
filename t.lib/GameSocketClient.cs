@@ -15,6 +15,7 @@ namespace t.lib
         private readonly IPAddress serverIpAdress;
         private readonly int serverPort;
         private int? totalGameRounds;
+        private int GameRound;
         private Socket? _senderSocket;
         internal Player? _player;
 
@@ -71,9 +72,11 @@ namespace t.lib
             if (totalGameRounds == null)
             {
                 totalGameRounds = values.totalgameRounds;
+                Game.SetTotalRoundsToPlay(totalGameRounds.Value);
             }
 
             Game.Start(totalPoints: values.totalpoints);
+            GameRound++;
             return Task.CompletedTask;
         }
 

@@ -10,7 +10,7 @@ namespace t.lib.Game
     public class GameLogic
     {
         private int? TotalPointsToPlay;
-        private int? TotalRoundsToPlay;
+        private int? TotalGameRounds;
         public const int CardCapacity = 10;
         private const string InitializeAndStartNewGameMessage = $"Start a new Game with {nameof(NewGame)} and {nameof(Start)}";
         private readonly Random random;
@@ -48,6 +48,10 @@ namespace t.lib.Game
         /// the current round of the game
         /// </summary>
         public int Round { get; private set; }
+        /// <summary>
+        /// the current game round of the game
+        /// </summary>
+        public int GameRound { get; private set; }
         /// <summary>
         /// Counter for skiping previous game rounds
         /// </summary>
@@ -127,17 +131,24 @@ namespace t.lib.Game
             if (requiredAmountOfPlayers < 1) throw new ArgumentException("At least two players are required to play the game!");
             if (totalGames != null)
             {
-                TotalRoundsToPlay = totalGames * CardCapacity;
+                SetTotalRoundsToPlay(totalGames.Value);
             }
             RequiredAmountOfPlayers = requiredAmountOfPlayers;
             SkipRounds = -CardCapacity;
             Round = 0;
+            GameRound = 0;
             CurrentCard = null;
             Players.Clear();
             PlayerCards.Clear();
             gameActions.Clear();
             MixCards();
         }
+
+        public void SetTotalRoundsToPlay(int totalGames)
+        {
+            TotalGameRounds = totalGames * CardCapacity;
+        }
+
         /// <summary>
         /// Starts the game
         /// </summary>
@@ -145,10 +156,6 @@ namespace t.lib.Game
         /// <returns>amount of "games" (one game=10 rounds) to play without the current one. If <see cref="NewGame(int, int?)"></see> was called without totalGames this function returns null </returns>
         public int? Start(int? totalPoints = null)
         {
-            if (TotalRoundsToPlay != null)
-            {
-                TotalRoundsToPlay -= CardCapacity;
-            }
             SkipRounds += CardCapacity;
             Round = 0;
             foreach (var player in Players)
@@ -161,9 +168,9 @@ namespace t.lib.Game
             }
             OnStartEvent(System.EventArgs.Empty);
             NextRound();
-            if (TotalRoundsToPlay != null)
+            if (TotalGameRounds != null)
             {
-                return (int)(TotalRoundsToPlay / CardCapacity);
+                return (int)(TotalGameRounds / CardCapacity);
             }
             return null;
         }
@@ -182,6 +189,7 @@ namespace t.lib.Game
             if (nextRound)
             {
                 Round++;
+                GameRound++;
                 CurrentCard = Cards[Round - 1];
                 OnNextRoundEvent(new NextRoundEventArgs(Round, CurrentCard));
             }
@@ -199,7 +207,7 @@ namespace t.lib.Game
                     return true;
                 }
             }
-            if (Round == CardCapacity && TotalRoundsToPlay == 0)
+            if (Round == CardCapacity && TotalGameRounds == GameRound)
             {
                 var winners = GetPlayerStats().DistinctBy(a => a.Points);
                 if (winners.Any())

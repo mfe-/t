@@ -59,7 +59,7 @@ namespace t.lib.Game
         /// <exception cref="InvalidOperationException"></exception>
         public virtual void RegisterPlayer(Player player)
         {
-            if (player == null) throw new ArgumentNullException();
+            if (player == null) throw new ArgumentNullException(nameof(player));
             if (Cards.Count == 0) throw new InvalidOperationException(InitializeAndStartNewGameMessage);
             if (Players.Count == CardCapacity) throw new InvalidOperationException($"Game only designed for {CardCapacity} players");
             Players.Add(player);
@@ -163,7 +163,7 @@ namespace t.lib.Game
             }
             return false;
         }
-        private record OfferedDuplicates(int Offered, IEnumerable<GameAction> GameActions);
+        private sealed record OfferedDuplicates(int Offered, IEnumerable<GameAction> GameActions);
         internal virtual bool CalculateAndAssignPointsOfPreviousRound()
         {
             if (CurrentCard == null) throw new InvalidOperationException(InitializeAndStartNewGameMessage);
@@ -181,11 +181,11 @@ namespace t.lib.Game
                 {
                     finishedRound = false;
                     //loop through playerActions and take the next highest card
-                    foreach (var roundAction in currentRoundAction.Where(a => a.Offered != maxOffered).OrderByDescending(a => a.Offered))
+                    foreach (var offered in currentRoundAction.Where(a => a.Offered != maxOffered).OrderByDescending(a => a.Offered).Select(a=>a.Offered))
                     {
-                        if (!offeredDuplicates.Any(a => a.Offered == roundAction.Offered))
+                        if (!offeredDuplicates.Any(a => a.Offered == offered))
                         {
-                            maxOffered = roundAction.Offered;
+                            maxOffered = offered;
                             finishedRound = true;
                             break;
                         }
@@ -199,11 +199,11 @@ namespace t.lib.Game
                 var winner = maxOfferbyPlayers.First();
                 //check if previous round was not finished (pair game)
                 int previousCardPoints = 0;
-                if (gameActions.Where(a => a.Round != Round).Any(a => a.RoundFinished == false))
+                if (gameActions.Where(a => a.Round != Round).Any(a => !a.RoundFinished))
                 {
                     //get previous rounds
                     var previousGameActions = gameActions
-                        .Where(a => a.RoundFinished == false)
+                        .Where(a => !a.RoundFinished)
                             .Where(a => a.Round != Round);
 
                     previousCardPoints = previousGameActions.Select(a => a.ForCard.Value).Distinct().Sum();

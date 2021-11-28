@@ -75,7 +75,7 @@ namespace t.lib
             gameActionProtocol.Version = Constants.Version;
             gameActionProtocol.PlayerId = _guid;
             gameActionProtocol.Phase = phase;
-            if (gameActionProtocol.Phase == Constants.NewPlayer)
+            if (gameActionProtocol.Phase == Constants.NewPlayer || gameActionProtocol.Phase == Constants.KickedPlayer)
             {
                 gameActionProtocol = GameActionProtocolNewPlayer(player, number, ref gameActionProtocol);
             }
@@ -215,7 +215,7 @@ namespace t.lib
         }
         public virtual Player GetPlayer(GameActionProtocol gameActionProtocol)
         {
-            if (gameActionProtocol.Phase == Constants.NewPlayer) return GetNewPlayer(ref gameActionProtocol);
+            if (gameActionProtocol.Phase == Constants.NewPlayer || gameActionProtocol.Phase == Constants.KickedPlayer) return GetNewPlayer(ref gameActionProtocol);
             if (gameActionProtocol.Phase == Constants.RegisterPlayer) return GetRegisterePlayer(ref gameActionProtocol);
             if (gameActionProtocol.Phase == Constants.PlayerScored)
             {
@@ -235,7 +235,7 @@ namespace t.lib
         /// <returns></returns>
         protected virtual Player GetNewPlayer(ref GameActionProtocol gameActionProtocol)
         {
-            if (gameActionProtocol.Phase != Constants.NewPlayer) throw new ArgumentException($"{nameof(Constants.NewPlayer)} required for argument {nameof(gameActionProtocol.Phase)}");
+            if (!(gameActionProtocol.Phase == Constants.NewPlayer || gameActionProtocol.Phase == Constants.KickedPlayer)) throw new ArgumentException($"{nameof(Constants.NewPlayer)} required for argument {nameof(gameActionProtocol.Phase)}");
             var span = gameActionProtocol.Payload.AsSpan();
 
             Guid playerId = new Guid(span.Slice(0, Marshal.SizeOf<Guid>()));

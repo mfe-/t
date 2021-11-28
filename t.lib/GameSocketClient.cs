@@ -21,11 +21,26 @@ namespace t.lib
         {
             this.serverIpAdress = serverIpAdress;
             this.serverPort = serverPort;
+            ActionDictionary.Add(Constants.KickedPlayer, OnPlayerKickedAsync);
             ActionDictionary.Add(Constants.NewPlayer, OnNewPlayerAsync);
             ActionDictionary.Add(Constants.NextRound, OnNextRoundAsync);
             ActionDictionary.Add(Constants.PlayerScored, OnPlayerScoredAsync);
             ActionDictionary.Add(Constants.PlayerWon, OnPlayerWonAsync);
             ActionDictionary.Add(Constants.StartGame, OnStartAsync);
+        }
+
+        private Task OnPlayerKickedAsync(GameActionProtocol gameActionProtocol, object? arg2)
+        {
+            Player player = GetPlayer(gameActionProtocol);
+            _logger.LogInformation("Player {player} was kicked or left the game", player.Name);
+
+            var removePlayer = Game.Players.FirstOrDefault(a => a.PlayerId == player.PlayerId);
+            if (removePlayer != null)
+            {
+                Game.Players.Remove(removePlayer);
+            }
+
+            return Task.CompletedTask;
         }
 
         protected virtual ISocket? SenderSocket => _senderSocket;
@@ -152,7 +167,6 @@ namespace t.lib
                     await OnMessageReceiveAsync(gameActionProtocolRec, messageReceiveArgs);
                     gameActionProtocolSend = GameActionProtocolFactory(Constants.Ok);
                     sendPayLoad = gameActionProtocolSend.ToByteArray();
-
                     if (gameActionProtocolRec.Phase == Constants.NextRound)
                     {
                         //get picked card

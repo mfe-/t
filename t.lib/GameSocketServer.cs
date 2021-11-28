@@ -27,9 +27,6 @@ namespace t.lib.Server
             TotalPoints = appConfig.TotalPoints;
             ServerPort = serverPort;
             ServerIpAdress = serverIpAdress;
-            //Game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
-
-            //Game.PlayerWonEvent += Game_EndPlayerWonEvent;
             _guid = Guid.NewGuid();
         }
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger, Guid guid)
@@ -37,27 +34,11 @@ namespace t.lib.Server
         {
             _guid = guid;
         }
-        private volatile bool _GameStarted = false;
-        SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
-        private async Task OnStartAsync(GameActionProtocol gameActionProtocol, object? obj)
+        private Task OnStartAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
-            await semaphoreSlim.WaitAsync();
-            if (_GameStarted == false)
-            {
-                _GameStarted = true;
-                int totalPoints = GetTotalPoints(gameActionProtocol);
-                Game.Start(totalPoints);
-            }
-            semaphoreSlim.Release();
-        }
-        private void Game_EndPlayerWonEvent(object? sender, EventArgs<IEnumerable<Player>> e)
-        {
-            Task GenerateGameEndWinner()
-            {
-                var gameActionProtocol = GameActionProtocolFactory(Constants.PlayerWon, e.Data.First());
-                return BroadcastMessageAsync(gameActionProtocol, null);
-            }
-            //_EventQueue.Enqueue(GenerateGameEndWinner);
+            int totalPoints = GetTotalPoints(gameActionProtocol);
+            Game.Start(totalPoints);
+            return Task.CompletedTask;
         }
         protected virtual Task OnPlayerReportedAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
@@ -68,23 +49,7 @@ namespace t.lib.Server
                 var player = Game.Players.First(a => a.PlayerId == gameActionProtocol.PlayerId);
                 Game.PlayerReport(player, pickedCard);
             }
-            //if (!Game.GetRemainingPickCardPlayers().Any())
-            //{
-            //    //finally tell every player which cards they took
-            //    foreach (var gameAction in Game.gameActions.Where(a => a.Round == Game.Round).ToArray())
-            //    {
-            //        var gameActionPro = GameActionProtocolFactory(Constants.PlayerScored, player: gameAction.Player, number: gameAction.Offered);
-            //        await BroadcastMessageAsync(gameActionPro, null);
-            //    }
-            //    Game.NextRound();
-            //}
             return Task.CompletedTask;
-        }
-
-        private void Game_NewPlayerRegisteredEvent(object? sender, EventArgs<Player> e)
-        {
-            //make sure the event is not blocking any processing tcp event
-            Task.Factory.StartNew(OnNewPlayerAsync, TaskCreationOptions.DenyChildAttach);
         }
         private async Task OnNewPlayerAsync()
         {
@@ -134,8 +99,6 @@ namespace t.lib.Server
         }
 
         private CancellationTokenSource? cancellationTokenSource;
-        // Thread signal.  
-        protected readonly ManualResetEvent allDone = new ManualResetEvent(false);
         private async void Listening(IPEndPoint localEndPoint, Socket listener)
         {
             _logger.LogInformation($"{nameof(Listening)} on {localEndPoint.Address}:{ServerPort}", localEndPoint.Address, ServerPort);
@@ -218,6 +181,7 @@ namespace t.lib.Server
                         if (_FirstPlayerJoined == null)
                         {
                             _FirstPlayerJoined = connectionState.Player.PlayerId;
+                            _logger.LogDebug($"Set FirstPlayerJoined={_FirstPlayerJoined}", _FirstPlayerJoined);
                         }
                         if (connectionState.Player == null)
                         {
@@ -236,9 +200,9 @@ namespace t.lib.Server
                         gameActionProtocolSend = GameActionProtocolFactory(Constants.WaitingPlayers);
                         await Task.Delay(TimeSpan.FromSeconds(1));
 
-                        if (allPlayersAvailable && !_GameStarted && AllQueueEmpty())
+                        if (allPlayersAvailable && AllQueueEmpty())
                         {
-                            if (!_GameStarted)
+
                             {
                                 //start game all required players are here
                                 if (connectionState.Player?.PlayerId == _FirstPlayerJoined)
@@ -270,10 +234,7 @@ namespace t.lib.Server
                 {
                     int bytesRead = await connectionState.SocketClient.ReceiveAsync(connectionState.Buffer, SocketFlags.None);
                     _logger.LogTrace("Received {0} bytes.", bytesRead);
-                    if (bytesRead == 0)
-                    {
-                        break;
-                    }
+                    if (bytesRead == 0) break;
                     gameActionProtocolRec = connectionState.Buffer.AsSpan().Slice(0, bytesRead).ToArray().ToGameActionProtocol(bytesRead);
 
                     if (gameActionProtocolRec.Phase == Constants.PlayerReported
@@ -286,7 +247,7 @@ namespace t.lib.Server
                         {
                             waitingPlayers = Game.GetRemainingPickCardPlayers();
                         }
-                        if (waitingPlayers.Any() && AllQueueEmpty())
+                        if (waitingPlayers.Any())
                         {
                             gameActionProtocolSend = GameActionProtocolFactory(Constants.WaitingPlayers);
                         }
@@ -313,6 +274,10 @@ namespace t.lib.Server
                                     await BroadcastMessageAsync(CreateNextRoundGameActionProtocol(), null);
                                 }
                             }
+                            else
+                            {
+                                gameActionProtocolSend = GameActionProtocolFactory(Constants.WaitingPlayers);
+                            }
                         }
                     }
                     if (gameActionProtocolSend.Phase == Constants.WaitingPlayers)
@@ -333,6 +298,37 @@ namespace t.lib.Server
                 }
 
 
+            }
+            catch (SocketException se) when (se.SocketErrorCode == SocketError.ConnectionReset)
+            {
+                _logger.LogInformation("Player {playername}@{ip} {playerguid} left", connectionState.Player?.Name ?? "unknown", connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.PlayerId);
+                if (connectionState.Player == null)
+                {
+                    return;
+                }
+
+                //remove player from game
+                lock (Game)
+                {
+                    var player = Game.Players.First(a => a.PlayerId == connectionState.Player.PlayerId);
+                    Game.Players.Remove(player);
+                }
+
+                bool successful = _playerConnections.TryRemove(connectionState.Player.PlayerId, out ConnectionState? removedConnectionState);
+                if (!successful) throw new InvalidOperationException($"Could not remove player from {nameof(_playerConnections)}");
+                //if our "main" player left we need to look for a new one
+                if (connectionState.Player.PlayerId == _FirstPlayerJoined)
+                {
+                    _FirstPlayerJoined = _playerConnections.Keys.First();
+                }
+
+                //tell everyone that player left
+                var msg = GameActionProtocolFactory(Constants.KickedPlayer, player: connectionState.Player, number: RequiredAmountOfPlayers);
+                await BroadcastMessageAsync(msg, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("exception", ex);
             }
             finally
             {

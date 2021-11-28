@@ -53,7 +53,7 @@ namespace t.TestProject1
             int requiredPlayer = gameSocketServer.GetNumber(gameActionProtocol);
 
             Assert.Equal(expectedPlayer.PlayerId, player.PlayerId);
-            Assert.Equal(expectedPlayer.Name, player.Name);
+            Assert.Equal(expectedPlayer.Name.Replace(Environment.NewLine,String.Empty), player.Name);
             Assert.Equal(expectedRequiredPlayer, requiredPlayer);
         }
 

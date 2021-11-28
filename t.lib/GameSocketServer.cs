@@ -17,7 +17,7 @@ namespace t.lib.Server
     {
         private readonly int RequiredAmountOfPlayers;
         private readonly int TotalPoints;
-        private readonly Queue<Func<Task>> _EventQueue = new Queue<Func<Task>>();
+        private readonly Queue<GameActionProtocol> _EventQueue = new Queue<GameActionProtocol>();
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger) : base(logger)
         {
             if (appConfig.RequiredAmountOfPlayers < 1) throw new ArgumentException("At least two players are required to play the game!");
@@ -27,9 +27,6 @@ namespace t.lib.Server
             TotalPoints = appConfig.TotalPoints;
             ServerPort = serverPort;
             ServerIpAdress = serverIpAdress;
-            Game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
-            Game.NextRoundEvent += Game_NextRoundEvent;
-            Game.PlayerWonEvent += Game_EndPlayerWonEvent;
             _guid = Guid.NewGuid();
         }
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger, Guid guid)
@@ -37,61 +34,32 @@ namespace t.lib.Server
         {
             _guid = guid;
         }
-        private void Game_NextRoundEvent(object? sender, NextRoundEventArgs e)
+        private Task OnStartAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
-            Task GenerateNextRoundBroadcast()
-            {
-                var gameActionProtocol = GameActionProtocolFactory(Constants.NextRound, nextRoundEventArgs: e);
-                return BroadcastMessageAsync(gameActionProtocol, null);
-            }
-            _EventQueue.Enqueue(GenerateNextRoundBroadcast);
+            int totalPoints = GetTotalPoints(gameActionProtocol);
+            Game.Start(totalPoints);
+            return Task.CompletedTask;
         }
-        private void Game_EndPlayerWonEvent(object? sender, EventArgs<IEnumerable<Player>> e)
-        {
-            Task GenerateGameEndWinner()
-            {
-                var gameActionProtocol = GameActionProtocolFactory(Constants.PlayerWon, e.Data.First());
-                return BroadcastMessageAsync(gameActionProtocol, null);
-            }
-            _EventQueue.Enqueue(GenerateGameEndWinner);
-        }
-        protected virtual async Task OnPlayerReportedAsync(GameActionProtocol gameActionProtocol, object? obj)
+        protected virtual Task OnPlayerReportedAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             int pickedNumber = GetNumber(gameActionProtocol);
             Card pickedCard = new Card(pickedNumber);
-            var player = Game.Players.First(a => a.PlayerId == gameActionProtocol.PlayerId);
-            Game.PlayerReport(player, pickedCard);
-            if (!Game.GetRemainingPickCardPlayers().Any())
+            lock (Game)
             {
-                //finally tell every player which cards they took
-                foreach (var gameAction in Game.gameActions.Where(a => a.Round == Game.Round).ToArray())
-                {
-                    var gameActionPro = GameActionProtocolFactory(Constants.PlayerScored, player: gameAction.Player, number: gameAction.Offered);
-                    await BroadcastMessageAsync(gameActionPro, null);
-                }
-                Game.NextRound();
+                var player = Game.Players.First(a => a.PlayerId == gameActionProtocol.PlayerId);
+                Game.PlayerReport(player, pickedCard);
             }
-        }
-
-        private void Game_NewPlayerRegisteredEvent(object? sender, EventArgs<Player> e)
-        {
-            //make sure the event is not blocking any processing tcp event
-            Task.Factory.StartNew(OnNewPlayerAsync, TaskCreationOptions.DenyChildAttach);
+            return Task.CompletedTask;
         }
         private async Task OnNewPlayerAsync()
         {
             //broadcast the "new player and all existing players" to all other players
-            foreach (var player in Game.Players.ToArray())
+            Player[] players = Game.Players.ToArray();
+            foreach (var player in players)
             {
                 var protocol = GameActionProtocolFactory(Constants.NewPlayer, player, number: RequiredAmountOfPlayers);
                 _logger.LogTrace($"Created {nameof(GameActionProtocol)} with {nameof(GameActionProtocol.Phase)}={{Phase}} for Player {{player}} {{PlayerId}} ", protocol.Phase, player.Name, player.PlayerId);
                 await BroadcastMessageAsync(protocol, null);
-            }
-            if (Game.Players.Count == RequiredAmountOfPlayers)
-            {
-                var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
-                await OnStartAsync(gameActionProtocol, null);
-                await BroadcastMessageAsync(gameActionProtocol, null);
             }
         }
 
@@ -100,6 +68,10 @@ namespace t.lib.Server
 
         private ConcurrentDictionary<Guid, ConnectionState> _playerConnections = new ConcurrentDictionary<Guid, ConnectionState>();
 
+        public bool AllQueueEmpty()
+        {
+            return _playerConnections.Select(a => a.Value).All(a => a.MessageQueue.Count == 0);
+        }
         private async Task StartListeningAsync(CancellationToken cancellationToken)
         {
             // Establish the local endpoint for the socket.  
@@ -127,9 +99,7 @@ namespace t.lib.Server
         }
 
         private CancellationTokenSource? cancellationTokenSource;
-        // Thread signal.  
-        protected readonly ManualResetEvent allDone = new ManualResetEvent(false);
-        private void Listening(IPEndPoint localEndPoint, Socket listener)
+        private async void Listening(IPEndPoint localEndPoint, Socket listener)
         {
             _logger.LogInformation($"{nameof(Listening)} on {localEndPoint.Address}:{ServerPort}", localEndPoint.Address, ServerPort);
             _logger.LogInformation("ServerId {ServerId} generated", _guid);
@@ -140,7 +110,7 @@ namespace t.lib.Server
                 try
                 {
                     listener.Bind(localEndPoint);
-                    listener.Listen(10);
+                    listener.Listen(RequiredAmountOfPlayers + 2);
 
                     Game.NewGame(RequiredAmountOfPlayers);
 
@@ -150,16 +120,19 @@ namespace t.lib.Server
                     {
                         if (cancellationTokenSource != null && cancellationTokenSource.IsCancellationRequested)
                             break;
-                        // Set the event to nonsignaled state.  
-                        allDone.Reset();
-
-                        // Start an asynchronous socket to listen for connections.
-                        listener.BeginAccept(new AsyncCallback(AcceptClientConnection), listener);
-
-                        // Wait until a connection is made before continuing.  
-                        allDone.WaitOne();
+                        var connection = await listener.AcceptAsync();
+                        if (Game.Players.Count == RequiredAmountOfPlayers)
+                        {
+                            var errmsg = "Game started";
+                            var msg = GameActionProtocolFactory(Constants.ErrorOccoured, message: errmsg);
+                            await connection.SendAsync(msg.ToByteArray(), SocketFlags.None);
+                        }
+                        else
+                        {
+                            var connectionState = new ConnectionState(connection);
+                            _ = Task.Run(() => ClientHandler(connectionState));
+                        }
                     }
-
                 }
                 catch (Exception e)
                 {
@@ -168,109 +141,233 @@ namespace t.lib.Server
             }
             cancellationTokenSource = null;
         }
+        /// <summary>
+        /// Guid of first player which joined the game
+        /// </summary>
+        /// <remarks>
+        /// To avoid calling <see cref="GameLogic.NextRound()"/> multiple times only the first player is allowed to do so
+        /// </remarks>
+        private Guid? _FirstPlayerJoined = null;
 
-        private void AcceptClientConnection(IAsyncResult ar)
-        {
-            // Signal the main thread to continue.  
-            allDone.Set();
-
-            // Get the socket that handles the client request.  
-            if (ar.AsyncState is ISocket socket)
-            {
-                ISocket listener = socket;
-                ISocket handler = listener.EndAccept(ar);
-
-                // Create the state object.  
-                ConnectionState state = new ConnectionState(handler);
-                handler.BeginReceive(state.Buffer, 0, ConnectionState.BufferSize, 0, new AsyncCallback(ReadResult), state);
-            }
-        }
-
-        private async void ReadResult(IAsyncResult ar)
+        private async Task ClientHandler(ConnectionState connectionState)
         {
             try
             {
-                // Retrieve the state object and the handler socket  
-                // from the asynchronous state object.  
-                if (ar.AsyncState is ConnectionState connectionState)
+                GameActionProtocol gameActionProtocolRec = new GameActionProtocol();
+                gameActionProtocolRec.Phase = Constants.Ok;
+                GameActionProtocol gameActionProtocolSend = new GameActionProtocol();
+                gameActionProtocolSend.Phase = Constants.Ok;
+                byte[] bytes;
+                bool allPlayersAvailable = false;
+                while (gameActionProtocolSend.Phase != Constants.NextRound)
                 {
-                    ConnectionState state = connectionState;
-                    ISocket handler = state.SocketClient;
-
-                    // Read data from the client socket.
-                    int bytesRead = handler.EndReceive(ar);
-
-                    if (bytesRead > 0)
+                    int bytesRead = await connectionState.SocketClient.ReceiveAsync(connectionState.Buffer, SocketFlags.None);
+                    _logger.LogTrace("Received {0} bytes.", bytesRead);
+                    if (bytesRead == 0)
                     {
-                        _logger.LogTrace("Received {0} bytes.", bytesRead);
+                        break;
+                    }
+                    gameActionProtocolRec = connectionState.Buffer.AsSpan().Slice(0, bytesRead).ToArray().ToGameActionProtocol(bytesRead);
 
-                        GameActionProtocol gameActionProtocol = state.Buffer.AsSpan().Slice(0, bytesRead).ToArray().ToGameActionProtocol(bytesRead);
-                        if (gameActionProtocol.Phase == Constants.RegisterPlayer && !_playerConnections.ContainsKey(gameActionProtocol.PlayerId))
+                    lock (Game)
+                    {
+                        allPlayersAvailable = Game.Players.Count == RequiredAmountOfPlayers;
+                    }
+
+                    if (gameActionProtocolRec.Phase == Constants.RegisterPlayer && !_playerConnections.ContainsKey(gameActionProtocolRec.PlayerId))
+                    {
+                        var player = GetPlayer(gameActionProtocolRec);
+                        connectionState.Player = player;
+                        if (_FirstPlayerJoined == null)
                         {
-                            connectionState.Player = GetPlayer(gameActionProtocol);
-                            var addResult = _playerConnections.TryAdd(gameActionProtocol.PlayerId, connectionState);
-                            _logger.LogInformation("Client {connectionWithPlayerId} {PlayerName} connected and added to Clientlist={addResult}", gameActionProtocol.PlayerId, connectionState.Player?.Name ?? "", addResult);
+                            _FirstPlayerJoined = connectionState.Player.PlayerId;
+                            _logger.LogDebug($"Set FirstPlayerJoined={_FirstPlayerJoined}", _FirstPlayerJoined);
                         }
+                        if (connectionState.Player == null)
+                        {
+                            throw new InvalidOperationException();
+                        }
+                        var addResult = _playerConnections.TryAdd(gameActionProtocolRec.PlayerId, connectionState);
+                        _logger.LogInformation("Client {connectionWithPlayerId} {PlayerName} connected and added to Clientlist={addResult}", gameActionProtocolRec.PlayerId, connectionState.Player?.Name ?? "", addResult);
 
-                        await OnMessageReceiveAsync(gameActionProtocol, null);
+                        //process message and execute proper game action
+                        await OnMessageReceiveAsync(gameActionProtocolRec, null);
+                        //broadcast all new players by adding the message to the queue
+                        await OnNewPlayerAsync();
+                    }
+                    else if (gameActionProtocolRec.Phase == Constants.Ok)
+                    {
+                        gameActionProtocolSend = GameActionProtocolFactory(Constants.WaitingPlayers);
+                        await Task.Delay(TimeSpan.FromSeconds(1));
 
-                        //Task.Factory.StartNew(() => OnMessageReceive(gameActionProtocol), TaskCreationOptions.DenyChildAttach);
+                        if (allPlayersAvailable && AllQueueEmpty())
+                        {
+
+                            {
+                                //start game all required players are here
+                                if (connectionState.Player?.PlayerId == _FirstPlayerJoined)
+                                {
+                                    var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints);
+                                    //start new game
+                                    await OnStartAsync(gameActionProtocol, null);
+                                    await BroadcastMessageAsync(gameActionProtocol, null);
+                                    //first "next round"
+                                    gameActionProtocol = CreateNextRoundGameActionProtocol();
+                                    await BroadcastMessageAsync(gameActionProtocol, null);
+                                }
+                            }
+                        }
+                    }
+                    //a messages awaits in the queue - send this message instead of the "regular" one
+                    if (connectionState.MessageQueue.Count != 0)
+                    {
+                        gameActionProtocolSend = connectionState.MessageQueue.Dequeue();
+                    }
+                    bytes = gameActionProtocolSend.ToByteArray();
+                    _logger.LogTrace("Send to {player}@{destination} Phase={Phase}", connectionState.Player?.Name ?? "unkown", connectionState.SocketClient.RemoteEndPoint, Constants.ToString(gameActionProtocolSend.Phase));
+                    await connectionState.SocketClient.SendAsync(bytes, SocketFlags.None);
+                    connectionState.LastPayload = gameActionProtocolRec;
+                }
+
+
+                while (gameActionProtocolSend.Phase != Constants.PlayerWon)
+                {
+                    int bytesRead = await connectionState.SocketClient.ReceiveAsync(connectionState.Buffer, SocketFlags.None);
+                    _logger.LogTrace("Received {0} bytes.", bytesRead);
+                    if (bytesRead == 0) break;
+                    gameActionProtocolRec = connectionState.Buffer.AsSpan().Slice(0, bytesRead).ToArray().ToGameActionProtocol(bytesRead);
+
+                    if (gameActionProtocolRec.Phase == Constants.PlayerReported
+                        || gameActionProtocolRec.Phase == Constants.Ok)
+                    {
+                        //process message (player reported)
+                        await OnMessageReceiveAsync(gameActionProtocolRec, null);
+                        var waitingPlayers = Enumerable.Empty<Player>();
+                        lock (Game)
+                        {
+                            waitingPlayers = Game.GetRemainingPickCardPlayers();
+                        }
+                        if (waitingPlayers.Any())
+                        {
+                            gameActionProtocolSend = GameActionProtocolFactory(Constants.WaitingPlayers);
+                        }
+                        else
+                        {
+                            GameAction[] gameActions;
+                            lock (Game)
+                            {
+                                gameActions = Game.gameActions.Where(a => a.Round == Game.Round).ToArray();
+                            }
+
+                            //make sure Game.NextRound ist not called multiple times
+                            if (connectionState.Player?.PlayerId == _FirstPlayerJoined && AllQueueEmpty())
+                            {
+                                //finally tell every player which cards they took
+                                foreach (var gameAction in gameActions)
+                                {
+                                    var msg = GameActionProtocolFactory(Constants.PlayerScored, player: gameAction.Player, number: gameAction.Offered);
+                                    await BroadcastMessageAsync(msg, null);
+                                }
+                                bool nextRound = Game.NextRound();
+                                if (nextRound)
+                                {
+                                    await BroadcastMessageAsync(CreateNextRoundGameActionProtocol(), null);
+                                }
+                            }
+                            else
+                            {
+                                gameActionProtocolSend = GameActionProtocolFactory(Constants.WaitingPlayers);
+                            }
+                        }
+                    }
+                    if (gameActionProtocolSend.Phase == Constants.WaitingPlayers)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(1));
+                    }
+
+                    //a messages awaits in the queue - send this message instead of the "regular" one
+                    if (connectionState.MessageQueue.Count != 0)
+                    {
+                        gameActionProtocolSend = connectionState.MessageQueue.Dequeue();
+                    }
+
+                    bytes = gameActionProtocolSend.ToByteArray();
+                    _logger.LogTrace("Send to {player}@{destination} Phase={Phase}", connectionState.Player?.Name ?? "unkown", connectionState.SocketClient.RemoteEndPoint, Constants.ToString(gameActionProtocolSend.Phase));
+                    await connectionState.SocketClient.SendAsync(bytes, SocketFlags.None);
+                    connectionState.LastPayload = gameActionProtocolRec;
+                }
+
+
+            }
+            catch (SocketException se) when (se.SocketErrorCode == SocketError.ConnectionReset)
+            {
+                _logger.LogInformation("Player {playername}@{ip} {playerguid} left", connectionState.Player?.Name ?? "unknown", connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.PlayerId);
+                if (connectionState.Player == null)
+                {
+                    return;
+                }
+
+                //remove player from game
+                lock (Game)
+                {
+                    var player = Game.Players.First(a => a.PlayerId == connectionState.Player.PlayerId);
+                    Game.Players.Remove(player);
+                }
+
+                bool successful = _playerConnections.TryRemove(connectionState.Player.PlayerId, out ConnectionState? removedConnectionState);
+                if (!successful) throw new InvalidOperationException($"Could not remove player from {nameof(_playerConnections)}");
+                //if our "main" player left we need to look for a new one
+                if (connectionState.Player.PlayerId == _FirstPlayerJoined)
+                {
+                    _FirstPlayerJoined = _playerConnections.Keys.First();
+                }
+
+                //tell everyone that player left
+                var msg = GameActionProtocolFactory(Constants.KickedPlayer, player: connectionState.Player, number: RequiredAmountOfPlayers);
+                await BroadcastMessageAsync(msg, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("exception", ex);
+            }
+            finally
+            {
+                connectionState.SocketClient.Dispose();
+            }
+        }
+
+        private GameActionProtocol CreateNextRoundGameActionProtocol()
+        {
+            GameActionProtocol gameActionProtocol;
+            var nextRoundEventArgs = new NextRoundEventArgs(Game.Round, Game.CurrentCard ?? throw new InvalidOperationException());
+            gameActionProtocol = GameActionProtocolFactory(Constants.NextRound, nextRoundEventArgs: nextRoundEventArgs);
+            return gameActionProtocol;
+        }
+
+        protected override Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj)
+        {
+            foreach (var key in _playerConnections.Keys)
+            {
+                bool tryGetValue = false;
+                int counter = 3;
+                while (tryGetValue == false && counter != 0)
+                {
+                    if (_playerConnections.TryGetValue(key, out var connectionState))
+                    {
+                        connectionState.MessageQueue.Enqueue(gameActionProtocol);
+                        _logger.LogDebug("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase} QueueSize={size}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase), connectionState.MessageQueue.Count);
+                        tryGetValue = true;
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed recieving item from {playerConnections} for {PlayerId}", nameof(_playerConnections), key);
+                        counter--;
                     }
                 }
-                else
-                {
-                    _logger.LogInformation("Received something unknown");
-                }
             }
-            catch (Exception e)
-            {
-                _logger.LogCritical(e, nameof(ReadResult));
-            }
-
+            return Task.CompletedTask;
         }
-        protected async Task SendAsync(ConnectionState connectionState, GameActionProtocol gameActionProtocol)
-        {
-            try
-            {
-                connectionState.LastPayload = gameActionProtocol;
-                // Convert the data to byte data
-                byte[] byteData = gameActionProtocol.ToByteArray();
 
-                // Begin sending the data to the remote device.  
-                await connectionState.SocketClient.SendAsync(new ArraySegment<byte>(byteData), SocketFlags.None);
-                //connectionState.SocketClient.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallback), connectionState);
-
-                //connectionState.SocketClient.EndSend(ar);
-                connectionState.Buffer = new byte[ConnectionState.BufferSize];
-                int bytesSent = connectionState.SocketClient.Receive(connectionState.Buffer);
-                gameActionProtocol = connectionState.Buffer.AsSpan().Slice(0, bytesSent).ToArray().ToGameActionProtocol(bytesSent);
-                await OnMessageReceiveAsync(gameActionProtocol, null);
-            }
-            catch (SocketException e)
-            {
-                //System.Net.Sockets.SocketException: 'An existing connection was forcibly closed by the remote host.'
-                //client ist tot
-                _logger.LogError(e, nameof(SendAsync));
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, nameof(SendAsync));
-            }
-            
-        }
-        protected override async Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj)
-        {
-            foreach (var connectionState in _playerConnections.Values)
-            {
-                _logger.LogDebug("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase));
-                await SendAsync(connectionState, gameActionProtocol);
-            }
-            //process events which occoured during broadcasting
-            while (_EventQueue.Count != 0)
-            {
-                await _EventQueue.Dequeue().Invoke();
-            }
-        }
         private void StopListening()
         {
             try

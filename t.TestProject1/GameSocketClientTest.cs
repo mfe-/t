@@ -24,7 +24,7 @@ namespace t.TestProject1
             this.output = output;
         }
         [Fact]
-        public async Task PlayGameAsync_ask_as_long_user_provides_valid_inputAsync()
+        public void PlayGameAsync_ask_as_long_user_provides_valid_inputAsync()
         {
             Mock<ILogger> mockLogger = new Mock<ILogger>();
             Mock<GameSocketClient> mockGameSocketClient = new Mock<GameSocketClient>(() => new GameSocketClient(System.Net.IPAddress.Parse("127.0.0.1"), 1, mockLogger.Object));

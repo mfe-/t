@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace t.lib
 {
     [StructLayout(LayoutKind.Sequential)]
     [Serializable]
+    [DebuggerDisplay("PlayerId = {PlayerId} Phase={Constants.ToString(Phase)}")]
     public struct GameActionProtocol
     {
         //0b000010
@@ -47,5 +45,33 @@ namespace t.lib
         /// new player - playerguid|palyername\r\n|requiredplayer
         /// </summary>
         public byte[] Payload;
+
+        public static bool operator ==(GameActionProtocol c1, GameActionProtocol c2)
+        {
+            return c1.Equals(c2);
+        }
+        public static bool operator !=(GameActionProtocol c1, GameActionProtocol c2)
+        {
+            return !c1.Equals(c2);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is GameActionProtocol g)
+            {
+                if (Version != g.Version) return false;
+                if (!PlayerId.Equals(g.PlayerId)) return false;
+                if (Phase != g.Phase) return false;
+                if (PayloadSize != g.PayloadSize) return false;
+                if (Payload != g.Payload) return false;
+                return true;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return PlayerId.GetHashCode() ^ Phase.GetHashCode();
+        }
     }
 }

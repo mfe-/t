@@ -110,7 +110,21 @@ namespace t.lib
         //   T:System.ObjectDisposedException:
         //     The System.Net.Sockets.Socket has been closed.
         public int EndReceive(IAsyncResult asyncResult);
-
+        //
+        // Summary:
+        //     Receives data from a connected socket.
+        //
+        // Parameters:
+        //   buffer:
+        //     The buffer for the received data.
+        //
+        //   socketFlags:
+        //     A bitwise combination of SocketFlags values that will be used when receiving
+        //     the data.
+        //
+        // Returns:
+        //     An asynchronous task that completes with the number of bytes received.
+        Task<int> ReceiveAsync(byte[] buffers, SocketFlags socketFlags);
         //
         // Summary:
         //     Begins to asynchronously receive data from a connected System.Net.Sockets.Socket.

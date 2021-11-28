@@ -9,7 +9,8 @@ namespace t.lib.Game
 {
     public class GameLogic
     {
-        private int TotalPointsToPlay = 0;
+        private int? TotalPointsToPlay;
+        private int? TotalRoundsToPlay;
         public const int CardCapacity = 10;
         private const string InitializeAndStartNewGameMessage = $"Start a new Game with {nameof(NewGame)} and {nameof(Start)}";
         private readonly Random random;
@@ -44,9 +45,13 @@ namespace t.lib.Game
         /// </summary>
         public IDictionary<Player, IList<Card>> PlayerCards { get; private set; }
         /// <summary>
-        /// the current round
+        /// the current round of the game
         /// </summary>
         public int Round { get; private set; }
+        /// <summary>
+        /// Counter for skiping previous game rounds
+        /// </summary>
+        public int SkipRounds { get; private set; } = -CardCapacity;
         /// <summary>
         /// the card to play for (from <see cref="Cards"/>
         /// </summary>
@@ -63,7 +68,6 @@ namespace t.lib.Game
             if (Cards.Count == 0) throw new InvalidOperationException(InitializeAndStartNewGameMessage);
             if (Players.Count == CardCapacity) throw new InvalidOperationException($"Game only designed for {CardCapacity} players");
             Players.Add(player);
-            AddPlayerCards(player);
             NewPlayerRegisteredEvent?.Invoke(this, new EventArgs<Player>(player));
             if (Players.Count == RequiredAmountOfPlayers)
             {
@@ -82,7 +86,14 @@ namespace t.lib.Game
                 Card card = new Card(i);
                 playerCards.Add(card);
             }
-            PlayerCards.Add(player, playerCards);
+            if (PlayerCards.ContainsKey(player))
+            {
+                PlayerCards[player] = playerCards;
+            }
+            else
+            {
+                PlayerCards.Add(player, playerCards);
+            }
         }
 
         public void OnLeavePlayerEvent(Player player)
@@ -109,12 +120,17 @@ namespace t.lib.Game
         /// prepares a new game. In this phase player can use <see cref="RegisterPlayer(Player)"/> 
         /// </summary>
         /// <param name="requiredAmountOfPlayers"></param>
+        /// <param name="totalGames">the number of games. for example 2 games are equivalent to 20 rounds</param>
         /// <exception cref="ArgumentException"></exception>
-        public void NewGame(int requiredAmountOfPlayers)
+        public void NewGame(int requiredAmountOfPlayers, int? totalGames = null)
         {
             if (requiredAmountOfPlayers < 1) throw new ArgumentException("At least two players are required to play the game!");
+            if (totalGames != null)
+            {
+                TotalRoundsToPlay = totalGames * CardCapacity;
+            }
             RequiredAmountOfPlayers = requiredAmountOfPlayers;
-            TotalPointsToPlay = 0;
+            SkipRounds = -CardCapacity;
             Round = 0;
             CurrentCard = null;
             Players.Clear();
@@ -125,12 +141,31 @@ namespace t.lib.Game
         /// <summary>
         /// Starts the game
         /// </summary>
-        /// <param name="totalPoints"></param>
-        public void Start(int totalPoints)
+        /// <param name="totalPoints">when a player reaches the number of points the game stops</param>
+        /// <returns>amount of "games" (one game=10 rounds) to play without the current one. If <see cref="NewGame(int, int?)"></see> was called without totalGames this function returns null </returns>
+        public int? Start(int? totalPoints = null)
         {
-            TotalPointsToPlay = totalPoints;
+            if (TotalRoundsToPlay != null)
+            {
+                TotalRoundsToPlay -= CardCapacity;
+            }
+            SkipRounds += CardCapacity;
+            Round = 0;
+            foreach (var player in Players)
+            {
+                AddPlayerCards(player);
+            }
+            if (totalPoints != null && totalPoints != 0)
+            {
+                TotalPointsToPlay = totalPoints;
+            }
             OnStartEvent(System.EventArgs.Empty);
             NextRound();
+            if (TotalRoundsToPlay != null)
+            {
+                return (int)(TotalRoundsToPlay / CardCapacity);
+            }
+            return null;
         }
         private void OnStartEvent(System.EventArgs e)
         {
@@ -155,13 +190,24 @@ namespace t.lib.Game
 
         private bool IsLastRound()
         {
-            var winners = Players.Where(a => a.Points >= TotalPointsToPlay);
-            if (winners.Any())
+            if (TotalPointsToPlay != null)
             {
-                PlayerWonEvent?.Invoke(this, new EventArgs<IEnumerable<Player>>(winners));
-                return true;
+                var winners = Players.Where(a => a.Points >= TotalPointsToPlay);
+                if (winners.Any())
+                {
+                    PlayerWonEvent?.Invoke(this, new EventArgs<IEnumerable<Player>>(winners));
+                    return true;
+                }
             }
-            return false;
+            if (Round == CardCapacity && TotalRoundsToPlay == 0)
+            {
+                var winners = GetPlayerStats().DistinctBy(a => a.Points);
+                if (winners.Any())
+                {
+                    PlayerWonEvent?.Invoke(this, new EventArgs<IEnumerable<Player>>(winners));
+                }
+            }
+            return Round == CardCapacity;
         }
         private sealed record OfferedDuplicates(int Offered, IEnumerable<GameAction> GameActions);
         internal virtual bool CalculateAndAssignPointsOfPreviousRound()
@@ -169,7 +215,7 @@ namespace t.lib.Game
             if (CurrentCard == null) throw new InvalidOperationException(InitializeAndStartNewGameMessage);
             bool finishedRound = true;
             //retriev all actions of round
-            var currentRoundAction = gameActions.Where(a => a.Round == Round);
+            var currentRoundAction = gameActions.Skip(SkipRounds).Where(a => a.Round == Round && a.RoundFinished == false);
             var maxOffered = currentRoundAction.Max(a => a.Offered);
             //check for duplicates
             var offeredDuplicates = currentRoundAction.GroupBy(i => i.Offered).Where(g => g.Count() > 1).Select(a => new OfferedDuplicates(a.Key, a));
@@ -181,7 +227,7 @@ namespace t.lib.Game
                 {
                     finishedRound = false;
                     //loop through playerActions and take the next highest card
-                    foreach (var offered in currentRoundAction.Where(a => a.Offered != maxOffered).OrderByDescending(a => a.Offered).Select(a=>a.Offered))
+                    foreach (var offered in currentRoundAction.Where(a => a.Offered != maxOffered).OrderByDescending(a => a.Offered).Select(a => a.Offered))
                     {
                         if (!offeredDuplicates.Any(a => a.Offered == offered))
                         {
@@ -232,7 +278,8 @@ namespace t.lib.Game
         {
             if (CurrentCard == null) throw new InvalidOperationException(InitializeAndStartNewGameMessage);
             //check if this card (v) was already used!
-            if (gameActions.Where(a => a.Player == player).Any(a => a.Offered == card.Value)) throw new InvalidOperationException("Card used by player twice");
+            //if multiple round games were played Skip the past games using GlobalRound
+            if (gameActions.Where(a => a.Player == player).Skip(SkipRounds).Any(a => a.Offered == card.Value)) throw new InvalidOperationException("Card used by player twice");
             PlayerCards[player].Remove(card);
             GameAction gameAction = new GameAction(Round, player, card.Value, CurrentCard, false);
             gameActions.Add(gameAction);

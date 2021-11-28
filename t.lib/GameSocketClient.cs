@@ -14,6 +14,7 @@ namespace t.lib
     {
         private readonly IPAddress serverIpAdress;
         private readonly int serverPort;
+        private int? totalGameRounds;
         private Socket? _senderSocket;
         internal Player? _player;
 
@@ -65,8 +66,14 @@ namespace t.lib
         }
         private Task OnStartAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
-            int totalPoints = GetTotalPoints(gameActionProtocol);
-            Game.Start(totalPoints);
+            var values = GetGameStartValues(gameActionProtocol);
+
+            if (totalGameRounds == null)
+            {
+                totalGameRounds = values.totalgameRounds;
+            }
+
+            Game.Start(totalPoints: values.totalpoints);
             return Task.CompletedTask;
         }
 
@@ -80,9 +87,6 @@ namespace t.lib
             // Connect to a remote device.  
 
             // Establish the remote endpoint for the socket.  
-            // This example uses port 11000 on the local computer.  
-            IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-            //IPAddress ipAddress = ipHostInfo.AddressList[0];
             IPEndPoint remoteEP = new IPEndPoint(serverIpAdress, serverPort);
 
             // Create a TCP/IP  socket.  
@@ -142,19 +146,17 @@ namespace t.lib
 
         public async Task PlayGameAsync(MessageReceiveArgs messageReceiveArgs)
         {
-            if (messageReceiveArgs == null) throw new ArgumentNullException(nameof(messageReceiveArgs));
+            ThrowException(messageReceiveArgs);
             if (_player == null) throw new InvalidOperationException($"{nameof(_player)} not set!");
             if (SenderSocket == null) throw new InvalidOperationException($"{nameof(_senderSocket)} is not set! Make sure you called {nameof(JoinGameAsync)}");
-
-
             try
             {
-                GameActionProtocol gameActionProtocolRec = new GameActionProtocol();
-                GameActionProtocol gameActionProtocolSend = new GameActionProtocol();
+                GameActionProtocol gameActionProtocolRec;
+                GameActionProtocol gameActionProtocolSend;
                 gameActionProtocolRec.Phase = Constants.Ok;
                 int bytesSent;
-                var bytes = new byte[1024];
-                byte[] sendPayLoad = new byte[0];
+                byte[] bytes;
+                byte[] sendPayLoad;
                 while (gameActionProtocolRec.Phase != Constants.PlayerWon)
                 {
                     // Receive the response from the remote device.  
@@ -177,8 +179,6 @@ namespace t.lib
                     }
                     else if (gameActionProtocolRec.Phase == Constants.PlayerScored)
                     {
-                        //int number = GetNumber(gameActionProtocolRec);
-                        //Player player = Game.Players.First(a => a.PlayerId == GetPlayer(gameActionProtocolRec).PlayerId);
                         //send ok
                     }
                     _logger.LogDebug("Send as {ClientId} {PlayerName} Phase={Phase}", gameActionProtocolSend.PlayerId, _player.Name, Constants.ToString(gameActionProtocolSend.Phase));
@@ -190,6 +190,11 @@ namespace t.lib
             {
                 _logger.LogCritical(e, e.ToString());
             }
+        }
+
+        private void ThrowException(MessageReceiveArgs messageReceiveArgs)
+        {
+            if (messageReceiveArgs == null) throw new ArgumentNullException(nameof(messageReceiveArgs));
         }
 
         private async Task<int> GetPlayerCardChoiceAsync(Func<Task<string>> onChoiceCommandFuncAsync)
@@ -207,7 +212,6 @@ namespace t.lib
                         System.Console.WriteLine("Selected card is not available! Enter a valid card number!");
                         System.Console.ResetColor();
                         cardValue = 0;
-                        continue;
                     }
                     else
                     {
@@ -237,9 +241,16 @@ namespace t.lib
             SenderSocket?.Dispose();
             _senderSocket = null;
         }
+        protected virtual void Dispose(bool disposing)
+        {
+            // Cleanup
+            ExitGame();
+        }
+
         public void Dispose()
         {
-            ExitGame();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
         protected virtual async Task OnPlayerScoredAsync(GameActionProtocol gameActionProtocol, object? obj)
         {

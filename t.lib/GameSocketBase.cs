@@ -19,7 +19,7 @@ namespace t.lib
         protected readonly GameLogic _game;
         protected readonly ILogger _logger;
         protected Guid _guid;
-        public GameSocketBase(ILogger logger)
+        protected GameSocketBase(ILogger logger)
         {
             _game = new GameLogic();
             _logger = logger;
@@ -69,7 +69,7 @@ namespace t.lib
         protected abstract Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal virtual GameActionProtocol GameActionProtocolFactory(byte phase, Player? player = null, string? message = null, int? number = null, NextRoundEventArgs? nextRoundEventArgs = null)
+        internal virtual GameActionProtocol GameActionProtocolFactory(byte phase, Player? player = null, string? message = null, int? number = null, int? number2 = null, NextRoundEventArgs? nextRoundEventArgs = null)
         {
             GameActionProtocol gameActionProtocol = new GameActionProtocol();
             gameActionProtocol.Version = Constants.Version;
@@ -96,9 +96,17 @@ namespace t.lib
             else if (gameActionProtocol.Phase == Constants.StartGame)
             {
                 if (number == null) throw new ArgumentNullException(nameof(number), $"{nameof(Constants.StartGame)} requires argument {nameof(number)}");
+                if (number2 == null) throw new ArgumentNullException(nameof(number2), $"{nameof(Constants.StartGame)} requires argument {nameof(number2)} for the amount of game rounds which should be played");
                 var nbytes = BitConverter.GetBytes(number.Value);
-                gameActionProtocol.PayloadSize = (byte)nbytes.Length;
-                gameActionProtocol.Payload = nbytes;
+                var n2bytes = BitConverter.GetBytes(number2.Value);
+                gameActionProtocol.PayloadSize = (byte)(nbytes.Length + n2bytes.Length);
+
+                Span<byte> numberbytes = stackalloc byte[gameActionProtocol.PayloadSize];
+                nbytes.AsSpan().CopyTo(numberbytes);
+                n2bytes.AsSpan().CopyTo(numberbytes[4..]);
+
+                gameActionProtocol.Payload = numberbytes.ToArray();
+
             }
             else if (gameActionProtocol.Phase == Constants.Ok)
             {
@@ -183,11 +191,13 @@ namespace t.lib
             return gameActionProtocol;
         }
 
-        internal int GetTotalPoints(GameActionProtocol gameActionProtocol)
+        internal (int totalpoints,int totalgameRounds) GetGameStartValues(GameActionProtocol gameActionProtocol)
         {
             if (gameActionProtocol.Phase != Constants.StartGame) throw new ArgumentException($"{nameof(Constants.StartGame)} required for argument {nameof(gameActionProtocol.Phase)}");
-            int a = BitConverter.ToInt32(gameActionProtocol.Payload.AsSpan().Slice(0, gameActionProtocol.PayloadSize));
-            return a;
+            
+            var p = BitConverter.ToInt32(gameActionProtocol.Payload.AsSpan().Slice(0, 4));
+            var r = BitConverter.ToInt32(gameActionProtocol.Payload.AsSpan().Slice(4));
+            return (p,r);
         }
         internal int GetNumber(GameActionProtocol gameActionProtocol)
         {

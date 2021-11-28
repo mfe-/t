@@ -19,7 +19,7 @@ namespace t.lib
         protected readonly IConfiguration configuration;
         protected readonly string[] args;
         protected readonly Func<Task<string>> onChoiceCommandFunc;
-        public GameClient(ILogger logger, IConfiguration configuration, Func<Task<string>> onChoiceCommandFunc)
+        protected GameClient(ILogger logger, IConfiguration configuration, Func<Task<string>> onChoiceCommandFunc)
         {
             this.logger = logger;
             this.configuration = configuration;
@@ -28,9 +28,7 @@ namespace t.lib
         }
         public virtual async Task OnJoinLanGameAsync(string ServerIpAdress, int port, string playerName)
         {
-            if (String.IsNullOrEmpty(ServerIpAdress)) throw new ArgumentException(nameof(ServerIpAdress));
-            if (String.IsNullOrEmpty(playerName)) throw new ArgumentException(nameof(playerName));
-            if (port == 0) throw new ArgumentException("port 0 not allowed");
+            ThrowException(ServerIpAdress, port, playerName);
 
             IPAddress iPAddress = IPAddress.Parse(ServerIpAdress);
 
@@ -42,6 +40,14 @@ namespace t.lib
 
             await gameSocketClient.PlayGameAsync(messageReceiveArgs);
         }
+
+        private static void ThrowException(string ServerIpAdress, int port, string playerName)
+        {
+            if (String.IsNullOrEmpty(ServerIpAdress)) throw new ArgumentException(nameof(ServerIpAdress));
+            if (String.IsNullOrEmpty(playerName)) throw new ArgumentException(nameof(playerName));
+            if (port == 0) throw new ArgumentException("port 0 not allowed");
+        }
+
         protected TaskCompletionSource? TaskCompletionSource;
         public abstract Task OnNextRoundAsync(NextRoundEventArgs e);
         public abstract Task ShowAvailableCardsAsync(IEnumerable<Card> cards);

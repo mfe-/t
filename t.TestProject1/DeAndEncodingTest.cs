@@ -53,35 +53,37 @@ namespace t.TestProject1
             int requiredPlayer = gameSocketServer.GetNumber(gameActionProtocol);
 
             Assert.Equal(expectedPlayer.PlayerId, player.PlayerId);
-            Assert.Equal(expectedPlayer.Name.Replace(Environment.NewLine,String.Empty), player.Name);
+            Assert.Equal(expectedPlayer.Name.Replace(Environment.NewLine, String.Empty), player.Name);
             Assert.Equal(expectedRequiredPlayer, requiredPlayer);
         }
 
         [Theory]
-        [InlineData(1)]
-        [InlineData(10)]
-        [InlineData(int.MaxValue)]
-        [InlineData(int.MinValue)]
-        public void Serialize_StartGame_And_Deserialize(int totalpoints)
+        [InlineData(1, 2)]
+        [InlineData(10, 3)]
+        [InlineData(int.MaxValue, int.MaxValue)]
+        [InlineData(int.MinValue, int.MaxValue)]
+        public void Serialize_StartGame_And_Deserialize(int totalpoints, int totalgamerounds)
         {
-            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.StartGame, number: totalpoints);
+            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.StartGame,
+                number: totalpoints, number2: totalgamerounds);
 
-            int points = GameSocketFactory().GetTotalPoints(gameActionProtocol);
+            var values = GameSocketFactory().GetGameStartValues(gameActionProtocol);
 
-            Assert.Equal(totalpoints, points);
+            Assert.Equal(totalpoints, values.totalpoints);
+            Assert.Equal(totalgamerounds, values.totalgameRounds);
 
         }
         [Theory]
-        [InlineData(1,4)]
+        [InlineData(1, 4)]
         [InlineData(int.MaxValue, int.MaxValue)]
         [InlineData(int.MinValue, int.MinValue)]
         [InlineData(int.MinValue, int.MaxValue)]
-        public void Serialize_NextRound_And_Deserialze(int expectedRound,int expectedCardnumber)
+        public void Serialize_NextRound_And_Deserialze(int expectedRound, int expectedCardnumber)
         {
             var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.NextRound, nextRoundEventArgs: new NextRoundEventArgs(expectedRound, new Card(expectedCardnumber)));
             var nextRoundEventArgs = GameSocketFactory().GetNextRoundEventArgs(gameActionProtocol);
 
-            Assert.Equal(expectedRound,nextRoundEventArgs.Round);
+            Assert.Equal(expectedRound, nextRoundEventArgs.Round);
             Assert.Equal(expectedCardnumber, nextRoundEventArgs.Card.Value);
         }
         [Theory]
@@ -91,7 +93,7 @@ namespace t.TestProject1
             var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.PlayerReported, number: expectedPickedCard);
             var pickedCard = GameSocketFactory().GetNumber(gameActionProtocol);
 
-            Assert.Equal(expectedPickedCard,pickedCard);
+            Assert.Equal(expectedPickedCard, pickedCard);
         }
         [Fact]
         public void Serialize_PlayerScroed_AndDeserialze()
@@ -108,7 +110,7 @@ namespace t.TestProject1
 
         private static GameSocketServer GameSocketFactory()
         {
-            return new GameSocketServer(new AppConfig() { TotalPoints = 10, RequiredAmountOfPlayers = 2 }, "", 0, new Mock<ILogger>().Object);
+            return new GameSocketServer(new AppConfig() { TotalPoints = 10, RequiredAmountOfPlayers = 2, GamesToPlay = 2 }, "", 0, new Mock<ILogger>().Object);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace t.lib
 {
-    public class Constants
+    public static class Constants
     {
         public static readonly byte Ok =             0b000001;
         public static readonly byte Version =        0b000010;

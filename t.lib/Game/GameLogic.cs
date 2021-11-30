@@ -10,7 +10,7 @@ namespace t.lib.Game
     public class GameLogic
     {
         private int? TotalPointsToPlay;
-        private int? TotalGameRounds;
+        private int? FinalGameRounds;
         public const int CardCapacity = 10;
         private const string InitializeAndStartNewGameMessage = $"Start a new Game with {nameof(NewGame)} and {nameof(Start)}";
         private readonly Random random;
@@ -49,9 +49,9 @@ namespace t.lib.Game
         /// </summary>
         public int Round { get; private set; }
         /// <summary>
-        /// the current game round of the game
+        /// the total amount of played rounds of the game
         /// </summary>
-        public int GameRound { get; private set; }
+        public int TotalRound { get; private set; }
         /// <summary>
         /// Counter for skiping previous game rounds
         /// </summary>
@@ -131,12 +131,12 @@ namespace t.lib.Game
             if (requiredAmountOfPlayers < 1) throw new ArgumentException("At least two players are required to play the game!");
             if (totalGames != null)
             {
-                SetTotalRoundsToPlay(totalGames.Value);
+                SetFinalRoundsToPlay(totalGames.Value);
             }
             RequiredAmountOfPlayers = requiredAmountOfPlayers;
             SkipRounds = -CardCapacity;
             Round = 0;
-            GameRound = 0;
+            TotalRound = 0;
             CurrentCard = null;
             Players.Clear();
             PlayerCards.Clear();
@@ -144,17 +144,16 @@ namespace t.lib.Game
             MixCards();
         }
 
-        public void SetTotalRoundsToPlay(int totalGames)
+        public void SetFinalRoundsToPlay(int totalGames)
         {
-            TotalGameRounds = totalGames * CardCapacity;
+            FinalGameRounds = totalGames * CardCapacity;
         }
 
         /// <summary>
         /// Starts the game
         /// </summary>
         /// <param name="totalPoints">when a player reaches the number of points the game stops</param>
-        /// <returns>amount of "games" (one game=10 rounds) to play without the current one. If <see cref="NewGame(int, int?)"></see> was called without totalGames this function returns null </returns>
-        public int? Start(int? totalPoints = null)
+        public void Start(int? totalPoints = null)
         {
             SkipRounds += CardCapacity;
             Round = 0;
@@ -168,11 +167,6 @@ namespace t.lib.Game
             }
             OnStartEvent(System.EventArgs.Empty);
             NextRound();
-            if (TotalGameRounds != null)
-            {
-                return (int)(TotalGameRounds / CardCapacity);
-            }
-            return null;
         }
         private void OnStartEvent(System.EventArgs e)
         {
@@ -189,7 +183,7 @@ namespace t.lib.Game
             if (nextRound)
             {
                 Round++;
-                GameRound++;
+                TotalRound++;
                 CurrentCard = Cards[Round - 1];
                 OnNextRoundEvent(new NextRoundEventArgs(Round, CurrentCard));
             }
@@ -207,7 +201,7 @@ namespace t.lib.Game
                     return true;
                 }
             }
-            if (Round == CardCapacity && TotalGameRounds == GameRound)
+            if (Round == CardCapacity && FinalGameRounds == TotalRound)
             {
                 var winners = GetPlayerStats().DistinctBy(a => a.Points);
                 if (winners.Any())
@@ -284,12 +278,14 @@ namespace t.lib.Game
         }
         public void PlayerReport(Player player, Card card)
         {
+            var gameRound = TotalRound / (CardCapacity + 1);
             if (CurrentCard == null) throw new InvalidOperationException(InitializeAndStartNewGameMessage);
             //check if this card (v) was already used!
             //if multiple round games were played Skip the past games using GlobalRound
-            if (gameActions.Where(a => a.Player == player).Skip(SkipRounds).Any(a => a.Offered == card.Value)) throw new InvalidOperationException("Card used by player twice");
+            if (gameActions.Where(a => a.Player == player && a.GameRound == gameRound).Any(a => a.Offered == card.Value)) throw new InvalidOperationException("Card used by player twice");
             PlayerCards[player].Remove(card);
-            GameAction gameAction = new GameAction(Round, player, card.Value, CurrentCard, false);
+
+            GameAction gameAction = new GameAction(Round, gameRound, player, card.Value, CurrentCard, false);
             gameActions.Add(gameAction);
         }
         /// <summary>
@@ -298,7 +294,7 @@ namespace t.lib.Game
         /// <returns></returns>
         public IEnumerable<Player> GetRemainingPickCardPlayers()
         {
-            var gameActionsCurrent = gameActions.Where(a => a.Round == Round);
+            var gameActionsCurrent = gameActions.Skip(SkipRounds).Where(a => a.Round == Round);
             foreach (var player in Players)
             {
                 if (!gameActionsCurrent.Any(a => a.Player == player))

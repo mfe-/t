@@ -110,7 +110,7 @@ namespace t.TestProject1
 
         private static GameSocketServer GameSocketFactory()
         {
-            return new GameSocketServer(new AppConfig() { TotalPoints = 10, RequiredAmountOfPlayers = 2, GamesToPlay = 2 }, "", 0, new Mock<ILogger>().Object);
+            return new GameSocketServer(new AppConfig() { TotalPoints = 10, RequiredAmountOfPlayers = 2, GameRounds = 2 }, "", 0, new Mock<ILogger>().Object);
         }
     }
 }

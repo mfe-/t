@@ -31,7 +31,8 @@ namespace t.lib.Server
         internal ISocket SocketClient;
         internal Player? Player;
         public DateTime LastModified { get; private set; }
-        public GameActionProtocol LastPayload { get; internal set; }
+        public GameActionProtocol LastRecPayload { get; internal set; }
+        public GameActionProtocol LastSendPayload { get; internal set; }
         internal Queue<GameActionProtocol> MessageQueue { get; set; }
     }
 }

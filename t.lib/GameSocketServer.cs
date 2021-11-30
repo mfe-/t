@@ -17,18 +17,17 @@ namespace t.lib.Server
     {
         private readonly int RequiredAmountOfPlayers;
         private readonly int? TotalPoints;
-        private int GameRound;
-        private int GamesPlayed = 0;
+        private readonly int GameRounds;
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger) : base(logger)
         {
-            if (appConfig.GamesToPlay < 1) throw new ArgumentException("At least one game round should be played!");
+            if (appConfig.GameRounds < 1) throw new ArgumentException("At least one game round should be played!");
             if (appConfig.RequiredAmountOfPlayers < 1) throw new ArgumentException("At least two players are required to play the game!");
             if (appConfig.TotalPoints != null && appConfig.TotalPoints < 10) throw new ArgumentException("At least ten points are expected!");
 
             ActionDictionary.Add(Constants.PlayerReported, OnPlayerReportedAsync);
             RequiredAmountOfPlayers = appConfig.RequiredAmountOfPlayers;
             TotalPoints = appConfig.TotalPoints;
-            GameRound = appConfig.GamesToPlay;
+            GameRounds = appConfig.GameRounds;
             ServerPort = serverPort;
             ServerIpAdress = serverIpAdress;
             _guid = Guid.NewGuid();
@@ -116,7 +115,7 @@ namespace t.lib.Server
                     listener.Bind(localEndPoint);
                     listener.Listen(RequiredAmountOfPlayers + 2);
 
-                    Game.NewGame(RequiredAmountOfPlayers, GameRound);
+                    Game.NewGame(RequiredAmountOfPlayers, GameRounds);
 
                     _logger.LogInformation("Waiting for a connection...");
                     // Start listening for connections.  
@@ -201,7 +200,8 @@ namespace t.lib.Server
                     bytes = gameActionProtocolSend.ToByteArray();
                     _logger.LogTrace("Send to {player}@{destination} Phase={Phase}", connectionState.Player?.Name ?? "unkown", connectionState.SocketClient.RemoteEndPoint, Constants.ToString(gameActionProtocolSend.Phase));
                     await connectionState.SocketClient.SendAsync(bytes, SocketFlags.None);
-                    connectionState.LastPayload = gameActionProtocolRec;
+                    connectionState.LastRecPayload = gameActionProtocolRec;
+                    connectionState.LastSendPayload = gameActionProtocolSend;
                 }
 
 
@@ -215,6 +215,7 @@ namespace t.lib.Server
                     if (gameActionProtocolRec.Phase == Constants.PlayerReported
                         || gameActionProtocolRec.Phase == Constants.Ok)
                     {
+
                         //process message (player reported)
                         await OnMessageReceiveAsync(gameActionProtocolRec, null);
                         //create message
@@ -249,7 +250,8 @@ namespace t.lib.Server
                     bytes = gameActionProtocolSend.ToByteArray();
                     _logger.LogTrace("Send to {player}@{destination} Phase={Phase}", connectionState.Player?.Name ?? "unkown", connectionState.SocketClient.RemoteEndPoint, Constants.ToString(gameActionProtocolSend.Phase));
                     await connectionState.SocketClient.SendAsync(bytes, SocketFlags.None);
-                    connectionState.LastPayload = gameActionProtocolRec;
+                    connectionState.LastRecPayload = gameActionProtocolRec;
+                    connectionState.LastSendPayload = gameActionProtocolSend;
                 }
 
 
@@ -301,29 +303,26 @@ namespace t.lib.Server
         }
         private async Task QueueStartGameAndNextRoundAsync()
         {
-            if (GamesPlayed != GameRound)
-            {
-                var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints ?? 0, number2: GameRound);
-                //start new game
-                await OnStartAsync(gameActionProtocol);
-                await BroadcastMessageAsync(gameActionProtocol, null);
-                GamesPlayed++;
-                //first "next round"
-                gameActionProtocol = CreateNextRoundGameActionProtocol();
-                await BroadcastMessageAsync(gameActionProtocol, null);
-            }
-            else
-            {
-                //todo broadcast winner
-            }
-
+            await QueueStartGameAsync();
+            //first "next round"
+            var gameActionProtocol = CreateNextRoundGameActionProtocol();
+            await BroadcastMessageAsync(gameActionProtocol, null);
         }
+
+        private async Task QueueStartGameAsync()
+        {
+            var gameActionProtocol = GameActionProtocolFactory(Constants.StartGame, number: TotalPoints ?? 0, number2: GameRounds);
+            //start new game
+            await OnStartAsync(gameActionProtocol);
+            await BroadcastMessageAsync(gameActionProtocol, null);
+        }
+
         private async Task QueuePlayerScoredAndNextRoundAsync()
         {
             GameAction[] gameActions;
             lock (Game)
             {
-                gameActions = Game.gameActions.Where(a => a.Round == Game.Round).ToArray();
+                gameActions = Game.gameActions.Skip(Game.SkipRounds).Where(a => a.Round == Game.Round).ToArray();
             }
             //finally tell every player which cards they took
             foreach (var gameAction in gameActions)
@@ -387,8 +386,18 @@ namespace t.lib.Server
                 {
                     if (_playerConnections.TryGetValue(key, out var connectionState))
                     {
-                        connectionState.MessageQueue.Enqueue(gameActionProtocol);
-                        _logger.LogDebug("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase} QueueSize={size}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase), connectionState.MessageQueue.Count);
+                        if (!connectionState.MessageQueue.Any(a => a.Equals(gameActionProtocol)))
+                        {
+                            connectionState.MessageQueue.Enqueue(gameActionProtocol);
+                            _logger.LogDebug("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase} QueueSize={size}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase), connectionState.MessageQueue.Count);
+                            if (gameActionProtocol.Phase == Constants.PlayerScored)
+                            {
+                                var player = Game.Players.First(a => a.PlayerId == GetPlayer(gameActionProtocol).PlayerId);
+                                var offeredCardNumber = GetNumber(gameActionProtocol);
+                                _logger.LogDebug("Phase={Phase} {GameRound} Player {player} offered {offeredCardNumber}", Constants.ToString(gameActionProtocol.Phase), Game.TotalRound, player.Name, offeredCardNumber);
+                            }
+                        }
+
                         tryGetValue = true;
                     }
                     else

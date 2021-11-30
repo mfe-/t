@@ -15,6 +15,6 @@ namespace t.lib
         public Guid Identifier { get; set; }
         public int RequiredAmountOfPlayers { get; set; }
         public int? TotalPoints { get; set; }
-        public int GamesToPlay { get; set; }
+        public int GameRounds { get; set; }
     }
 }

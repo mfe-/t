@@ -72,7 +72,7 @@ namespace t.lib
             if (totalGameRounds == null)
             {
                 totalGameRounds = values.totalgameRounds;
-                Game.SetTotalRoundsToPlay(totalGameRounds.Value);
+                Game.SetFinalRoundsToPlay(totalGameRounds.Value);
             }
 
             Game.Start(totalPoints: values.totalpoints);

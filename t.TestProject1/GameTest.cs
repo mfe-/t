@@ -346,8 +346,7 @@ namespace t.TestProject1
             game.Players.Add(player2);
 
 
-            var remainggames = game.Start();
-            Assert.Equal(1, remainggames);
+            game.Start();
 
             game.PlayerReport(player1, new Card(1));
             var remainingPlayers = game.GetRemainingPickCardPlayers();
@@ -452,8 +451,7 @@ namespace t.TestProject1
 
             if (!nextRound)
             {
-                remainggames = game.Start();
-                Assert.Equal(0, remainggames);
+                game.Start();
 
                 game.PlayerReport(player1, new Card(8));
                 game.PlayerReport(player2, new Card(6));

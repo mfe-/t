@@ -2,7 +2,7 @@
 
 namespace t.lib.Game
 {
-    [DebuggerDisplay("Round={Round,2},Player={Player.Name},Offered={Offered},ForCard={ForCard}")]
+    [DebuggerDisplay("GameRound={GameRound},Round={Round,2},Player={Player.Name},Offered={Offered},ForCard={ForCard}")]
     public class GameAction
     {
         public GameAction(int round,int gameRound, Player player, int offered, Card currentCard, bool roundfinished)

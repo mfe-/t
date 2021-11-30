@@ -246,8 +246,9 @@ namespace t.lib.Server
                         await Task.Delay(TimeSpan.FromSeconds(1));
                     }
                     bytes = gameActionProtocolSend.ToByteArray();
-                    _logger.LogTrace("Send to {player}@{destination} Phase={Phase}", connectionState.Player?.Name ?? "unkown", connectionState.SocketClient.RemoteEndPoint, Constants.ToString(gameActionProtocolSend.Phase));
+                    _logger.LogTrace("Send to {player}@{destination} bytes={bytes} Phase={Phase}", connectionState.Player?.Name ?? "unkown", connectionState.SocketClient.RemoteEndPoint, bytes.Length, Constants.ToString(gameActionProtocolSend.Phase));
                     await connectionState.SocketClient.SendAsync(bytes, SocketFlags.None);
+                    connectionState.History.Add(gameActionProtocolSend);
                     connectionState.LastRecPayload = gameActionProtocolRec;
                     connectionState.LastSendPayload = gameActionProtocolSend;
                 }
@@ -320,7 +321,7 @@ namespace t.lib.Server
             GameAction[] gameActions;
             lock (Game)
             {
-                gameActions = Game.gameActions.Skip(Game.SkipRounds).Where(a => a.Round == Game.Round).ToArray();
+                gameActions = Game.gameActions.Where(a => a.Round == Game.Round && a.GameRound == Game.GetCurrentGameRound()).ToArray();
             }
             //finally tell every player which cards they took
             foreach (var gameAction in gameActions)

@@ -34,5 +34,7 @@ namespace t.lib.Server
         public GameActionProtocol LastRecPayload { get; internal set; }
         public GameActionProtocol LastSendPayload { get; internal set; }
         internal Queue<GameActionProtocol> MessageQueue { get; set; }
+
+        public List<GameActionProtocol> History { get; set; } = new();
     }
 }

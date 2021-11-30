@@ -53,10 +53,6 @@ namespace t.lib.Game
         /// </summary>
         public int TotalRound { get; private set; }
         /// <summary>
-        /// Counter for skiping previous game rounds
-        /// </summary>
-        public int SkipRounds { get; private set; } = -CardCapacity;
-        /// <summary>
         /// the card to play for (from <see cref="Cards"/>
         /// </summary>
         public Card? CurrentCard { get; private set; }
@@ -134,7 +130,6 @@ namespace t.lib.Game
                 SetFinalRoundsToPlay(totalGames.Value);
             }
             RequiredAmountOfPlayers = requiredAmountOfPlayers;
-            SkipRounds = -CardCapacity;
             Round = 0;
             TotalRound = 0;
             CurrentCard = null;
@@ -155,7 +150,6 @@ namespace t.lib.Game
         /// <param name="totalPoints">when a player reaches the number of points the game stops</param>
         public void Start(int? totalPoints = null)
         {
-            SkipRounds += CardCapacity;
             Round = 0;
             foreach (var player in Players)
             {
@@ -217,7 +211,7 @@ namespace t.lib.Game
             if (CurrentCard == null) throw new InvalidOperationException(InitializeAndStartNewGameMessage);
             bool finishedRound = true;
             //retriev all actions of round
-            var currentRoundAction = gameActions.Skip(SkipRounds).Where(a => a.Round == Round && a.RoundFinished == false);
+            var currentRoundAction = gameActions.Where(a => a.GameRound == GetCurrentGameRound() && a.Round == Round && !a.RoundFinished);
             var maxOffered = currentRoundAction.Max(a => a.Offered);
             //check for duplicates
             var offeredDuplicates = currentRoundAction.GroupBy(i => i.Offered).Where(g => g.Count() > 1).Select(a => new OfferedDuplicates(a.Key, a));
@@ -278,23 +272,29 @@ namespace t.lib.Game
         }
         public void PlayerReport(Player player, Card card)
         {
-            var gameRound = TotalRound / (CardCapacity + 1);
+            var gameRound = GetCurrentGameRound();
             if (CurrentCard == null) throw new InvalidOperationException(InitializeAndStartNewGameMessage);
             //check if this card (v) was already used!
-            //if multiple round games were played Skip the past games using GlobalRound
+            //if multiple round games were played Skip the past games using GameRound
             if (gameActions.Where(a => a.Player == player && a.GameRound == gameRound).Any(a => a.Offered == card.Value)) throw new InvalidOperationException("Card used by player twice");
             PlayerCards[player].Remove(card);
 
             GameAction gameAction = new GameAction(Round, gameRound, player, card.Value, CurrentCard, false);
             gameActions.Add(gameAction);
         }
+
+        public int GetCurrentGameRound()
+        {
+            return TotalRound / (CardCapacity + 1);
+        }
+
         /// <summary>
         /// returns the list of players which should pick a card for the current round
         /// </summary>
         /// <returns></returns>
         public IEnumerable<Player> GetRemainingPickCardPlayers()
         {
-            var gameActionsCurrent = gameActions.Skip(SkipRounds).Where(a => a.Round == Round);
+            var gameActionsCurrent = gameActions.Where(a => a.Round == Round && a.GameRound == GetCurrentGameRound());
             foreach (var player in Players)
             {
                 if (!gameActionsCurrent.Any(a => a.Player == player))

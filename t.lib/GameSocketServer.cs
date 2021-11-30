@@ -151,7 +151,6 @@ namespace t.lib.Server
         /// To avoid calling <see cref="GameLogic.NextRound()"/> multiple times only the first player is allowed to do so
         /// </remarks>
         private Guid? _FirstPlayerJoined = null;
-
         private async Task ClientHandler(ConnectionState connectionState)
         {
             try
@@ -215,7 +214,6 @@ namespace t.lib.Server
                     if (gameActionProtocolRec.Phase == Constants.PlayerReported
                         || gameActionProtocolRec.Phase == Constants.Ok)
                     {
-
                         //process message (player reported)
                         await OnMessageReceiveAsync(gameActionProtocolRec, null);
                         //create message
@@ -386,16 +384,13 @@ namespace t.lib.Server
                 {
                     if (_playerConnections.TryGetValue(key, out var connectionState))
                     {
-                        if (!connectionState.MessageQueue.Any(a => a.Equals(gameActionProtocol)))
+                        connectionState.MessageQueue.Enqueue(gameActionProtocol);
+                        _logger.LogDebug("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase} QueueSize={size}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase), connectionState.MessageQueue.Count);
+                        if (gameActionProtocol.Phase == Constants.PlayerScored)
                         {
-                            connectionState.MessageQueue.Enqueue(gameActionProtocol);
-                            _logger.LogDebug("Broadcasting as {ServerId} to {ip} {PlayerName} Phase={Phase} QueueSize={size}", gameActionProtocol.PlayerId, connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.Name ?? "", Constants.ToString(gameActionProtocol.Phase), connectionState.MessageQueue.Count);
-                            if (gameActionProtocol.Phase == Constants.PlayerScored)
-                            {
-                                var player = Game.Players.First(a => a.PlayerId == GetPlayer(gameActionProtocol).PlayerId);
-                                var offeredCardNumber = GetNumber(gameActionProtocol);
-                                _logger.LogDebug("Phase={Phase} {GameRound} Player {player} offered {offeredCardNumber}", Constants.ToString(gameActionProtocol.Phase), Game.TotalRound, player.Name, offeredCardNumber);
-                            }
+                            var player = Game.Players.First(a => a.PlayerId == GetPlayer(gameActionProtocol).PlayerId);
+                            var offeredCardNumber = GetNumber(gameActionProtocol);
+                            _logger.LogDebug("Phase={Phase} {GameRound} Player {player} offered {offeredCardNumber}", Constants.ToString(gameActionProtocol.Phase), Game.TotalRound, player.Name, offeredCardNumber);
                         }
 
                         tryGetValue = true;

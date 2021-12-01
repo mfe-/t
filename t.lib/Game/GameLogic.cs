@@ -10,10 +10,8 @@ namespace t.lib.Game
     public class GameLogic
     {
         private int? TotalPointsToPlay;
-        private int? FinalGameRounds;
         public const int CardCapacity = 10;
         private const string InitializeAndStartNewGameMessage = $"Start a new Game with {nameof(NewGame)} and {nameof(Start)}";
-        private Random? random;
         internal readonly List<GameAction> gameActions = new List<GameAction>();
         public event EventHandler<System.EventArgs>? GameStartedEvent;
         public event EventHandler<NextRoundEventArgs>? NextRoundEvent;
@@ -26,6 +24,7 @@ namespace t.lib.Game
             PlayerCards = new Dictionary<Player, IList<Card>>();
             Players = new List<Player>();
         }
+        public int? FinalGameRounds { get; private set; }
         /// <summary>
         /// The amount of players.
         /// As the long the amount of required players is not fulfilled, the game cant be started
@@ -104,7 +103,7 @@ namespace t.lib.Game
         /// </summary>
         public virtual void MixCards()
         {
-            random = new Random(DateTime.Now.Minute + DateTime.Now.Hour + DateTime.Now.Second);
+            Random random = new Random(DateTime.Now.Minute + DateTime.Now.Hour + DateTime.Now.Second);
             Cards.Clear();
             do
             {

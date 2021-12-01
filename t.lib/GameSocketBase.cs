@@ -55,13 +55,24 @@ namespace t.lib
                 {
                     await ActionDictionary[gameActionProtocol.Phase].Invoke(gameActionProtocol, obj);
                 }
-                else
-                {
-                    await ActionDictionary[Constants.ErrorOccoured].Invoke(gameActionProtocol, obj);
-                }
             }
         }
-        protected virtual Task OnProtocolErrorAsync(GameActionProtocol gameActionProtocol, object? obj) => Task.CompletedTask;
+        protected virtual Task OnProtocolErrorAsync(GameActionProtocol gameActionProtocol, object? obj)
+        {
+            string errormsg = "error message not set";
+            try
+            {
+                if (gameActionProtocol.Payload.Length > 0)
+                {
+                    errormsg = Encoding.ASCII.GetString(gameActionProtocol.Payload);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, nameof(OnProtocolErrorAsync));
+            }
+            throw new GameActionProtocolException(gameActionProtocol, errormsg);
+        }
         /// <summary>
         /// Broadcasts a <see cref="GameActionProtocol"/> to every recipient
         /// </summary>
@@ -199,7 +210,7 @@ namespace t.lib
             return gameActionProtocol;
         }
 
-        internal (int totalpoints, int totalgameRounds) GetGameStartValues(GameActionProtocol gameActionProtocol)
+        internal (int Totalpoints, int TotalGameRounds) GetGameStartValues(GameActionProtocol gameActionProtocol)
         {
             if (gameActionProtocol.Phase != Constants.StartGame) throw new ArgumentException($"{nameof(Constants.StartGame)} required for argument {nameof(gameActionProtocol.Phase)}");
 

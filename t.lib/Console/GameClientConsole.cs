@@ -62,22 +62,32 @@ namespace t.lib.Console
         }
         private async Task ProcessEntertedCommand(string enteredCommand, string[] param)
         {
-            switch (enteredCommand)
+            try
             {
-                case "exit":
-                    break;
-                case "version":
-                    System.Console.WriteLine(Assembly.GetExecutingAssembly().FullName);
-                    break;
-                case "join":
-                    string ipadress = (param.FirstOrDefault(a => a.Contains("ip")) ?? "").Replace("-ip=", "");
-                    int.TryParse((param.FirstOrDefault(a => a.Contains("port")) ?? "").Replace("-port=", ""), out int port);
-                    string playername = (param.FirstOrDefault(a => a.Contains("name")) ?? "").Replace("-name=", "");
-                    await OnJoinLanGameAsync(ipadress, port, playername);
-                    break;
-                default:
-                    ShowOptions();
-                    break;
+
+
+                switch (enteredCommand)
+                {
+                    case "exit":
+                        break;
+                    case "version":
+                        System.Console.WriteLine(Assembly.GetExecutingAssembly().FullName);
+                        break;
+                    case "join":
+                        string ipadress = (param.FirstOrDefault(a => a.Contains("ip")) ?? "").Replace("-ip=", "");
+                        int.TryParse((param.FirstOrDefault(a => a.Contains("port")) ?? "").Replace("-port=", ""), out int port);
+                        string playername = (param.FirstOrDefault(a => a.Contains("name")) ?? "").Replace("-name=", "");
+                        await OnJoinLanGameAsync(ipadress, port, playername);
+                        break;
+                    default:
+                        ShowOptions();
+                        break;
+                }
+            }
+            catch (GameActionProtocolException e)
+            {
+                System.Console.WriteLine(e);
+                logger.LogError(e, nameof(OnJoinLanGameAsync));
             }
         }
 

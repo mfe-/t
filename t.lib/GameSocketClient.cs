@@ -71,11 +71,11 @@ namespace t.lib
 
             if (totalGameRounds == null)
             {
-                totalGameRounds = values.totalgameRounds;
+                totalGameRounds = values.TotalGameRounds;
                 Game.SetFinalRoundsToPlay(totalGameRounds.Value);
             }
 
-            Game.Start(totalPoints: values.totalpoints);
+            Game.Start(totalPoints: values.Totalpoints);
             GameRound++;
             return Task.CompletedTask;
         }
@@ -188,6 +188,7 @@ namespace t.lib
                     bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
                     _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                 }
+                SenderSocket.Close();
             }
             catch (SocketException e)
             {
@@ -238,10 +239,18 @@ namespace t.lib
         protected override Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj) => Task.CompletedTask;
         public void ExitGame()
         {
-            // Release the socket.  
-            SenderSocket?.Shutdown(SocketShutdown.Both);
-            SenderSocket?.Close();
-            SenderSocket?.Dispose();
+            try
+            {
+                // Release the socket.  
+                //SenderSocket?.Shutdown(SocketShutdown.Both);
+                SenderSocket?.Close();
+                SenderSocket?.Dispose();
+            }
+            catch(ObjectDisposedException)
+            {
+                //we dont care on dispose exception
+            }
+
             _senderSocket = null;
         }
         protected virtual void Dispose(bool disposing)

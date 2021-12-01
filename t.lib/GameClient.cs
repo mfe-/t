@@ -39,6 +39,9 @@ namespace t.lib
                 ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats, ShowPlayerOffered);
 
             await gameSocketClient.PlayGameAsync(messageReceiveArgs);
+
+            gameSocketClient.ExitGame();
+
         }
 
         private static void ThrowException(string ServerIpAdress, int port, string playerName)
@@ -48,9 +51,8 @@ namespace t.lib
             if (port == 0) throw new ArgumentException("port 0 not allowed");
         }
 
-        protected TaskCompletionSource? TaskCompletionSource;
         public abstract Task OnNextRoundAsync(NextRoundEventArgs e);
-        public abstract Task ShowAvailableCardsAsync(IEnumerable<Card> cards);
+        public abstract Task ShowAvailableCardsAsync(IEnumerable<Card> availableCards);
         public abstract Task OnShowMenueAsync();
         public abstract Task ParseStartArgumentsAsync(string[] args);
         public abstract Task ShowPlayerOffered(Player player, int offered, int forCard);
@@ -59,8 +61,7 @@ namespace t.lib
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            TaskCompletionSource = new TaskCompletionSource();
-            if (args.Where(a => !a.Contains("t.Client.dll")).Any())
+            if (args.Any(a => !a.Contains("t.Client.dll")))
             {
                 await ParseStartArgumentsAsync(args);
             }
@@ -72,7 +73,6 @@ namespace t.lib
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            TaskCompletionSource?.TrySetCanceled();
             return Task.CompletedTask;
         }
     }

@@ -45,7 +45,6 @@ namespace t.TestProject1
         [InlineData("asdf\ro\n", 6)]
         public void GameActionProtocol_ToPlayer_test(string expectedPlayerName, int expectedRequiredPlayer)
         {
-            byte[] byteArray = new byte[] { 4, 5, 6, 13, 0, 10 };
             Guid guid = Guid.Parse("6d88b7c1-5b8b-4068-b510-b4ff01309670");
             Player expectedPlayer = new Player(expectedPlayerName, guid);
             GameSocketServer gameSocketServer = GameSocketFactory();
@@ -71,8 +70,8 @@ namespace t.TestProject1
 
             var values = GameSocketFactory().GetGameStartValues(gameActionProtocol);
 
-            Assert.Equal(totalpoints, values.totalpoints);
-            Assert.Equal(totalgamerounds, values.totalgameRounds);
+            Assert.Equal(totalpoints, values.Totalpoints);
+            Assert.Equal(totalgamerounds, values.TotalGameRounds);
 
         }
         [Theory]
@@ -118,7 +117,7 @@ namespace t.TestProject1
             Player expectedPlayer = new Player("martin", player1);
             Player expectedPlayer1 = new Player("stefan", player2);
 
-            PlayerWonEventArgs playerWonEventArgs = new PlayerWonEventArgs(new List<Player>() { expectedPlayer, expectedPlayer1 });
+            var playerWonEventArgs = new PlayerWonEventArgs(new List<Player>() { expectedPlayer, expectedPlayer1 });
 
             var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.PlayerWon, playerWonEventArgs: playerWonEventArgs);
 

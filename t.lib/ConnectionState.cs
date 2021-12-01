@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Sockets;
 using t.lib.Game;
 
 namespace t.lib.Server
@@ -16,8 +15,6 @@ namespace t.lib.Server
         }
         // Size of receive buffer.  
         public const int BufferSize = 1024;
-        // Receive buffer.  
-
         private byte[] _buffer = new byte[BufferSize];
         public byte[] Buffer
         {
@@ -34,7 +31,5 @@ namespace t.lib.Server
         public GameActionProtocol LastRecPayload { get; internal set; }
         public GameActionProtocol LastSendPayload { get; internal set; }
         internal Queue<GameActionProtocol> MessageQueue { get; set; }
-
-        public List<GameActionProtocol> History { get; set; } = new();
     }
 }

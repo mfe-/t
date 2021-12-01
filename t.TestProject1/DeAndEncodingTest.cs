@@ -7,6 +7,8 @@ using t.lib.EventArgs;
 using t.lib.Server;
 using t.lib.Game;
 using Xunit;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace t.TestProject1
 {
@@ -106,6 +108,26 @@ namespace t.TestProject1
             var player = GameSocketFactory().GetPlayer(gameActionProtocol);
 
             Assert.Equal(player.PlayerId, player.PlayerId);
+        }
+        [Fact]
+        public void Serialize_PlayerWonEventArgs_()
+        {
+            var player1 = Guid.Parse("24397370-d5b7-468d-815f-e1599502caeb");
+            var player2 = Guid.Parse("2fc77b7b-8c14-4451-b603-8ab3a9060a4f");
+
+            Player expectedPlayer = new Player("martin", player1);
+            Player expectedPlayer1 = new Player("stefan", player2);
+
+            PlayerWonEventArgs playerWonEventArgs = new PlayerWonEventArgs(new List<Player>() { expectedPlayer, expectedPlayer1 });
+
+            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.PlayerWon, playerWonEventArgs: playerWonEventArgs);
+
+            var players = GameSocketFactory().GetPlayers(gameActionProtocol);
+
+
+            Assert.Equal(player1, players.First(a => a.PlayerId == player1).PlayerId);
+            Assert.Equal(player2, players.First(a => a.PlayerId == player2).PlayerId);
+
         }
 
         private static GameSocketServer GameSocketFactory()

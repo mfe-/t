@@ -69,7 +69,7 @@ namespace t.lib
         protected abstract Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal virtual GameActionProtocol GameActionProtocolFactory(byte phase, Player? player = null, string? message = null, int? number = null, int? number2 = null, NextRoundEventArgs? nextRoundEventArgs = null)
+        internal virtual GameActionProtocol GameActionProtocolFactory(byte phase, Player? player = null, string? message = null, int? number = null, int? number2 = null, NextRoundEventArgs? nextRoundEventArgs = null, PlayerWonEventArgs? playerWonEventArgs = null)
         {
             GameActionProtocol gameActionProtocol = new GameActionProtocol();
             gameActionProtocol.Version = Constants.Version;
@@ -146,9 +146,17 @@ namespace t.lib
             }
             else if (gameActionProtocol.Phase == Constants.PlayerWon)
             {
-                if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(Constants.PlayerWon)} requires argument {nameof(player)}");
-                var playerid = player.PlayerId.ToByteArray();
-                gameActionProtocol.Payload = playerid;
+                if (playerWonEventArgs == null) throw new ArgumentNullException(nameof(playerWonEventArgs), $"{nameof(Constants.PlayerWon)} requires argument {nameof(playerWonEventArgs)}");
+                //calculate the total amount of bytes for all guid players
+                Span<byte> totalBytes = stackalloc byte[playerWonEventArgs.Players.Count() * Marshal.SizeOf(typeof(Guid))];
+                int iterator = 0;
+                foreach (var p in playerWonEventArgs.Players)
+                {
+                    var a = p.PlayerId.ToByteArray();
+                    a.CopyTo<byte>(totalBytes.Slice(iterator));
+                    iterator += Marshal.SizeOf(typeof(Guid));
+                }
+                gameActionProtocol.Payload = totalBytes.ToArray();
                 gameActionProtocol.PayloadSize = (byte)gameActionProtocol.Payload.Length;
             }
             else if (gameActionProtocol.Phase == Constants.WaitingPlayers)
@@ -191,13 +199,13 @@ namespace t.lib
             return gameActionProtocol;
         }
 
-        internal (int totalpoints,int totalgameRounds) GetGameStartValues(GameActionProtocol gameActionProtocol)
+        internal (int totalpoints, int totalgameRounds) GetGameStartValues(GameActionProtocol gameActionProtocol)
         {
             if (gameActionProtocol.Phase != Constants.StartGame) throw new ArgumentException($"{nameof(Constants.StartGame)} required for argument {nameof(gameActionProtocol.Phase)}");
-            
+
             var p = BitConverter.ToInt32(gameActionProtocol.Payload.AsSpan().Slice(0, 4));
             var r = BitConverter.ToInt32(gameActionProtocol.Payload.AsSpan().Slice(4));
-            return (p,r);
+            return (p, r);
         }
         internal int GetNumber(GameActionProtocol gameActionProtocol)
         {
@@ -236,6 +244,24 @@ namespace t.lib
                 return player;
             }
             throw new NotImplementedException($"Not implemented {gameActionProtocol.Phase}");
+        }
+
+        public IEnumerable<Player> GetPlayers(GameActionProtocol gameActionProtocol)
+        {
+            if (gameActionProtocol.Phase != Constants.PlayerWon) throw new ArgumentException($"{nameof(gameActionProtocol)} requires property {nameof(gameActionProtocol.Phase)} to be set to {nameof(Constants.PlayerWon)}");
+
+            int amountGuids = gameActionProtocol.PayloadSize / Marshal.SizeOf(typeof(Guid));
+            var payload = gameActionProtocol.Payload.AsSpan();
+            Player[] players = new Player[amountGuids];
+            int a = 0;
+            for (int iterator = 0; iterator < amountGuids * Marshal.SizeOf(typeof(Guid)); iterator += Marshal.SizeOf(typeof(Guid)))
+            {
+                Guid g = new Guid(payload.Slice(iterator, Marshal.SizeOf(typeof(Guid))));
+                players[a] = new Player(String.Empty, g);
+                a++;
+            }
+
+            return players;
         }
 
         /// <summary>

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using t.lib;
+using t.lib.EventArgs;
 using t.lib.Game;
 using Xunit;
 
@@ -328,7 +329,7 @@ namespace t.TestProject1
                 game.Cards.Add(new Card(10));
             });
             var game_PlayerWonEventRaised = false;
-            void Game_PlayerWonEvent(object? sender, lib.EventArgs.EventArgs<IEnumerable<Player>> e)
+            void Game_PlayerWonEvent(object? sender, PlayerWonEventArgs e)
             {
                 game_PlayerWonEventRaised = true;
             }
@@ -544,6 +545,20 @@ namespace t.TestProject1
 
                 Assert.True(game_PlayerWonEventRaised);
             }
+        }
+        [Fact]
+        public void MixCardShouldReturnDiffrentValues()
+        {
+            var game = new GameLogic();
+            game.NewGame(4);
+            game.MixCards();
+
+            var card_first_it = game.Cards.First();
+
+            game.MixCards();
+            var card_second_it = game.Cards.First();
+
+            Assert.NotEqual(card_first_it.Value,card_second_it.Value);
         }
 
     }

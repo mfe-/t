@@ -13,16 +13,15 @@ namespace t.lib.Game
         private int? FinalGameRounds;
         public const int CardCapacity = 10;
         private const string InitializeAndStartNewGameMessage = $"Start a new Game with {nameof(NewGame)} and {nameof(Start)}";
-        private readonly Random random;
+        private Random? random;
         internal readonly List<GameAction> gameActions = new List<GameAction>();
         public event EventHandler<System.EventArgs>? GameStartedEvent;
         public event EventHandler<NextRoundEventArgs>? NextRoundEvent;
-        public event EventHandler<EventArgs<IEnumerable<Player>>>? PlayerWonEvent;
+        public event EventHandler<PlayerWonEventArgs>? PlayerWonEvent;
         public event EventHandler<EventArgs<Player>>? NewPlayerRegisteredEvent;
         public event EventHandler<System.EventArgs>? RequiredAmountOfPlayersReachedEvent;
         public GameLogic()
         {
-            random = new Random();
             Cards = new List<Card>(CardCapacity);
             PlayerCards = new Dictionary<Player, IList<Card>>();
             Players = new List<Player>();
@@ -105,6 +104,7 @@ namespace t.lib.Game
         /// </summary>
         public virtual void MixCards()
         {
+            random = new Random(DateTime.Now.Minute + DateTime.Now.Hour + DateTime.Now.Second);
             Cards.Clear();
             do
             {
@@ -191,7 +191,7 @@ namespace t.lib.Game
                 var winners = Players.Where(a => a.Points >= TotalPointsToPlay);
                 if (winners.Any())
                 {
-                    PlayerWonEvent?.Invoke(this, new EventArgs<IEnumerable<Player>>(winners));
+                    PlayerWonEvent?.Invoke(this, new PlayerWonEventArgs(winners));
                     return true;
                 }
             }
@@ -200,7 +200,7 @@ namespace t.lib.Game
                 var winners = GetPlayerStats().DistinctBy(a => a.Points);
                 if (winners.Any())
                 {
-                    PlayerWonEvent?.Invoke(this, new EventArgs<IEnumerable<Player>>(winners));
+                    PlayerWonEvent?.Invoke(this, new PlayerWonEventArgs(winners));
                 }
             }
             return Round == CardCapacity;

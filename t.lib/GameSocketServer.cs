@@ -97,9 +97,9 @@ namespace t.lib.Server
             _listener = new Socket(ipAddress.AddressFamily,
                 SocketType.Stream, ProtocolType.Tcp);
 
-            await Task.Factory.StartNew(() => ListeningAsync(localEndPoint, _listener),
+            var listenerTask = await Task.Factory.StartNew(() => ListeningAsync(localEndPoint, _listener),
                 cancellationToken, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
-
+            await listenerTask;
         }
 
         private CancellationTokenSource? cancellationTokenSource;

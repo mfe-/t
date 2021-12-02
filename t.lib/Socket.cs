@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace t.lib
@@ -25,6 +26,8 @@ namespace t.lib
         public async Task<Socket> AcceptAsync() => (Socket)await _socket.AcceptAsync();
         /// <inheritdoc />
         public void Connect(EndPoint remoteEP) => _socket.Connect(remoteEP);
+
+        public ValueTask ConnectAsync(EndPoint remoteEP, CancellationToken cancellationToken) => _socket.ConnectAsync(remoteEP, cancellationToken);
         /// <inheritdoc />
         public void Dispose() => _socket.Dispose();
         /// <inheritdoc />

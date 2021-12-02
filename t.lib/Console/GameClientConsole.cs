@@ -24,7 +24,7 @@ namespace t.lib.Console
         /// <returns>Task which indicates the process of the current execution of the method</returns>
         public override async Task ParseStartArgumentsAsync(string[] args)
         {
-            string command = String.Join(" ", args.Skip(1));
+            string command = String.Join(" ", args);
             string enteredCommand = PrepareCommandInput(command).Replace("-", "");
             string[] param = ToParam(command, enteredCommand);
             await ProcessEntertedCommand(enteredCommand, param);
@@ -80,7 +80,8 @@ namespace t.lib.Console
                         await OnJoinLanGameAsync(ipadress, port, playername);
                         break;
                     default:
-                        ShowOptions();
+                        //interactive
+                        await OnShowMenueAsync();
                         break;
                 }
             }
@@ -109,12 +110,10 @@ namespace t.lib.Console
             completeCommand = ReplaceFirst(completeCommand, commandInital, string.Empty);
             if (String.IsNullOrEmpty(completeCommand))
             {
-                //add sendung via helper
                 return new string[0];
             }
             else
             {
-                //add sendung via params
                 return completeCommand.Split(' ').Where(a => !String.IsNullOrEmpty(a)).ToArray();
             }
         }

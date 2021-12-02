@@ -48,16 +48,25 @@ namespace t.Client
 
                 var appConfig = hostContext.Configuration.GetSection("AppConfig").Get<AppConfig>();
 
-                services.AddHostedService(serviceProvider => new GameClientConsole(
-                    serviceProvider.GetService<ILogger<GameClientConsole>>() ?? throw new ArgumentNullException(nameof(ILogger<GameClientConsole>)),
-                    serviceProvider.GetService<IConfiguration>() ?? throw new ArgumentNullException(nameof(IConfiguration)), ReadLineAsync));
+                Func<IServiceProvider, GameClientConsole> GameClientConsoleFactory = serviceProvider => new GameClientConsole(
+                                        serviceProvider.GetService<ILogger<GameClientConsole>>() ?? throw new ArgumentNullException(nameof(ILogger<GameClientConsole>)),
+                                        serviceProvider.GetService<IConfiguration>() ?? throw new ArgumentNullException(nameof(IConfiguration)), ReadLineAsync);
+                
+                services.AddScoped(GameClientConsoleFactory);
+                services.AddHostedService(GameClientConsoleFactory);
+
             }).ConfigureLogging((hostingContext, logging) =>
             {
                 logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                 logging.AddConsole();
             }).UseConsoleLifetime();
 
-            await builder.RunConsoleAsync();
+            var host = builder.Build();
+
+            var gameClientConsole = host.Services.GetService<GameClientConsole>();
+            if (gameClientConsole == null) throw new NullReferenceException($"{nameof(gameClientConsole)} is null!");
+            await gameClientConsole.ParseStartArgumentsAsync(args);
+
 
             return 0;
         }

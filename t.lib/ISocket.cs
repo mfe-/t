@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace t.lib
@@ -410,6 +411,6 @@ namespace t.lib
         // Summary:
         //     Closes the System.Net.Sockets.Socket connection and releases all associated resources.
         void Close();
-
+        ValueTask ConnectAsync(EndPoint remoteEP, CancellationToken cancellationToken);
     }
 }

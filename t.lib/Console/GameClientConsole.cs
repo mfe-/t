@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Threading.Tasks;
 using t.lib.EventArgs;
@@ -64,8 +65,6 @@ namespace t.lib.Console
         {
             try
             {
-
-
                 switch (enteredCommand)
                 {
                     case "exit":
@@ -84,6 +83,10 @@ namespace t.lib.Console
                         await OnShowMenueAsync();
                         break;
                 }
+            }
+            catch (SocketException se) when (se.ErrorCode == 10060)
+            {
+                System.Console.WriteLine($"Could not reach Server. {se.Message}");
             }
             catch (GameActionProtocolException e)
             {

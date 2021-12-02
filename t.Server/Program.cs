@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using t.lib;
 using t.lib.Server;
@@ -25,7 +26,7 @@ namespace t.Server
             {
                 services.AddOptions();
 
-                services.AddHostedService(serviceProvider =>
+                Func<IServiceProvider, GameSocketServer> GameSocketServerFactory = serviceProvider =>
                 {
                     var identifier = hostContext.Configuration.GetValue<Guid>("AppConfig:Identifier");
                     if (identifier == Guid.Empty)
@@ -41,23 +42,26 @@ namespace t.Server
                         return new GameSocketServer(
                             hostContext.Configuration.GetSection("AppConfig").Get<AppConfig>(),
                             hostContext.Configuration.GetValue<string>("AppConfig:ServerIpAdress"),
-                            hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"), 
+                            hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"),
                             serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new ArgumentNullException(),
                             identifier);
                     }
-
-                });
+                };
+                services.AddScoped(GameSocketServerFactory);
+                services.AddHostedService(GameSocketServerFactory);
             }).ConfigureLogging((hostingContext, logging) =>
             {
                 logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                 logging.AddConsole();
             }).UseConsoleLifetime();
 
-            var runConsoleTask = builder.RunConsoleAsync();
+            var host = builder.Build();
 
+            var gameSocketServer = host.Services.GetService<GameSocketServer>();
+            if (gameSocketServer == null) throw new NullReferenceException($"{nameof(gameSocketServer)} is null!");
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            await gameSocketServer.StartAsync(cancellationTokenSource.Token);
 
-
-            await runConsoleTask;
             //GameActionProtocol gameActionProtocol = new GameActionProtocol();
             //gameActionProtocol.Version = 0b0000100;
             //System.Console.WriteLine(gameActionProtocol.Version);

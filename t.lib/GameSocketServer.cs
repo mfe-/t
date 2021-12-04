@@ -39,7 +39,15 @@ namespace t.lib.Server
             UdpPort = udpPort;
             ServerIpAdress = serverIpAdress;
             _guid = Guid.NewGuid();
-            _ServerIpAddress = GetIpAdress();
+            if (String.IsNullOrEmpty(serverIpAdress))
+            {
+                _ServerIpAddress = GetLanIpAdress();
+                _logger.LogTrace($"{nameof(ServerIpAdress)} not set!");
+            }
+            else
+            {
+                _ServerIpAddress = IPAddress.Parse(serverIpAdress);
+            }
             _logger.LogTrace("Use {serverip} for tcp sockets", _ServerIpAddress);
         }
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, int udpPort, ILogger logger, Guid guid)
@@ -86,7 +94,7 @@ namespace t.lib.Server
             return _playerConnections.Select(a => a.Value).All(a => a.MessageQueue.Count == 0);
         }
         private Socket? _listener;
-        private async Task StartListeningAsync(string serverName, CancellationToken cancellationToken)
+        public async Task StartListeningAsync(string serverName, CancellationToken cancellationToken)
         {
             // Establish the local endpoint for the socket.  
             // Dns.GetHostName returns the name of the
@@ -103,22 +111,12 @@ namespace t.lib.Server
             await listenerTask;
         }
 
-        private IPAddress GetIpAdress()
+        public static IPAddress GetLanIpAdress()
         {
             IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-            IPAddress ipAddress;
-            if (String.IsNullOrEmpty(ServerIpAdress))
-            {
-                ipAddress = ipHostInfo.AddressList.First(a => a.AddressFamily == AddressFamily.InterNetwork);
-                _logger.LogTrace($"{nameof(ServerIpAdress)} not set!");
-            }
-            else
-            {
-                ipAddress = IPAddress.Parse(ServerIpAdress);
-            }
-
-            return ipAddress;
+            return ipHostInfo.AddressList.First(a => a.AddressFamily == AddressFamily.InterNetwork);
         }
+
 
         public async Task StartBroadcastingServerAsync(string gameName, int requiredAmountOfPlayers, int gameRounds, CancellationToken cancellationToken)
         {

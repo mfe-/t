@@ -31,6 +31,12 @@ namespace t.Client
                        ,{ "-port", "Port" }
                        ,{ "-join", "join" }
                        ,{"-name", "name" }
+                        ,{ "-start","start"}
+                        ,{"-gamerounds","gamerounds"}
+                        ,{"-players","players"}
+                        ,{"-gamename","gamename"},
+                        {"-playername","playername" }
+
                     };
                     config.AddCommandLine(args, switchMappings);
                 }
@@ -48,10 +54,10 @@ namespace t.Client
 
                 var appConfig = hostContext.Configuration.GetSection("AppConfig").Get<AppConfig>();
 
-                Func<IServiceProvider, GameClientConsole> GameClientConsoleFactory = serviceProvider => new GameClientConsole(
+                Func<IServiceProvider, GameClientConsole> GameClientConsoleFactory = serviceProvider => new GameClientConsole(serviceProvider.GetRequiredService<IServiceProvider>(),
                                         serviceProvider.GetService<ILogger<GameClientConsole>>() ?? throw new ArgumentNullException(nameof(ILogger<GameClientConsole>)),
-                                        serviceProvider.GetService<IConfiguration>() ?? throw new ArgumentNullException(nameof(IConfiguration)), ReadLineAsync);
-                
+                                        appConfig ?? throw new ArgumentNullException(nameof(AppConfig)), ReadLineAsync);
+
                 services.AddScoped(GameClientConsoleFactory);
                 services.AddHostedService(GameClientConsoleFactory);
 

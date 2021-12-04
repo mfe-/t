@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
@@ -10,14 +11,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using t.lib.EventArgs;
 using t.lib.Game;
+using t.lib.Server;
 
 namespace t.lib.Console
 {
     public class GameClientConsole : GameClient
     {
-        public GameClientConsole(ILogger logger, IConfiguration configuration, Func<Task<string>> onCommandFunc) : base(logger, configuration, onCommandFunc)
-        {
+        public IServiceProvider ServiceProvider { get; }
 
+        public GameClientConsole(IServiceProvider serviceProvider, ILogger logger, AppConfig appConfig, Func<Task<string>> onCommandFunc) : base(logger, appConfig, onCommandFunc)
+        {
+            ServiceProvider = serviceProvider;
         }
         /// <summary>
         /// Parse StartArguments if provided
@@ -84,6 +88,65 @@ namespace t.lib.Console
                         var publicGames = await GameSocketClient.FindLanGamesAsync(15000, cancellationTokenSource.Token);
                         await OnFoundLanGames(publicGames);
                         break;
+                    case "start":
+                        //"[start] a game -gamename=katzenserver -gamerounds=2 -players=4 -playername=martin"
+                        CancellationTokenSource cancellationTokenServer = new CancellationTokenSource();
+                        string gamename = (param.FirstOrDefault(a => a.Contains("gamename")) ?? "").Replace("-gamename=", "");
+                        string playerName = (param.FirstOrDefault(a => a.Contains("playername")) ?? "").Replace("-playername=", "");
+                        int.TryParse((param.FirstOrDefault(a => a.Contains("gamerounds")) ?? "").Replace("-gamerounds=", ""), out int gamerounds);
+                        int.TryParse((param.FirstOrDefault(a => a.Contains("players")) ?? "").Replace("-players=", ""), out int players);
+
+                        if (String.IsNullOrEmpty(gamename))
+                        {
+                            System.Console.WriteLine("Enter Gamename:");
+                            gamename = System.Console.ReadLine() ?? "gamename";
+                        }
+                        if (String.IsNullOrEmpty(playerName))
+                        {
+                            System.Console.WriteLine("Enter your playername:");
+                            playerName = System.Console.ReadLine() ?? "playername";
+                        }
+                        if (gamerounds <= 0)
+                        {
+                            System.Console.WriteLine("Enter the amount of games to play (at least one round):");
+                            var gr = System.Console.ReadLine() ?? "1";
+                            if (int.TryParse(gr, out int gameround))
+                            {
+                                gamerounds = gameround;
+                            }
+                            else
+                            {
+                                gamerounds = 1;
+                            }
+                        }
+                        if (players <= 0)
+                        {
+                            System.Console.WriteLine("Enter the required amount of players for the game (at least two):");
+                            var p = System.Console.ReadLine() ?? "2";
+                            if (int.TryParse(p, out int requiredPlayers) && requiredPlayers > 2)
+                            {
+                                players = requiredPlayers;
+                            }
+                            else
+                            {
+                                players = 2;
+                            }
+                        }
+
+                        var config = AppConfig;
+                        config.GameRounds = gamerounds;
+                        config.RequiredAmountOfPlayers = players;
+                        GameSocketServer gameSocketServer = new GameSocketServer(AppConfig, "", AppConfig.ServerPort, AppConfig.BroadcastPort, ServiceProvider.GetService<ILogger<GameSocketServer>>());
+                        Task gameServerTask = gameSocketServer.StartListeningAsync(gamename, cancellationTokenServer.Token);
+                        //give the server time to boot up
+                        await Task.Delay(TimeSpan.FromSeconds(1));
+                        Task joinGameTask = OnJoinLanGameAsync(GameSocketServer.GetLanIpAdress().ToString(), config.ServerPort, playerName);
+                        
+                        Task[] tasks = new Task[] { gameServerTask, joinGameTask };
+
+                        await Task.WhenAll(tasks);
+
+                        break;
                     default:
                         //interactive
                         await OnShowMenueAsync();
@@ -104,10 +167,11 @@ namespace t.lib.Console
         private static void ShowOptions()
         {
             System.Console.WriteLine("Welcome to t");
-            System.Console.WriteLine("join -ip=127.0.0.1 -port=11000 -name=martin");
-            System.Console.WriteLine("find games");
-            System.Console.WriteLine("version shows the version of the app");
-            System.Console.WriteLine("exit the app");
+            System.Console.WriteLine("[start] a game -gamename=katzenserver -gamerounds=2 -players=4 -playername=martin");
+            System.Console.WriteLine("[join] -ip=127.0.0.1 -port=11000 -name=martin");
+            System.Console.WriteLine("[find] and join games");
+            System.Console.WriteLine("[version] shows the version of the app");
+            System.Console.WriteLine("[exit] the app");
         }
 
         private string PrepareCommandInput(string command)

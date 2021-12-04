@@ -16,13 +16,13 @@ namespace t.lib
     public abstract class GameClient : IHostedService
     {
         protected readonly ILogger logger;
-        protected readonly IConfiguration configuration;
+        protected readonly AppConfig AppConfig;
         protected readonly string[] args;
         protected readonly Func<Task<string>> onChoiceCommandFunc;
-        protected GameClient(ILogger logger, IConfiguration configuration, Func<Task<string>> onChoiceCommandFunc)
+        protected GameClient(ILogger logger, AppConfig appConfig, Func<Task<string>> onChoiceCommandFunc)
         {
             this.logger = logger;
-            this.configuration = configuration;
+            this.AppConfig = appConfig;
             this.args = Environment.GetCommandLineArgs() ?? new string[0];
             this.onChoiceCommandFunc = onChoiceCommandFunc;
         }

@@ -5,6 +5,7 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<!--<StartArguments>-join -ip=10.51.51.100 -port=11000 -name=surface3</StartArguments>-->
+    <StartArguments>-start  -gamename=katzenserver -gamerounds=2 -players=2 -playername=martin</StartArguments>
 		<RuntimeIdentifiers>win10-x64;osx-x64</RuntimeIdentifiers>
 	</PropertyGroup>
 

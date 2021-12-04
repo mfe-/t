@@ -20,6 +20,11 @@ namespace t.lib
         {
             _socket = new System.Net.Sockets.Socket(addressFamily, socketType, protocolType);
         }
+
+        public Task<int> SendToAsync(ArraySegment<byte> vs, SocketFlags socketFlags, EndPoint endPoint)
+            => _socket.SendToAsync(vs, socketFlags, endPoint);
+
+
         /// <inheritdoc />
         public EndPoint? RemoteEndPoint => _socket.RemoteEndPoint;
         /// <inheritdoc />

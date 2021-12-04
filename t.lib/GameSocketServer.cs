@@ -3,14 +3,19 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using t.lib.EventArgs;
 using t.lib.Game;
 
+[assembly: InternalsVisibleTo("t.TestProject1")]
 namespace t.lib.Server
 {
     public partial class GameSocketServer : GameSocketBase, IHostedService
@@ -18,6 +23,7 @@ namespace t.lib.Server
         private readonly int _RequiredAmountOfPlayers;
         private readonly int? _TotalPoints;
         private readonly int _GameRounds;
+        private readonly IPAddress _ServerIpAddress;
         private readonly ConcurrentDictionary<Guid, ConnectionState> _playerConnections = new();
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger) : base(logger)
         {
@@ -32,6 +38,7 @@ namespace t.lib.Server
             ServerPort = serverPort;
             ServerIpAdress = serverIpAdress;
             _guid = Guid.NewGuid();
+            _ServerIpAddress = GetIpAdress();
         }
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger, Guid guid)
             : this(appConfig, serverIpAdress, serverPort, logger)
@@ -81,6 +88,20 @@ namespace t.lib.Server
             // Establish the local endpoint for the socket.  
             // Dns.GetHostName returns the name of the
             // host running the application.  
+
+            IPEndPoint localEndPoint = new IPEndPoint(_ServerIpAddress, ServerPort);
+
+            // Create a TCP/IP socket.  
+            _listener = new Socket(_ServerIpAddress.AddressFamily,
+                SocketType.Stream, ProtocolType.Tcp);
+
+            var listenerTask = await Task.Factory.StartNew(() => ListeningAsync(localEndPoint, _listener),
+                cancellationToken, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
+            await listenerTask;
+        }
+
+        private IPAddress GetIpAdress()
+        {
             IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress ipAddress;
             if (String.IsNullOrEmpty(ServerIpAdress))
@@ -91,16 +112,91 @@ namespace t.lib.Server
             {
                 ipAddress = IPAddress.Parse(ServerIpAdress);
             }
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, ServerPort);
 
-            // Create a TCP/IP socket.  
-            _listener = new Socket(ipAddress.AddressFamily,
-                SocketType.Stream, ProtocolType.Tcp);
-
-            var listenerTask = await Task.Factory.StartNew(() => ListeningAsync(localEndPoint, _listener),
-                cancellationToken, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
-            await listenerTask;
+            return ipAddress;
         }
+        /// <summary>
+        /// Calculates the subnetmask of <paramref name="iPAddress"/>
+        /// </summary>
+        /// <remarks>https://weblogs.asp.net/razan/finding-subnet-mask-from-ip4-address-using-c</remarks>
+        /// <param name="iPAddress"></param>
+        /// <returns>Subnetmask</returns>
+        public static IPAddress GetSubnetmask(IPAddress iPAddress)
+        {
+            uint ReturnFirtsOctet(IPAddress iPAddress)
+            {
+                byte[] byteIP = iPAddress.GetAddressBytes();
+                uint ipInUint = (uint)byteIP[0];
+                return ipInUint;
+            }
+            uint firstOctet = ReturnFirtsOctet(iPAddress);
+            if (firstOctet >= 0 && firstOctet <= 127)
+                return IPAddress.Parse("255.0.0.0");
+            else if (firstOctet >= 128 && firstOctet <= 191)
+                return IPAddress.Parse("255.255.0.0");
+            else if (firstOctet >= 192 && firstOctet <= 223)
+                return IPAddress.Parse("255.255.255.0");
+            else return IPAddress.Parse("0.0.0.0");
+        }
+        /// <summary>
+        /// Calculates the broadcast ipadress of <paramref name="address"/> using <paramref name="mask"/>
+        /// </summary>
+        /// <remarks>
+        /// https://stackoverflow.com/questions/25281099/how-to-get-the-local-ip-broadcast-address-dynamically-c-sharp
+        /// </remarks>
+        /// <param name="address"></param>
+        /// <param name="mask"></param>
+        /// <returns></returns>
+        public static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)
+        {
+            uint ipAddress = BitConverter.ToUInt32(address.GetAddressBytes(), 0);
+            uint ipMaskV4 = BitConverter.ToUInt32(mask.GetAddressBytes(), 0);
+            uint broadCastIpAddress = ipAddress | ~ipMaskV4;
+
+            return new IPAddress(BitConverter.GetBytes(broadCastIpAddress));
+        }
+
+        public async Task StartBroadcastingServerAsync(CancellationToken cancellationToken)
+        {
+            //var subnetmask = GetSubnetmask(_ServerIpAddress);
+            //var broadcast = GetBroadcastAddress(_ServerIpAddress, subnetmask);
+
+
+            var msgbytes = GenerateBroadcastMessage(_ServerIpAddress, ServerPort, "muh");
+
+            var broadcastTask = await Task.Factory.StartNew(async () =>
+            {
+                using UdpClient client = new UdpClient();
+                IPEndPoint ip = new IPEndPoint(IPAddress.Broadcast, 15000);
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    await client.SendAsync(msgbytes, ip, cancellationToken);
+
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+            });
+
+            await broadcastTask;
+
+        }
+        public const int maxBroadcastCharacters = 60;
+        internal byte[] GenerateBroadcastMessage(IPAddress iPAddress, int port, string gameName)
+        {
+
+            var ipBytes = iPAddress.GetAddressBytes();
+            var portBytes = BitConverter.GetBytes(port);
+            //we only take the first 60 characters
+            var serverNameBytes = Encoding.ASCII.GetBytes(gameName.Length < 60 ? gameName : gameName.Substring(0, maxBroadcastCharacters));
+
+            var broadcastMsg = new byte[ipBytes.Length + portBytes.Length + maxBroadcastCharacters];
+
+            ipBytes.CopyTo(broadcastMsg, 0);
+            portBytes.CopyTo(broadcastMsg, 4);
+            serverNameBytes.CopyTo(broadcastMsg, 8);
+
+            return broadcastMsg;
+        }
+
 
         private CancellationTokenSource? cancellationTokenSource;
         private async Task ListeningAsync(IPEndPoint localEndPoint, Socket listener)

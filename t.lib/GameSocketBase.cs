@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -351,6 +353,25 @@ namespace t.lib
 
             return new NextRoundEventArgs(round, new Card(cardNumber));
 
+        }
+        internal static bool TryGetBroadcastMessage(byte[] broadcastmsg, [NotNullWhen(true)] out IPAddress? iPAddress, [NotNullWhen(true)] out int? port, [NotNullWhen(true)] out string? servername)
+        {
+            iPAddress = null;
+            port = null;
+            servername = null;
+            try
+            {
+                var msg = broadcastmsg.AsSpan();
+                iPAddress = new IPAddress(msg.Slice(0, 4));
+                port = BitConverter.ToInt32(msg.Slice(4, 4).ToArray());
+                servername = Encoding.ASCII.GetString(msg.Slice(8, msg.Length - 8));
+                servername = servername.Replace("\0", String.Empty).TrimEnd();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

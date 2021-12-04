@@ -58,6 +58,7 @@ namespace t.lib
         public abstract Task ShowPlayerOffered(Player player, int offered, int forCard);
         public abstract Task ShowPlayerWon(IEnumerable<Player> playerStats);
         public abstract Task ShowPlayerStats(IEnumerable<Player> playerStats);
+        public abstract Task OnFoundLanGames(IEnumerable<PublicGame> publicGames);
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {

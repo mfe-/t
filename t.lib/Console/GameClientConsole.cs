@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using t.lib.EventArgs;
 using t.lib.Game;
@@ -77,6 +78,11 @@ namespace t.lib.Console
                         int.TryParse((param.FirstOrDefault(a => a.Contains("port")) ?? "").Replace("-port=", ""), out int port);
                         string playername = (param.FirstOrDefault(a => a.Contains("name")) ?? "").Replace("-name=", "");
                         await OnJoinLanGameAsync(ipadress, port, playername);
+                        break;
+                    case "find":
+                        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        var publicGames = await GameSocketClient.FindLanGamesAsync(15000, cancellationTokenSource.Token);
+                        await OnFoundLanGames(publicGames);
                         break;
                     default:
                         //interactive
@@ -159,6 +165,11 @@ namespace t.lib.Console
         public override Task ShowPlayerOffered(Player player, int offered, int forCard)
         {
             System.Console.WriteLine($"{player.Name} offered {offered} for {forCard}");
+            return Task.CompletedTask;
+        }
+
+        public override Task OnFoundLanGames(IEnumerable<PublicGame> publicGames)
+        {
             return Task.CompletedTask;
         }
     }

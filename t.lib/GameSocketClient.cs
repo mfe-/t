@@ -4,16 +4,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using t.lib.EventArgs;
 using t.lib.Game;
 
 namespace t.lib
 {
-    public class GameSocketClient : GameSocketBase, IDisposable
+    public partial class GameSocketClient : GameSocketBase, IDisposable
     {
-        private readonly IPAddress serverIpAdress;
-        private readonly int serverPort;
+        private readonly IPAddress _serverIpAdress;
+        private readonly int _serverPort;
         private int? totalGameRounds;
         private int GameRound;
         private Socket? _senderSocket;
@@ -21,8 +22,8 @@ namespace t.lib
 
         public GameSocketClient(IPAddress serverIpAdress, int serverPort, ILogger logger) : base(logger)
         {
-            this.serverIpAdress = serverIpAdress;
-            this.serverPort = serverPort;
+            this._serverIpAdress = serverIpAdress;
+            this._serverPort = serverPort;
             ActionDictionary.Add(Constants.KickedPlayer, OnPlayerKickedAsync);
             ActionDictionary.Add(Constants.NewPlayer, OnNewPlayerAsync);
             ActionDictionary.Add(Constants.NextRound, OnNextRoundAsync);
@@ -90,10 +91,10 @@ namespace t.lib
             // Connect to a remote device.  
 
             // Establish the remote endpoint for the socket.  
-            IPEndPoint remoteEP = new IPEndPoint(serverIpAdress, serverPort);
+            IPEndPoint remoteEP = new IPEndPoint(_serverIpAdress, _serverPort);
 
             // Create a TCP/IP  socket.  
-            _senderSocket = new Socket(serverIpAdress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            _senderSocket = new Socket(_serverIpAdress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             if (SenderSocket == null) throw new InvalidOperationException($"{nameof(SenderSocket)} should not be null!");
             // Connect the socket to the remote endpoint. Catch any errors.  
             try
@@ -137,11 +138,11 @@ namespace t.lib
             {
                 if (se.ErrorCode == 10054)
                 {
-                    _logger.LogCritical(se, "Lost connection to {0} SocketException : {1}", serverIpAdress, se.ToString());
+                    _logger.LogCritical(se, "Lost connection to {0} SocketException : {1}", _serverIpAdress, se.ToString());
                 }
                 else
                 {
-                    _logger.LogCritical(se, "Could not connect to {0} SocketException : {1}", serverIpAdress, se.ToString());
+                    _logger.LogCritical(se, "Could not connect to {0} SocketException : {1}", _serverIpAdress, se.ToString());
                 }
                 throw;
             }
@@ -246,7 +247,7 @@ namespace t.lib
                 SenderSocket?.Close();
                 SenderSocket?.Dispose();
             }
-            catch(ObjectDisposedException)
+            catch (ObjectDisposedException)
             {
                 //we dont care on dispose exception
             }
@@ -307,6 +308,26 @@ namespace t.lib
                 return messageReceiveArgs.ShowPlayerWonFunc(Game.GetPlayerStats());
             }
             throw new NotImplementedException();
+        }
+        public static async Task<IEnumerable<PublicGame>> FindLanGamesAsync(int udpPort, CancellationToken cancellationToken)
+        {
+            //Client uses as receive udp client
+            using UdpClient udpClient = new UdpClient(udpPort);
+            List<PublicGame> publicGames = new List<PublicGame>();
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                //IPEndPoint object will allow us to read datagrams sent from any source.
+                var receivedResults = await udpClient.ReceiveAsync();
+
+                if (TryGetBroadcastMessage(receivedResults.Buffer, out var ipadress, out var port, out var gameName))
+                {
+                    if (!publicGames.Any(a => a.ServerIpAddress != ipadress))
+                    {
+                        publicGames.Add(new(ipadress, port.Value, gameName));
+                    }
+                }
+            }
+            return publicGames;
         }
     }
 }

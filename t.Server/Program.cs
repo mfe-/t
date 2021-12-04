@@ -62,7 +62,7 @@ namespace t.Server
             var gameSocketServer = host.Services.GetService<GameSocketServer>();
             if (gameSocketServer == null) throw new InvalidOperationException($"{nameof(gameSocketServer)} is null!");
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            await gameSocketServer.StartBroadcastingServerAsync(4, 1, 1, cancellationTokenSource.Token);
+            await gameSocketServer.StartAsync(cancellationTokenSource.Token);
 
             //GameActionProtocol gameActionProtocol = new GameActionProtocol();
             //gameActionProtocol.Version = 0b0000100;

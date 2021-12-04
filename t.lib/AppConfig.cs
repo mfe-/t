@@ -9,7 +9,7 @@ namespace t.lib
             //init some default values
             RequiredAmountOfPlayers = 10;
         }
-
+        public int BroadcastPort { get; set; }
         public int ServerPort { get; set; }
         public string? ServerIpAdress { get; set; }
         public Guid Identifier { get; set; }

@@ -3,14 +3,19 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using t.lib.EventArgs;
 using t.lib.Game;
 
+[assembly: InternalsVisibleTo("t.TestProject1")]
 namespace t.lib.Server
 {
     public partial class GameSocketServer : GameSocketBase, IHostedService
@@ -18,8 +23,9 @@ namespace t.lib.Server
         private readonly int _RequiredAmountOfPlayers;
         private readonly int? _TotalPoints;
         private readonly int _GameRounds;
+        private readonly IPAddress _ServerIpAddress;
         private readonly ConcurrentDictionary<Guid, ConnectionState> _playerConnections = new();
-        public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger) : base(logger)
+        public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, int udpPort, ILogger logger) : base(logger)
         {
             if (appConfig.GameRounds < 1) throw new ArgumentException("At least one game round should be played!");
             if (appConfig.RequiredAmountOfPlayers < 1) throw new ArgumentException("At least two players are required to play the game!");
@@ -30,11 +36,14 @@ namespace t.lib.Server
             _TotalPoints = appConfig.TotalPoints;
             _GameRounds = appConfig.GameRounds;
             ServerPort = serverPort;
+            UdpPort = udpPort;
             ServerIpAdress = serverIpAdress;
             _guid = Guid.NewGuid();
+            _ServerIpAddress = GetIpAdress();
+            _logger.LogTrace("Use {serverip} for tcp sockets", _ServerIpAddress);
         }
-        public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger, Guid guid)
-            : this(appConfig, serverIpAdress, serverPort, logger)
+        public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, int udpPort, ILogger logger, Guid guid)
+            : this(appConfig, serverIpAdress, serverPort, udpPort, logger)
         {
             _guid = guid;
         }
@@ -68,6 +77,7 @@ namespace t.lib.Server
         }
 
         public int ServerPort { get; }
+        public int UdpPort { get; }
         public string ServerIpAdress { get; }
 
 
@@ -76,34 +86,93 @@ namespace t.lib.Server
             return _playerConnections.Select(a => a.Value).All(a => a.MessageQueue.Count == 0);
         }
         private Socket? _listener;
-        private async Task StartListeningAsync(CancellationToken cancellationToken)
+        private async Task StartListeningAsync(string serverName, CancellationToken cancellationToken)
         {
             // Establish the local endpoint for the socket.  
             // Dns.GetHostName returns the name of the
             // host running the application.  
+
+            IPEndPoint localEndPoint = new IPEndPoint(_ServerIpAddress, ServerPort);
+
+            // Create a TCP/IP socket.  
+            _listener = new Socket(_ServerIpAddress.AddressFamily,
+                SocketType.Stream, ProtocolType.Tcp);
+
+            var listenerTask = await Task.Factory.StartNew(() => ListeningAsync(serverName, localEndPoint, _listener),
+                cancellationToken, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
+            await listenerTask;
+        }
+
+        private IPAddress GetIpAdress()
+        {
             IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress ipAddress;
             if (String.IsNullOrEmpty(ServerIpAdress))
             {
-                ipAddress = ipHostInfo.AddressList[0];
+                ipAddress = ipHostInfo.AddressList.First(a => a.AddressFamily == AddressFamily.InterNetwork);
+                _logger.LogTrace($"{nameof(ServerIpAdress)} not set!");
             }
             else
             {
                 ipAddress = IPAddress.Parse(ServerIpAdress);
             }
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, ServerPort);
 
-            // Create a TCP/IP socket.  
-            _listener = new Socket(ipAddress.AddressFamily,
-                SocketType.Stream, ProtocolType.Tcp);
-
-            await Task.Factory.StartNew(() => ListeningAsync(localEndPoint, _listener),
-                cancellationToken, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
-
+            return ipAddress;
         }
 
+        public async Task StartBroadcastingServerAsync(string gameName, int requiredAmountOfPlayers, int gameRounds, CancellationToken cancellationToken)
+        {
+            var broadcastTask = await Task.Factory.StartNew(async () =>
+            {
+                using UdpClient client = new UdpClient();
+                IPEndPoint ip = new IPEndPoint(IPAddress.Broadcast, UdpPort);
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    var msgbytes = GenerateBroadcastMessage(_ServerIpAddress, ServerPort, gameName, requiredAmountOfPlayers, _playerConnections.Count, gameRounds);
+                    _logger.LogTrace("UDP Broadcast {bytes} bytes {ServerIpAdress}:{socketServerPort} Gamename:{Gamename} Players {currentPlayers}/{ofRequiredPlayers}", msgbytes.Length,
+                        _ServerIpAddress, ServerPort, gameName, _playerConnections.Count, requiredAmountOfPlayers);
+                    await client.SendAsync(msgbytes, ip, cancellationToken);
+
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+                _logger.LogInformation($"Stopped {nameof(StartBroadcastingServerAsync)}");
+            });
+
+            await broadcastTask;
+
+        }
+        public const int maxBroadcastCharacters = 60;
+        internal byte[] GenerateBroadcastMessage(IPAddress iPAddress, int port, string gameName, int requiredAmountOfPlayers, int currentAmountOfPlayers, int gameRounds)
+        {
+            //4
+            var ipBytes = iPAddress.GetAddressBytes();
+            //4
+            var portBytes = BitConverter.GetBytes(port);
+            //4
+            var requiredAmountOfPlayersBytes = BitConverter.GetBytes(requiredAmountOfPlayers);
+            //4
+            var gameRoundsBytes = BitConverter.GetBytes(gameRounds);
+            //4
+            var currentAmountPlayersBytes = BitConverter.GetBytes(currentAmountOfPlayers);
+            //we only take the first 60 characters
+            var serverNameBytes = Encoding.ASCII.GetBytes(gameName.Length < 60 ? gameName : gameName.Substring(0, maxBroadcastCharacters));
+
+            var broadcastMsg = new byte[ipBytes.Length + portBytes.Length + requiredAmountOfPlayersBytes.Length + gameRoundsBytes.Length + maxBroadcastCharacters];
+
+            ipBytes.CopyTo(broadcastMsg, 0);
+            portBytes.CopyTo(broadcastMsg, 4);
+            requiredAmountOfPlayersBytes.CopyTo(broadcastMsg, 8);
+            gameRoundsBytes.CopyTo(broadcastMsg, 12);
+            currentAmountPlayersBytes.CopyTo(broadcastMsg, 16);
+            serverNameBytes.CopyTo(broadcastMsg, 20);
+
+            return broadcastMsg;
+        }
+
+
         private CancellationTokenSource? cancellationTokenSource;
-        private async Task ListeningAsync(IPEndPoint localEndPoint, Socket listener)
+        private CancellationTokenSource? _cancellationTokenBroadcasting;
+        private async Task ListeningAsync(string serverName, IPEndPoint localEndPoint, Socket listener)
         {
             _logger.LogInformation($"{nameof(ListeningAsync)} on {localEndPoint.Address}:{ServerPort}", localEndPoint.Address, ServerPort);
             _logger.LogInformation("ServerId {ServerId} generated", _guid);
@@ -120,6 +189,9 @@ namespace t.lib.Server
 
                     _logger.LogInformation("Waiting for a connection...");
                     // Start listening for connections.  
+                    _cancellationTokenBroadcasting = new CancellationTokenSource();
+                    _ = StartBroadcastingServerAsync(serverName, _RequiredAmountOfPlayers, _GameRounds, _cancellationTokenBroadcasting.Token);
+
                     while (true)
                     {
                         if (cancellationTokenSource != null && cancellationTokenSource.IsCancellationRequested)
@@ -212,6 +284,7 @@ namespace t.lib.Server
                     connectionState.LastSendPayload = gameActionProtocolSend;
                 }
 
+                _cancellationTokenBroadcasting?.Cancel();
 
                 while (gameActionProtocolSend.Phase != Constants.PlayerWon)
                 {
@@ -468,7 +541,7 @@ namespace t.lib.Server
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            return StartListeningAsync(cancellationToken);
+            return StartListeningAsync("asdf", cancellationToken);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

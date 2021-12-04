@@ -412,5 +412,6 @@ namespace t.lib
         //     Closes the System.Net.Sockets.Socket connection and releases all associated resources.
         void Close();
         ValueTask ConnectAsync(EndPoint remoteEP, CancellationToken cancellationToken);
+        Task<int> SendToAsync(ArraySegment<byte> vs, SocketFlags socketFlags, EndPoint endPoint);
     }
 }

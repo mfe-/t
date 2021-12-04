@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using t.lib.EventArgs;
 using t.lib.Game;
@@ -78,6 +79,11 @@ namespace t.lib.Console
                         string playername = (param.FirstOrDefault(a => a.Contains("name")) ?? "").Replace("-name=", "");
                         await OnJoinLanGameAsync(ipadress, port, playername);
                         break;
+                    case "find":
+                        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        var publicGames = await GameSocketClient.FindLanGamesAsync(15000, cancellationTokenSource.Token);
+                        await OnFoundLanGames(publicGames);
+                        break;
                     default:
                         //interactive
                         await OnShowMenueAsync();
@@ -99,6 +105,7 @@ namespace t.lib.Console
         {
             System.Console.WriteLine("Welcome to t");
             System.Console.WriteLine("join -ip=127.0.0.1 -port=11000 -name=martin");
+            System.Console.WriteLine("find games");
             System.Console.WriteLine("version shows the version of the app");
             System.Console.WriteLine("exit the app");
         }
@@ -160,6 +167,46 @@ namespace t.lib.Console
         {
             System.Console.WriteLine($"{player.Name} offered {offered} for {forCard}");
             return Task.CompletedTask;
+        }
+
+        public override async Task OnFoundLanGames(IEnumerable<PublicGame> publicGames)
+        {
+            System.Console.WriteLine($"Found the following games:");
+            int i = 0;
+            var enumerator = publicGames.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                i++;
+                var publicGame = enumerator.Current;
+                publicGame.GameId = i;
+
+                System.Console.WriteLine($"[{publicGame.GameId}] {publicGame.GameName} Players [{publicGame.CurrentAmountOfPlayers}/{publicGame.RequiredAmountOfPlayers}] GameRounds: {publicGame.GameRounds} {publicGame.ServerIpAddress}:{publicGame.ServerPort}");
+            }
+            if (i != 0)
+            {
+                System.Console.WriteLine("Enter the number of the game to join");
+                string? input = System.Console.ReadLine();
+                if (!String.IsNullOrEmpty(input))
+                {
+                    int gameid = -1;
+                    if (int.TryParse(input, out gameid))
+                    {
+                        var langame = publicGames.FirstOrDefault(a => a.GameId == gameid);
+
+                        if (langame != null)
+                        {
+                            System.Console.WriteLine("Enter playername");
+                            var playerid = System.Console.ReadLine();
+
+                            await OnJoinLanGameAsync(langame.ServerIpAddress.ToString(), langame.ServerPort, playerid ?? "unknown");
+                        }
+                        else
+                        {
+                            System.Console.WriteLine("Game not found!");
+                        }
+                    }
+                }
+            }
         }
     }
 }

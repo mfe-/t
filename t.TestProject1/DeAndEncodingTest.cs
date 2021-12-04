@@ -9,6 +9,7 @@ using t.lib.Game;
 using Xunit;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace t.TestProject1
 {
@@ -128,10 +129,27 @@ namespace t.TestProject1
             Assert.Equal(player2, players.First(a => a.PlayerId == player2).PlayerId);
 
         }
-
-        private static GameSocketServer GameSocketFactory()
+        [Theory]
+        [InlineData("10.51.51.195", 11000, "kathisserver", 4, 1, 2)]
+        [InlineData("192.168.0.192", 99000, "martins cooler host", 6, 1, 1)]
+        public void GenerateBroadcastMessage_and_decode(string ipadress, int port, string servername, int requiredAmountOfPlayers, int currentAmountOfPlayers, int gameRounds)
         {
-            return new GameSocketServer(new AppConfig() { TotalPoints = 10, RequiredAmountOfPlayers = 2, GameRounds = 2 }, "", 0, new Mock<ILogger>().Object);
+            GameSocketServer gameSocketServer = GameSocketFactory(ipadress, port);
+            var msgBytes = gameSocketServer.GenerateBroadcastMessage(IPAddress.Parse(ipadress), port, servername, requiredAmountOfPlayers, currentAmountOfPlayers, gameRounds);
+
+            GameSocketServer.TryGetBroadcastMessage(msgBytes, out var ip, out var p, out var name, out var amountPlayers, out var currentPlayerAmount, out var rounds);
+
+            Assert.Equal(ipadress, ip?.ToString());
+            Assert.Equal(port, p);
+            Assert.Equal(servername, name);
+            Assert.Equal(requiredAmountOfPlayers, amountPlayers);
+            Assert.Equal(currentAmountOfPlayers, currentPlayerAmount);
+            Assert.Equal(gameRounds, rounds);
+        }
+
+        private static GameSocketServer GameSocketFactory(string ipadress = "", int port = 0)
+        {
+            return new GameSocketServer(new AppConfig() { TotalPoints = 10, RequiredAmountOfPlayers = 2, GameRounds = 2 }, "", 0, 0, new Mock<ILogger>().Object);
         }
     }
 }

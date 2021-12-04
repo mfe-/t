@@ -25,7 +25,7 @@ namespace t.lib.Server
         private readonly int _GameRounds;
         private readonly IPAddress _ServerIpAddress;
         private readonly ConcurrentDictionary<Guid, ConnectionState> _playerConnections = new();
-        public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger) : base(logger)
+        public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, int udpPort, ILogger logger) : base(logger)
         {
             if (appConfig.GameRounds < 1) throw new ArgumentException("At least one game round should be played!");
             if (appConfig.RequiredAmountOfPlayers < 1) throw new ArgumentException("At least two players are required to play the game!");
@@ -36,12 +36,13 @@ namespace t.lib.Server
             _TotalPoints = appConfig.TotalPoints;
             _GameRounds = appConfig.GameRounds;
             ServerPort = serverPort;
+            UdpPort = udpPort;
             ServerIpAdress = serverIpAdress;
             _guid = Guid.NewGuid();
             _ServerIpAddress = GetIpAdress();
         }
-        public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, ILogger logger, Guid guid)
-            : this(appConfig, serverIpAdress, serverPort, logger)
+        public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, int udpPort, ILogger logger, Guid guid)
+            : this(appConfig, serverIpAdress, serverPort, udpPort, logger)
         {
             _guid = guid;
         }
@@ -75,6 +76,7 @@ namespace t.lib.Server
         }
 
         public int ServerPort { get; }
+        public int UdpPort { get; }
         public string ServerIpAdress { get; }
 
 
@@ -83,7 +85,7 @@ namespace t.lib.Server
             return _playerConnections.Select(a => a.Value).All(a => a.MessageQueue.Count == 0);
         }
         private Socket? _listener;
-        private async Task StartListeningAsync(CancellationToken cancellationToken)
+        private async Task StartListeningAsync(string serverName, CancellationToken cancellationToken)
         {
             // Establish the local endpoint for the socket.  
             // Dns.GetHostName returns the name of the
@@ -115,59 +117,15 @@ namespace t.lib.Server
 
             return ipAddress;
         }
-        /// <summary>
-        /// Calculates the subnetmask of <paramref name="iPAddress"/>
-        /// </summary>
-        /// <remarks>https://weblogs.asp.net/razan/finding-subnet-mask-from-ip4-address-using-c</remarks>
-        /// <param name="iPAddress"></param>
-        /// <returns>Subnetmask</returns>
-        public static IPAddress GetSubnetmask(IPAddress iPAddress)
+
+        public async Task StartBroadcastingServerAsync(int requiredAmountOfPlayers,int currentPlayerAmount, int gameRounds, CancellationToken cancellationToken)
         {
-            uint ReturnFirtsOctet(IPAddress iPAddress)
-            {
-                byte[] byteIP = iPAddress.GetAddressBytes();
-                uint ipInUint = (uint)byteIP[0];
-                return ipInUint;
-            }
-            uint firstOctet = ReturnFirtsOctet(iPAddress);
-            if (firstOctet >= 0 && firstOctet <= 127)
-                return IPAddress.Parse("255.0.0.0");
-            else if (firstOctet >= 128 && firstOctet <= 191)
-                return IPAddress.Parse("255.255.0.0");
-            else if (firstOctet >= 192 && firstOctet <= 223)
-                return IPAddress.Parse("255.255.255.0");
-            else return IPAddress.Parse("0.0.0.0");
-        }
-        /// <summary>
-        /// Calculates the broadcast ipadress of <paramref name="address"/> using <paramref name="mask"/>
-        /// </summary>
-        /// <remarks>
-        /// https://stackoverflow.com/questions/25281099/how-to-get-the-local-ip-broadcast-address-dynamically-c-sharp
-        /// </remarks>
-        /// <param name="address"></param>
-        /// <param name="mask"></param>
-        /// <returns></returns>
-        public static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)
-        {
-            uint ipAddress = BitConverter.ToUInt32(address.GetAddressBytes(), 0);
-            uint ipMaskV4 = BitConverter.ToUInt32(mask.GetAddressBytes(), 0);
-            uint broadCastIpAddress = ipAddress | ~ipMaskV4;
-
-            return new IPAddress(BitConverter.GetBytes(broadCastIpAddress));
-        }
-
-        public async Task StartBroadcastingServerAsync(CancellationToken cancellationToken)
-        {
-            //var subnetmask = GetSubnetmask(_ServerIpAddress);
-            //var broadcast = GetBroadcastAddress(_ServerIpAddress, subnetmask);
-
-
-            var msgbytes = GenerateBroadcastMessage(_ServerIpAddress, ServerPort, "muh");
+            var msgbytes = GenerateBroadcastMessage(_ServerIpAddress, ServerPort, "muh", requiredAmountOfPlayers, currentPlayerAmount, gameRounds);
 
             var broadcastTask = await Task.Factory.StartNew(async () =>
             {
                 using UdpClient client = new UdpClient();
-                IPEndPoint ip = new IPEndPoint(IPAddress.Broadcast, 15000);
+                IPEndPoint ip = new IPEndPoint(IPAddress.Broadcast, UdpPort);
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     await client.SendAsync(msgbytes, ip, cancellationToken);
@@ -180,19 +138,29 @@ namespace t.lib.Server
 
         }
         public const int maxBroadcastCharacters = 60;
-        internal byte[] GenerateBroadcastMessage(IPAddress iPAddress, int port, string gameName)
+        internal byte[] GenerateBroadcastMessage(IPAddress iPAddress, int port, string gameName, int requiredAmountOfPlayers,int currentAmountOfPlayers, int gameRounds)
         {
-
+            //4
             var ipBytes = iPAddress.GetAddressBytes();
+            //4
             var portBytes = BitConverter.GetBytes(port);
+            //4
+            var requiredAmountOfPlayersBytes = BitConverter.GetBytes(requiredAmountOfPlayers);
+            //4
+            var gameRoundsBytes = BitConverter.GetBytes(gameRounds);
+            //4
+            var currentAmountPlayersBytes = BitConverter.GetBytes(currentAmountOfPlayers);
             //we only take the first 60 characters
             var serverNameBytes = Encoding.ASCII.GetBytes(gameName.Length < 60 ? gameName : gameName.Substring(0, maxBroadcastCharacters));
 
-            var broadcastMsg = new byte[ipBytes.Length + portBytes.Length + maxBroadcastCharacters];
+            var broadcastMsg = new byte[ipBytes.Length + portBytes.Length + requiredAmountOfPlayersBytes.Length + gameRoundsBytes.Length + maxBroadcastCharacters];
 
             ipBytes.CopyTo(broadcastMsg, 0);
             portBytes.CopyTo(broadcastMsg, 4);
-            serverNameBytes.CopyTo(broadcastMsg, 8);
+            requiredAmountOfPlayersBytes.CopyTo(broadcastMsg, 8);
+            gameRoundsBytes.CopyTo(broadcastMsg, 12);
+            currentAmountPlayersBytes.CopyTo(broadcastMsg, 16);
+            serverNameBytes.CopyTo(broadcastMsg, 20);
 
             return broadcastMsg;
         }
@@ -564,7 +532,7 @@ namespace t.lib.Server
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            return StartListeningAsync(cancellationToken);
+            return StartListeningAsync("asdf", cancellationToken);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

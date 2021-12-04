@@ -319,11 +319,12 @@ namespace t.lib
                 //IPEndPoint object will allow us to read datagrams sent from any source.
                 var receivedResults = await udpClient.ReceiveAsync();
 
-                if (TryGetBroadcastMessage(receivedResults.Buffer, out var ipadress, out var port, out var gameName))
+                if (TryGetBroadcastMessage(receivedResults.Buffer, out var ipadress, out var port, out var gameName,
+                    out var requiredAmountOfPlayers, out var currentAmountPlayers, out var gameRound))
                 {
                     if (!publicGames.Any(a => a.ServerIpAddress != ipadress))
                     {
-                        publicGames.Add(new(ipadress, port.Value, gameName));
+                        publicGames.Add(new(ipadress, port.Value, requiredAmountOfPlayers.Value, currentAmountPlayers.Value, gameRound.Value, gameName));
                     }
                 }
             }

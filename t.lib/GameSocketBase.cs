@@ -354,17 +354,23 @@ namespace t.lib
             return new NextRoundEventArgs(round, new Card(cardNumber));
 
         }
-        internal static bool TryGetBroadcastMessage(byte[] broadcastmsg, [NotNullWhen(true)] out IPAddress? iPAddress, [NotNullWhen(true)] out int? port, [NotNullWhen(true)] out string? servername)
+        internal static bool TryGetBroadcastMessage(byte[] broadcastmsg, [NotNullWhen(true)] out IPAddress? iPAddress, [NotNullWhen(true)] out int? port, [NotNullWhen(true)] out string? servername, [NotNullWhen(true)] out int? requiredAmountOfPlayers, [NotNullWhen(true)] out int? currentAmountOfPlayers, [NotNullWhen(true)] out int? gameRounds)
         {
             iPAddress = null;
             port = null;
             servername = null;
+            requiredAmountOfPlayers = null;
+            gameRounds = null;
+            currentAmountOfPlayers = null;
             try
             {
                 var msg = broadcastmsg.AsSpan();
                 iPAddress = new IPAddress(msg.Slice(0, 4));
                 port = BitConverter.ToInt32(msg.Slice(4, 4).ToArray());
-                servername = Encoding.ASCII.GetString(msg.Slice(8, msg.Length - 8));
+                requiredAmountOfPlayers = BitConverter.ToInt32(msg.Slice(8, 4).ToArray());
+                gameRounds = BitConverter.ToInt32(msg.Slice(12, 4).ToArray());
+                currentAmountOfPlayers = BitConverter.ToInt32(msg.Slice(16,4).ToArray());
+                servername = Encoding.ASCII.GetString(msg.Slice(20, msg.Length - 20));
                 servername = servername.Replace("\0", String.Empty).TrimEnd();
             }
             catch (Exception)

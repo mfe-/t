@@ -170,6 +170,17 @@ namespace t.lib.Console
 
         public override Task OnFoundLanGames(IEnumerable<PublicGame> publicGames)
         {
+            System.Console.WriteLine($"Found the following games:");
+            int i = 1;
+            var enumerator = publicGames.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                var publicGame = enumerator.Current;
+                publicGame.GameId = i;
+
+                System.Console.WriteLine($"[{publicGame.GameId}] {publicGame.GameName} Players [{publicGame.CurrentAmountOfPlayers}/{publicGame.RequiredAmountOfPlayers}] GameRounds: {publicGame.GameRounds} {publicGame.ServerIpAddress}:{publicGame.ServerPort}");
+            }
+
             return Task.CompletedTask;
         }
     }

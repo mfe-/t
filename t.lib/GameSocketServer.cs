@@ -129,8 +129,8 @@ namespace t.lib.Server
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var msgbytes = GenerateBroadcastMessage(_ServerIpAddress, ServerPort, gameName, requiredAmountOfPlayers, _playerConnections.Count, gameRounds);
-                    _logger.LogTrace("UDP Broadcast {bytes} bytes {ServerIpAdress}:{socketServerPort} Gamename:{Gamename} Players {currentPlayers}/{ofRequiredPlayers}", msgbytes.Length,
-                        _ServerIpAddress, ServerPort, gameName, _playerConnections.Count, requiredAmountOfPlayers);
+                    _logger.LogTrace("UDP Broadcast {bytes} bytes {ServerIpAdress}:{socketServerPort} Gamename:{Gamename} Players {currentPlayers}/{ofRequiredPlayers} GameRounds:{GameRounds}", msgbytes.Length,
+                        _ServerIpAddress, ServerPort, gameName, _playerConnections.Count, requiredAmountOfPlayers, gameRounds);
                     await client.SendAsync(msgbytes, ip, cancellationToken);
 
                     await Task.Delay(TimeSpan.FromSeconds(1));
@@ -224,6 +224,10 @@ namespace t.lib.Server
                 }
             }
             cancellationTokenSource = null;
+            if (_cancellationTokenBroadcasting != null && !_cancellationTokenBroadcasting.IsCancellationRequested)
+            {
+                _cancellationTokenBroadcasting.Cancel();
+            }
         }
         /// <summary>
         /// Guid of first player which joined the game
@@ -232,6 +236,7 @@ namespace t.lib.Server
         /// To avoid calling <see cref="GameLogic.NextRound()"/> multiple times only the first player is allowed to do so
         /// </remarks>
         private Guid? _FirstPlayerJoined = null;
+        private volatile byte GlobalGamePhase = Constants.StartGame;
         private async Task ClientHandler(ConnectionState connectionState)
         {
             try
@@ -285,6 +290,7 @@ namespace t.lib.Server
                 }
 
                 _cancellationTokenBroadcasting?.Cancel();
+                GlobalGamePhase = Constants.NextRound;
 
                 while (gameActionProtocolSend.Phase != Constants.PlayerWon)
                 {
@@ -484,6 +490,17 @@ namespace t.lib.Server
                 //tell everyone that player left
                 var msg = GameActionProtocolFactory(Constants.KickedPlayer, player: connectionState.Player, number: _RequiredAmountOfPlayers);
                 await BroadcastMessageAsync(msg, null);
+            }
+            if (_playerConnections.Count == 1 && GlobalGamePhase == Constants.NextRound)
+            {
+                //if we are in the middle of the game and only one player is left - let the player win
+                var lastPlayer = _playerConnections.First().Value.Player;
+                if (lastPlayer != null)
+                {
+                    var msg = GameActionProtocolFactory(Constants.PlayerWon, player: lastPlayer, playerWonEventArgs: new PlayerWonEventArgs(new Player[] { lastPlayer }));
+                    await BroadcastMessageAsync(msg, null);
+                }
+
             }
 
         }

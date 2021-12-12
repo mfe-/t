@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using t.lib;
 using t.lib.Console;
+using t.lib.Network;
 
 namespace t.Client
 {
@@ -53,6 +54,29 @@ namespace t.Client
                 //        hostContext.Configuration.GetValue<string>("AppConfig:DefaultPlayerName")));
 
                 var appConfig = hostContext.Configuration.GetSection("AppConfig").Get<AppConfig>();
+                Func<IServiceProvider, GameSocketServer> GameSocketServerFactory = serviceProvider =>
+                {
+                    var identifier = hostContext.Configuration.GetValue<Guid>("AppConfig:Identifier");
+                    if (identifier == Guid.Empty)
+                    {
+                        return new GameSocketServer(
+                            hostContext.Configuration.GetSection("AppConfig").Get<AppConfig>(),
+                            hostContext.Configuration.GetValue<string>("AppConfig:ServerIpAdress"),
+                            hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"),
+                            hostContext.Configuration.GetValue<int>("AppConfig:BroadcastPort"),
+                            serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new ArgumentNullException());
+                    }
+                    else
+                    {
+                        return new GameSocketServer(
+                            hostContext.Configuration.GetSection("AppConfig").Get<AppConfig>(),
+                            hostContext.Configuration.GetValue<string>("AppConfig:ServerIpAdress"),
+                            hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"),
+                            hostContext.Configuration.GetValue<int>("AppConfig:BroadcastPort"),
+                            serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new ArgumentNullException(),
+                            identifier);
+                    }
+                };
 
                 Func<IServiceProvider, GameClientConsole> GameClientConsoleFactory = serviceProvider => new GameClientConsole(serviceProvider.GetRequiredService<IServiceProvider>(),
                                         serviceProvider.GetService<ILogger<GameClientConsole>>() ?? throw new ArgumentNullException(nameof(ILogger<GameClientConsole>)),
@@ -60,6 +84,8 @@ namespace t.Client
 
                 services.AddScoped(GameClientConsoleFactory);
                 services.AddHostedService(GameClientConsoleFactory);
+                //services.AddScoped(GameSocketServerFactory);
+                //services.AddHostedService(GameSocketServerFactory);
 
             }).ConfigureLogging((hostingContext, logging) =>
             {

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace t.lib
+namespace t.lib.Network
 {
-    public static class Constants
+    public static class PhaseConstants
     {
         public static readonly byte Ok =             0b000001;
         public static readonly byte Version =        0b000010;
@@ -24,18 +24,18 @@ namespace t.lib
         {
             var keyValuePairs = new Dictionary<byte, string>()
             {
-                 { Constants.Ok,nameof(Constants.Ok) }
-                ,{ Constants.Version,nameof(Constants.Version) }
-                ,{ Constants.KickedPlayer,nameof(Constants.KickedPlayer) }
-                ,{ Constants.RegisterPlayer,nameof(Constants.RegisterPlayer) }
-                ,{ Constants.NewPlayer,nameof(Constants.NewPlayer) }
-                ,{ Constants.StartGame,nameof(Constants.StartGame) }
-                ,{ Constants.PlayerReported,nameof(Constants.PlayerReported) }
-                ,{ Constants.PlayerScored,nameof(Constants.PlayerScored) }
-                ,{ Constants.NextRound,nameof(Constants.NextRound) }
-                ,{ Constants.PlayerWon,nameof(Constants.PlayerWon) }
-                ,{ Constants.ErrorOccoured,nameof(Constants.ErrorOccoured) }
-                ,{ Constants.WaitingPlayers,nameof(Constants.WaitingPlayers) }
+                 { Ok,nameof(Ok) }
+                ,{ Version,nameof(Version) }
+                ,{ KickedPlayer,nameof(KickedPlayer) }
+                ,{ RegisterPlayer,nameof(RegisterPlayer) }
+                ,{ NewPlayer,nameof(NewPlayer) }
+                ,{ StartGame,nameof(StartGame) }
+                ,{ PlayerReported,nameof(PlayerReported) }
+                ,{ PlayerScored,nameof(PlayerScored) }
+                ,{ NextRound,nameof(NextRound) }
+                ,{ PlayerWon,nameof(PlayerWon) }
+                ,{ ErrorOccoured,nameof(ErrorOccoured) }
+                ,{ WaitingPlayers,nameof(WaitingPlayers) }
 
             };
             if (keyValuePairs.ContainsKey(phase)) return keyValuePairs[phase];

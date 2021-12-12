@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using t.lib.EventArgs;
 using t.lib.Game;
 
-namespace t.lib
+namespace t.lib.Network
 {
     public partial class GameSocketClient : GameSocketBase, IDisposable
     {
@@ -24,12 +24,12 @@ namespace t.lib
         {
             this._serverIpAdress = serverIpAdress;
             this._serverPort = serverPort;
-            ActionDictionary.Add(Constants.KickedPlayer, OnPlayerKickedAsync);
-            ActionDictionary.Add(Constants.NewPlayer, OnNewPlayerAsync);
-            ActionDictionary.Add(Constants.NextRound, OnNextRoundAsync);
-            ActionDictionary.Add(Constants.PlayerScored, OnPlayerScoredAsync);
-            ActionDictionary.Add(Constants.PlayerWon, OnPlayerWonAsync);
-            ActionDictionary.Add(Constants.StartGame, OnStartAsync);
+            ActionDictionary.Add(PhaseConstants.KickedPlayer, OnPlayerKickedAsync);
+            ActionDictionary.Add(PhaseConstants.NewPlayer, OnNewPlayerAsync);
+            ActionDictionary.Add(PhaseConstants.NextRound, OnNextRoundAsync);
+            ActionDictionary.Add(PhaseConstants.PlayerScored, OnPlayerScoredAsync);
+            ActionDictionary.Add(PhaseConstants.PlayerWon, OnPlayerWonAsync);
+            ActionDictionary.Add(PhaseConstants.StartGame, OnStartAsync);
         }
 
         private Task OnPlayerKickedAsync(GameActionProtocol gameActionProtocol, object? arg2)
@@ -49,7 +49,7 @@ namespace t.lib
         protected virtual ISocket? SenderSocket => _senderSocket;
         private Task OnNewPlayerAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
-            if (gameActionProtocol.Phase != Constants.NewPlayer) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(Constants.RegisterPlayer)}");
+            if (gameActionProtocol.Phase != PhaseConstants.NewPlayer) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(PhaseConstants.RegisterPlayer)}");
 
             Player player = GetPlayer(gameActionProtocol);
             if (!Game.Players.Any(a => a.PlayerId == player.PlayerId))
@@ -103,7 +103,7 @@ namespace t.lib
 
                 _logger.LogTrace("Socket connected to {0}", SenderSocket.RemoteEndPoint?.ToString() ?? $"Could not determine {nameof(_senderSocket.RemoteEndPoint)}");
 
-                GameActionProtocol gameActionProtocol = GameActionProtocolFactory(Constants.RegisterPlayer, _player);
+                GameActionProtocol gameActionProtocol = GameActionProtocolFactory(PhaseConstants.RegisterPlayer, _player);
                 // Encode the data string into a byte array.  
                 byte[] sendPayLoad = gameActionProtocol.ToByteArray();
                 // Send the data through the socket.  
@@ -113,8 +113,8 @@ namespace t.lib
                 _logger.LogInformation("Waiting for remaining players to join");
                 //wait until all players joined
                 GameActionProtocol gameActionProtocolRec = new GameActionProtocol();
-                gameActionProtocolRec.Phase = Constants.Ok;
-                while (gameActionProtocolRec.Phase != Constants.StartGame)
+                gameActionProtocolRec.Phase = PhaseConstants.Ok;
+                while (gameActionProtocolRec.Phase != PhaseConstants.StartGame)
                 {
                     // Receive the response from the remote device.  
                     bytes = new byte[1024];
@@ -123,7 +123,7 @@ namespace t.lib
                     gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
                     await OnMessageReceiveAsync(gameActionProtocolRec, null);
                     //send ok
-                    sendPayLoad = GameActionProtocolFactory(Constants.Ok).ToByteArray();
+                    sendPayLoad = GameActionProtocolFactory(PhaseConstants.Ok).ToByteArray();
                     bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
                     _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                 }
@@ -157,11 +157,11 @@ namespace t.lib
             {
                 GameActionProtocol gameActionProtocolRec;
                 GameActionProtocol gameActionProtocolSend;
-                gameActionProtocolRec.Phase = Constants.Ok;
+                gameActionProtocolRec.Phase = PhaseConstants.Ok;
                 int bytesSent;
                 byte[] bytes;
                 byte[] sendPayLoad;
-                while (gameActionProtocolRec.Phase != Constants.PlayerWon)
+                while (gameActionProtocolRec.Phase != PhaseConstants.PlayerWon)
                 {
                     // Receive the response from the remote device.  
                     bytes = new byte[1024];
@@ -171,21 +171,21 @@ namespace t.lib
                     _logger.LogTrace("Received {0} bytes.", bytesRec);
 
                     await OnMessageReceiveAsync(gameActionProtocolRec, messageReceiveArgs);
-                    gameActionProtocolSend = GameActionProtocolFactory(Constants.Ok);
+                    gameActionProtocolSend = GameActionProtocolFactory(PhaseConstants.Ok);
                     sendPayLoad = gameActionProtocolSend.ToByteArray();
-                    if (gameActionProtocolRec.Phase == Constants.NextRound)
+                    if (gameActionProtocolRec.Phase == PhaseConstants.NextRound)
                     {
                         //get picked card
                         int pickedCard = await GetPlayerCardChoiceAsync(messageReceiveArgs.OnChoiceCommandFuncAsync);
                         //send server picked card
-                        gameActionProtocolSend = GameActionProtocolFactory(Constants.PlayerReported, number: pickedCard);
+                        gameActionProtocolSend = GameActionProtocolFactory(PhaseConstants.PlayerReported, number: pickedCard);
                         sendPayLoad = gameActionProtocolSend.ToByteArray();
                     }
-                    else if (gameActionProtocolRec.Phase == Constants.PlayerScored)
+                    else if (gameActionProtocolRec.Phase == PhaseConstants.PlayerScored)
                     {
                         //send ok
                     }
-                    _logger.LogDebug("Send as {ClientId} {PlayerName} Phase={Phase}", gameActionProtocolSend.PlayerId, _player.Name, Constants.ToString(gameActionProtocolSend.Phase));
+                    _logger.LogDebug("Send as {ClientId} {PlayerName} Phase={Phase}", gameActionProtocolSend.PlayerId, _player.Name, PhaseConstants.ToString(gameActionProtocolSend.Phase));
                     bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
                     _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                 }
@@ -277,7 +277,7 @@ namespace t.lib
         }
         protected virtual async Task OnNextRoundAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
-            if (gameActionProtocol.Phase != Constants.NextRound) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(Constants.NextRound)}");
+            if (gameActionProtocol.Phase != PhaseConstants.NextRound) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(PhaseConstants.NextRound)}");
             var nextRoundEventArgs = GetNextRoundEventArgs(gameActionProtocol);
             if (nextRoundEventArgs.Round != 1)
             {

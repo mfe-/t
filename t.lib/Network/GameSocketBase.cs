@@ -13,7 +13,7 @@ using t.lib.EventArgs;
 using t.lib.Game;
 
 [assembly: InternalsVisibleTo("t.TestProject1")]
-namespace t.lib
+namespace t.lib.Network
 {
     public abstract class GameSocketBase
     {
@@ -25,14 +25,14 @@ namespace t.lib
         {
             _game = new GameLogic();
             _logger = logger;
-            ActionDictionary.Add(Constants.Ok, OnOkAsync);
-            ActionDictionary.Add(Constants.ErrorOccoured, OnProtocolErrorAsync);
-            ActionDictionary.Add(Constants.RegisterPlayer, OnPlayerRegisterAsync);
+            ActionDictionary.Add(PhaseConstants.Ok, OnOkAsync);
+            ActionDictionary.Add(PhaseConstants.ErrorOccoured, OnProtocolErrorAsync);
+            ActionDictionary.Add(PhaseConstants.RegisterPlayer, OnPlayerRegisterAsync);
         }
         protected virtual GameLogic Game => _game;
         protected virtual Task OnPlayerRegisterAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
-            if (gameActionProtocol.Phase != Constants.RegisterPlayer) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(Constants.RegisterPlayer)}");
+            if (gameActionProtocol.Phase != PhaseConstants.RegisterPlayer) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(PhaseConstants.RegisterPlayer)}");
             lock (Game)
             {
                 Player player = GetPlayer(gameActionProtocol);
@@ -47,7 +47,7 @@ namespace t.lib
 
         protected virtual async Task OnMessageReceiveAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
-            _logger.LogTrace("OnMessageReceive from {player} with Phase {Phase}", gameActionProtocol.PlayerId, Constants.ToString(gameActionProtocol.Phase));
+            _logger.LogTrace("OnMessageReceive from {player} with Phase {Phase}", gameActionProtocol.PlayerId, PhaseConstants.ToString(gameActionProtocol.Phase));
             using (_logger.BeginScope(new Dictionary<string, object> {
                 { nameof(gameActionProtocol.Phase), gameActionProtocol.Phase }
                ,{ nameof(gameActionProtocol.PlayerId), gameActionProtocol.PlayerId}
@@ -85,14 +85,14 @@ namespace t.lib
         internal virtual GameActionProtocol GameActionProtocolFactory(byte phase, Player? player = null, string? message = null, int? number = null, int? number2 = null, NextRoundEventArgs? nextRoundEventArgs = null, PlayerWonEventArgs? playerWonEventArgs = null)
         {
             GameActionProtocol gameActionProtocol = new GameActionProtocol();
-            gameActionProtocol.Version = Constants.Version;
+            gameActionProtocol.Version = PhaseConstants.Version;
             gameActionProtocol.PlayerId = _guid;
             gameActionProtocol.Phase = phase;
-            if (gameActionProtocol.Phase == Constants.NewPlayer || gameActionProtocol.Phase == Constants.KickedPlayer)
+            if (gameActionProtocol.Phase == PhaseConstants.NewPlayer || gameActionProtocol.Phase == PhaseConstants.KickedPlayer)
             {
                 gameActionProtocol = GameActionProtocolNewPlayer(player, number, ref gameActionProtocol);
             }
-            else if (gameActionProtocol.Phase == Constants.ErrorOccoured)
+            else if (gameActionProtocol.Phase == PhaseConstants.ErrorOccoured)
             {
                 if (!String.IsNullOrEmpty(message))
                 {
@@ -101,15 +101,15 @@ namespace t.lib
                     gameActionProtocol.Payload = paypload;
                 }
             }
-            else if (gameActionProtocol.Phase == Constants.RegisterPlayer)
+            else if (gameActionProtocol.Phase == PhaseConstants.RegisterPlayer)
             {
-                if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(Constants.NewPlayer)} requires argument {nameof(player)}");
+                if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(PhaseConstants.NewPlayer)} requires argument {nameof(player)}");
                 gameActionProtocol.Payload = Encoding.ASCII.GetBytes($"{player.Name}{Environment.NewLine}");
             }
-            else if (gameActionProtocol.Phase == Constants.StartGame)
+            else if (gameActionProtocol.Phase == PhaseConstants.StartGame)
             {
-                if (number == null) throw new ArgumentNullException(nameof(number), $"{nameof(Constants.StartGame)} requires argument {nameof(number)}");
-                if (number2 == null) throw new ArgumentNullException(nameof(number2), $"{nameof(Constants.StartGame)} requires argument {nameof(number2)} for the amount of game rounds which should be played");
+                if (number == null) throw new ArgumentNullException(nameof(number), $"{nameof(PhaseConstants.StartGame)} requires argument {nameof(number)}");
+                if (number2 == null) throw new ArgumentNullException(nameof(number2), $"{nameof(PhaseConstants.StartGame)} requires argument {nameof(number2)} for the amount of game rounds which should be played");
                 var nbytes = BitConverter.GetBytes(number.Value);
                 var n2bytes = BitConverter.GetBytes(number2.Value);
                 gameActionProtocol.PayloadSize = (byte)(nbytes.Length + n2bytes.Length);
@@ -121,14 +121,14 @@ namespace t.lib
                 gameActionProtocol.Payload = numberbytes.ToArray();
 
             }
-            else if (gameActionProtocol.Phase == Constants.Ok)
+            else if (gameActionProtocol.Phase == PhaseConstants.Ok)
             {
                 gameActionProtocol.Payload = new byte[0];
                 gameActionProtocol.PayloadSize = (byte)gameActionProtocol.Payload.Length;
             }
-            else if (gameActionProtocol.Phase == Constants.NextRound)
+            else if (gameActionProtocol.Phase == PhaseConstants.NextRound)
             {
-                if (nextRoundEventArgs == null) throw new ArgumentNullException(nameof(nextRoundEventArgs), $"{nameof(Constants.NextRound)} requries argument {nameof(nextRoundEventArgs)}");
+                if (nextRoundEventArgs == null) throw new ArgumentNullException(nameof(nextRoundEventArgs), $"{nameof(PhaseConstants.NextRound)} requries argument {nameof(nextRoundEventArgs)}");
                 var cardbytes = BitConverter.GetBytes(nextRoundEventArgs.Card.Value);
                 var roundbytes = BitConverter.GetBytes(nextRoundEventArgs.Round);
                 byte[] payLoad = new byte[8];
@@ -137,17 +137,17 @@ namespace t.lib
                 gameActionProtocol.Payload = payLoad;
                 gameActionProtocol.PayloadSize = (byte)gameActionProtocol.Payload.Length;
             }
-            else if (gameActionProtocol.Phase == Constants.PlayerReported)
+            else if (gameActionProtocol.Phase == PhaseConstants.PlayerReported)
             {
-                if (number == null) throw new ArgumentNullException(nameof(number), $"{nameof(Constants.PlayerReported)} requires argument {nameof(number)}");
+                if (number == null) throw new ArgumentNullException(nameof(number), $"{nameof(PhaseConstants.PlayerReported)} requires argument {nameof(number)}");
                 var nbytes = BitConverter.GetBytes(number.Value);
                 gameActionProtocol.PayloadSize = (byte)nbytes.Length;
                 gameActionProtocol.Payload = nbytes;
             }
-            else if (gameActionProtocol.Phase == Constants.PlayerScored)
+            else if (gameActionProtocol.Phase == PhaseConstants.PlayerScored)
             {
-                if (number == null) throw new ArgumentNullException(nameof(number), $"{nameof(Constants.PlayerScored)} requires argument {nameof(number)}");
-                if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(Constants.PlayerScored)} requires argument {nameof(player)}");
+                if (number == null) throw new ArgumentNullException(nameof(number), $"{nameof(PhaseConstants.PlayerScored)} requires argument {nameof(number)}");
+                if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(PhaseConstants.PlayerScored)} requires argument {nameof(player)}");
                 var playerid = player.PlayerId.ToByteArray();
                 var nbytes = BitConverter.GetBytes(number.Value);
                 var payload = new byte[nbytes.Length + playerid.Length];
@@ -157,9 +157,9 @@ namespace t.lib
                 gameActionProtocol.PayloadSize = (byte)payload.Length;
                 return gameActionProtocol;
             }
-            else if (gameActionProtocol.Phase == Constants.PlayerWon)
+            else if (gameActionProtocol.Phase == PhaseConstants.PlayerWon)
             {
-                if (playerWonEventArgs == null) throw new ArgumentNullException(nameof(playerWonEventArgs), $"{nameof(Constants.PlayerWon)} requires argument {nameof(playerWonEventArgs)}");
+                if (playerWonEventArgs == null) throw new ArgumentNullException(nameof(playerWonEventArgs), $"{nameof(PhaseConstants.PlayerWon)} requires argument {nameof(playerWonEventArgs)}");
                 //calculate the total amount of bytes for all guid players
                 Span<byte> totalBytes = stackalloc byte[playerWonEventArgs.Players.Count() * Marshal.SizeOf(typeof(Guid))];
                 int iterator = 0;
@@ -172,7 +172,7 @@ namespace t.lib
                 gameActionProtocol.Payload = totalBytes.ToArray();
                 gameActionProtocol.PayloadSize = (byte)gameActionProtocol.Payload.Length;
             }
-            else if (gameActionProtocol.Phase == Constants.WaitingPlayers)
+            else if (gameActionProtocol.Phase == PhaseConstants.WaitingPlayers)
             {
                 gameActionProtocol.Payload = new byte[0];
             }
@@ -181,7 +181,7 @@ namespace t.lib
 
         private static GameActionProtocol GameActionProtocolNewPlayer(Player? player, int? number, ref GameActionProtocol gameActionProtocol)
         {
-            if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(Constants.NewPlayer)} requires argument {nameof(player)}");
+            if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(PhaseConstants.NewPlayer)} requires argument {nameof(player)}");
             if (number == null) throw new ArgumentNullException(nameof(number), $"The parameter {nameof(number)} is required as it is used as {nameof(GameLogic.RequiredAmountOfPlayers)}");
             //encode playerid and playername into payload
             var playerid = player.PlayerId.ToByteArray();
@@ -214,7 +214,7 @@ namespace t.lib
 
         internal (int Totalpoints, int TotalGameRounds) GetGameStartValues(GameActionProtocol gameActionProtocol)
         {
-            if (gameActionProtocol.Phase != Constants.StartGame) throw new ArgumentException($"{nameof(Constants.StartGame)} required for argument {nameof(gameActionProtocol.Phase)}");
+            if (gameActionProtocol.Phase != PhaseConstants.StartGame) throw new ArgumentException($"{nameof(PhaseConstants.StartGame)} required for argument {nameof(gameActionProtocol.Phase)}");
 
             var p = BitConverter.ToInt32(gameActionProtocol.Payload.AsSpan().Slice(0, 4));
             var r = BitConverter.ToInt32(gameActionProtocol.Payload.AsSpan().Slice(4));
@@ -222,7 +222,7 @@ namespace t.lib
         }
         internal int GetNumber(GameActionProtocol gameActionProtocol)
         {
-            if (gameActionProtocol.Phase == Constants.NewPlayer)
+            if (gameActionProtocol.Phase == PhaseConstants.NewPlayer)
             {
                 var span = gameActionProtocol.Payload.AsSpan();
 
@@ -231,12 +231,12 @@ namespace t.lib
                 var numberBytes = span.Slice(Marshal.SizeOf(typeof(Guid)) + playerNameLength, gameActionProtocol.PayloadSize - (Marshal.SizeOf(typeof(Guid)) + playerNameLength));
                 return BitConverter.ToInt32(numberBytes.ToArray());
             }
-            if (gameActionProtocol.Phase == Constants.StartGame || gameActionProtocol.Phase == Constants.PlayerReported)
+            if (gameActionProtocol.Phase == PhaseConstants.StartGame || gameActionProtocol.Phase == PhaseConstants.PlayerReported)
             {
                 var span = gameActionProtocol.Payload.AsSpan();
                 return BitConverter.ToInt32(span);
             }
-            if (gameActionProtocol.Phase == Constants.PlayerScored)
+            if (gameActionProtocol.Phase == PhaseConstants.PlayerScored)
             {
                 //int 4*8(bit)=32bit
                 var numberBytes = gameActionProtocol.Payload.AsSpan().Slice(gameActionProtocol.PayloadSize - 4, 4);
@@ -246,11 +246,11 @@ namespace t.lib
         }
         public virtual Player GetPlayer(GameActionProtocol gameActionProtocol)
         {
-            if (gameActionProtocol.Phase == Constants.NewPlayer || gameActionProtocol.Phase == Constants.KickedPlayer) return GetNewPlayer(ref gameActionProtocol);
-            if (gameActionProtocol.Phase == Constants.RegisterPlayer) return GetRegisterePlayer(ref gameActionProtocol);
-            if (gameActionProtocol.Phase == Constants.PlayerScored)
+            if (gameActionProtocol.Phase == PhaseConstants.NewPlayer || gameActionProtocol.Phase == PhaseConstants.KickedPlayer) return GetNewPlayer(ref gameActionProtocol);
+            if (gameActionProtocol.Phase == PhaseConstants.RegisterPlayer) return GetRegisterePlayer(ref gameActionProtocol);
+            if (gameActionProtocol.Phase == PhaseConstants.PlayerScored)
             {
-                if (gameActionProtocol.Phase != Constants.PlayerScored) throw new ArgumentException($"{nameof(Constants.PlayerScored)} required for argument {nameof(gameActionProtocol.Phase)}");
+                if (gameActionProtocol.Phase != PhaseConstants.PlayerScored) throw new ArgumentException($"{nameof(PhaseConstants.PlayerScored)} required for argument {nameof(gameActionProtocol.Phase)}");
                 var span = gameActionProtocol.Payload.AsSpan();
                 Guid guid = new Guid(span.Slice(0, Marshal.SizeOf(typeof(Guid))));
                 Player player = new Player("", guid);
@@ -261,7 +261,7 @@ namespace t.lib
 
         public IEnumerable<Player> GetPlayers(GameActionProtocol gameActionProtocol)
         {
-            if (gameActionProtocol.Phase != Constants.PlayerWon) throw new ArgumentException($"{nameof(gameActionProtocol)} requires property {nameof(gameActionProtocol.Phase)} to be set to {nameof(Constants.PlayerWon)}");
+            if (gameActionProtocol.Phase != PhaseConstants.PlayerWon) throw new ArgumentException($"{nameof(gameActionProtocol)} requires property {nameof(gameActionProtocol.Phase)} to be set to {nameof(PhaseConstants.PlayerWon)}");
 
             int amountGuids = gameActionProtocol.PayloadSize / Marshal.SizeOf(typeof(Guid));
             var payload = gameActionProtocol.Payload.AsSpan();
@@ -278,13 +278,13 @@ namespace t.lib
         }
 
         /// <summary>
-        /// Gets the <see cref="Player"/> if <see cref="GameActionProtocol.Phase"/> is <see cref="Constants.NewPlayer"/>
+        /// Gets the <see cref="Player"/> if <see cref="GameActionProtocol.Phase"/> is <see cref="PhaseConstants.NewPlayer"/>
         /// </summary>
         /// <param name="gameActionProtocol"></param>
         /// <returns></returns>
         protected virtual Player GetNewPlayer(ref GameActionProtocol gameActionProtocol)
         {
-            if (!(gameActionProtocol.Phase == Constants.NewPlayer || gameActionProtocol.Phase == Constants.KickedPlayer)) throw new ArgumentException($"{nameof(Constants.NewPlayer)} required for argument {nameof(gameActionProtocol.Phase)}");
+            if (!(gameActionProtocol.Phase == PhaseConstants.NewPlayer || gameActionProtocol.Phase == PhaseConstants.KickedPlayer)) throw new ArgumentException($"{nameof(PhaseConstants.NewPlayer)} required for argument {nameof(gameActionProtocol.Phase)}");
             var span = gameActionProtocol.Payload.AsSpan();
 
             Guid playerId = new Guid(span.Slice(0, Marshal.SizeOf<Guid>()));
@@ -333,13 +333,13 @@ namespace t.lib
         }
 
         /// <summary>
-        /// Gets the <see cref="Player"/> if <see cref="GameActionProtocol.Phase"/> is <see cref="Constants.RegisterPlayer"/>
+        /// Gets the <see cref="Player"/> if <see cref="GameActionProtocol.Phase"/> is <see cref="PhaseConstants.RegisterPlayer"/>
         /// </summary>
         /// <param name="gameActionProtocol"></param>
         /// <returns></returns>
         protected Player GetRegisterePlayer(ref GameActionProtocol gameActionProtocol)
         {
-            if (gameActionProtocol.Phase != Constants.RegisterPlayer) throw new ArgumentException($"{nameof(Constants.RegisterPlayer)} required for argument {nameof(gameActionProtocol.Phase)}");
+            if (gameActionProtocol.Phase != PhaseConstants.RegisterPlayer) throw new ArgumentException($"{nameof(PhaseConstants.RegisterPlayer)} required for argument {nameof(gameActionProtocol.Phase)}");
             string playername = Encoding.ASCII.GetString(gameActionProtocol.Payload).Replace(Environment.NewLine, String.Empty);
             Player player = new Player(playername.Replace(System.Environment.NewLine, String.Empty), gameActionProtocol.PlayerId);
             return player;

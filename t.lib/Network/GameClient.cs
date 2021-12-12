@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using t.lib.EventArgs;
 using t.lib.Game;
 
-namespace t.lib
+namespace t.lib.Network
 {
     public abstract class GameClient : IHostedService
     {

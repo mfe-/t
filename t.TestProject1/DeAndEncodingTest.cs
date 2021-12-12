@@ -10,6 +10,7 @@ using Xunit;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using t.lib.Network;
 
 namespace t.TestProject1
 {
@@ -19,9 +20,9 @@ namespace t.TestProject1
         public void Serializing_and_deserializing_protocol_should_contain_all_information()
         {
             GameActionProtocol expectedGameActionProtocol = new GameActionProtocol();
-            expectedGameActionProtocol.Version = Constants.Version;
+            expectedGameActionProtocol.Version = PhaseConstants.Version;
             expectedGameActionProtocol.PlayerId = Guid.Parse("6d88b7c1-5b8b-4068-b510-b4ff01309670");
-            expectedGameActionProtocol.Phase = Constants.RegisterPlayer;
+            expectedGameActionProtocol.Phase = PhaseConstants.RegisterPlayer;
             string playerName = $"martin{Environment.NewLine}";
             expectedGameActionProtocol.Payload = Encoding.ASCII.GetBytes(playerName);
             expectedGameActionProtocol.PayloadSize = (byte)expectedGameActionProtocol.Payload.Length;
@@ -49,7 +50,7 @@ namespace t.TestProject1
             Guid guid = Guid.Parse("6d88b7c1-5b8b-4068-b510-b4ff01309670");
             Player expectedPlayer = new Player(expectedPlayerName, guid);
             GameSocketServer gameSocketServer = GameSocketFactory();
-            var gameActionProtocol = gameSocketServer.GameActionProtocolFactory(Constants.NewPlayer, expectedPlayer, number: expectedRequiredPlayer);
+            var gameActionProtocol = gameSocketServer.GameActionProtocolFactory(PhaseConstants.NewPlayer, expectedPlayer, number: expectedRequiredPlayer);
 
             Player player = gameSocketServer.GetPlayer(gameActionProtocol);
             int requiredPlayer = gameSocketServer.GetNumber(gameActionProtocol);
@@ -66,7 +67,7 @@ namespace t.TestProject1
         [InlineData(int.MinValue, int.MaxValue)]
         public void Serialize_StartGame_And_Deserialize(int totalpoints, int totalgamerounds)
         {
-            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.StartGame,
+            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(PhaseConstants.StartGame,
                 number: totalpoints, number2: totalgamerounds);
 
             var values = GameSocketFactory().GetGameStartValues(gameActionProtocol);
@@ -82,7 +83,7 @@ namespace t.TestProject1
         [InlineData(int.MinValue, int.MaxValue)]
         public void Serialize_NextRound_And_Deserialze(int expectedRound, int expectedCardnumber)
         {
-            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.NextRound, nextRoundEventArgs: new NextRoundEventArgs(expectedRound, new Card(expectedCardnumber)));
+            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(PhaseConstants.NextRound, nextRoundEventArgs: new NextRoundEventArgs(expectedRound, new Card(expectedCardnumber)));
             var nextRoundEventArgs = GameSocketFactory().GetNextRoundEventArgs(gameActionProtocol);
 
             Assert.Equal(expectedRound, nextRoundEventArgs.Round);
@@ -92,7 +93,7 @@ namespace t.TestProject1
         [InlineData(4)]
         public void Serialize_PlayerReport_AndDeserialze(int expectedPickedCard)
         {
-            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.PlayerReported, number: expectedPickedCard);
+            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(PhaseConstants.PlayerReported, number: expectedPickedCard);
             var pickedCard = GameSocketFactory().GetNumber(gameActionProtocol);
 
             Assert.Equal(expectedPickedCard, pickedCard);
@@ -102,7 +103,7 @@ namespace t.TestProject1
         {
             Player expectedPlayer = new Player("martin", Guid.NewGuid());
             int offeredExpected = 5;
-            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.PlayerScored, player: expectedPlayer, number: offeredExpected);
+            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(PhaseConstants.PlayerScored, player: expectedPlayer, number: offeredExpected);
             int offered = GameSocketFactory().GetNumber(gameActionProtocol);
             Assert.Equal(offeredExpected, offered);
             var player = GameSocketFactory().GetPlayer(gameActionProtocol);
@@ -120,7 +121,7 @@ namespace t.TestProject1
 
             var playerWonEventArgs = new PlayerWonEventArgs(new List<Player>() { expectedPlayer, expectedPlayer1 });
 
-            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(Constants.PlayerWon, playerWonEventArgs: playerWonEventArgs);
+            var gameActionProtocol = GameSocketFactory().GameActionProtocolFactory(PhaseConstants.PlayerWon, playerWonEventArgs: playerWonEventArgs);
 
             var players = GameSocketFactory().GetPlayers(gameActionProtocol);
 

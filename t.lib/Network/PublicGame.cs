@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace t.lib
+namespace t.lib.Network
 {
     public class PublicGame
     {

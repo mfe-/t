@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace t.lib
+namespace t.lib.Network
 {
     [Serializable]
     public class GameActionProtocolException : Exception

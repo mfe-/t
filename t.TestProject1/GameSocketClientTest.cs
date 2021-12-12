@@ -12,6 +12,7 @@ using t.lib.EventArgs;
 using Xunit;
 using Xunit.Abstractions;
 using t.lib.Game;
+using t.lib.Network;
 
 namespace t.TestProject1
 {
@@ -31,7 +32,7 @@ namespace t.TestProject1
             Mock<ISocket> mockSocket = new Mock<ISocket>();
             mockSocket.Setup(a => a.Receive(It.IsAny<byte[]>())).Returns((byte[] buffer) =>
             {
-                var protocol = mockGameSocketClient.Object.GameActionProtocolFactory(Constants.NextRound, nextRoundEventArgs: new NextRoundEventArgs(1, new Card(4)));
+                var protocol = mockGameSocketClient.Object.GameActionProtocolFactory(PhaseConstants.NextRound, nextRoundEventArgs: new NextRoundEventArgs(1, new Card(4)));
                 buffer = protocol.ToByteArray();
                 return buffer.Length;
             });

@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace t.lib
+namespace t.lib.Network
 {
     [StructLayout(LayoutKind.Sequential)]
     [Serializable]

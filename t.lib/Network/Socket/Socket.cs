@@ -34,8 +34,6 @@ namespace t.lib
 
         public ValueTask ConnectAsync(EndPoint remoteEP, CancellationToken cancellationToken) => _socket.ConnectAsync(remoteEP, cancellationToken);
         /// <inheritdoc />
-        public void Dispose() => _socket.Dispose();
-        /// <inheritdoc />
         public int Receive(byte[] buffer) => _socket.Receive(buffer);
         /// <inheritdoc />
         public Task<int> ReceiveAsync(byte[] buffers, SocketFlags socketFlags) => _socket.ReceiveAsync(buffers, socketFlags);
@@ -69,5 +67,19 @@ namespace t.lib
 
         public static implicit operator System.Net.Sockets.Socket(Socket d) => d._socket;
         public static explicit operator Socket(System.Net.Sockets.Socket b) => new Socket(b);
+
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            // Cleanup
+            _socket.Dispose();
+        }
+
     }
 }

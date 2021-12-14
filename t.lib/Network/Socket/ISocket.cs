@@ -6,37 +6,16 @@ using System.Threading.Tasks;
 
 namespace t.lib
 {
+    /// <summary>
+    /// Interface to wrap <see cref="System.Net.Sockets.Socket"/>
+    /// </summary>
     public interface ISocket : IDisposable
     {
-        //
-        // Summary:
-        //     Ends a pending asynchronous send.
-        //
-        // Parameters:
-        //   asyncResult:
-        //     An System.IAsyncResult that stores state information for this asynchronous operation.
-        //
-        // Returns:
-        //     If successful, the number of bytes sent to the System.Net.Sockets.Socket; otherwise,
-        //     an invalid System.Net.Sockets.Socket error.
-        //
-        // Exceptions:
-        //   T:System.ArgumentNullException:
-        //     asyncResult is null.
-        //
-        //   T:System.ArgumentException:
-        //     asyncResult was not returned by a call to the System.Net.Sockets.Socket.BeginSend(System.Byte[],System.Int32,System.Int32,System.Net.Sockets.SocketFlags,System.AsyncCallback,System.Object)
-        //     method.
-        //
-        //   T:System.InvalidOperationException:
-        //     System.Net.Sockets.Socket.EndSend(System.IAsyncResult) was previously called
-        //     for the asynchronous send.
-        //
-        //   T:System.Net.Sockets.SocketException:
-        //     An error occurred when attempting to access the socket.
-        //
-        //   T:System.ObjectDisposedException:
-        //     The System.Net.Sockets.Socket has been closed.
+        /// <summary>
+        /// Ends a pending asynchronous send.
+        /// </summary>
+        /// <param name="asyncResult">An System.IAsyncResult that stores state information for this asynchronous operation.</param>
+        /// <returns>If successful, the number of bytes sent to the System.Net.Sockets.Socket; otherwise, an invalid System.Net.Sockets.Socket error.</returns>
         public int EndSend(IAsyncResult asyncResult);
 
         //

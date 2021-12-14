@@ -97,7 +97,15 @@ namespace t.lib.Console
                         string playerName = (param.FirstOrDefault(a => a.Contains("playername")) ?? "").Replace("-playername=", "");
                         int.TryParse((param.FirstOrDefault(a => a.Contains("gamerounds")) ?? "").Replace("-gamerounds=", ""), out int gamerounds);
                         int.TryParse((param.FirstOrDefault(a => a.Contains("players")) ?? "").Replace("-players=", ""), out int players);
+                        string useappconfig = (param.FirstOrDefault(a => a.Contains("useappconfig")) ?? "").Replace("-useappconfig=", "");
 
+                        var ServerIpAdress = GameSocketServer.GetLanIpAdress().ToString();
+                        int serverPort = AppConfig.ServerPort;
+                        if (!string.IsNullOrEmpty(useappconfig) && bool.TryParse(useappconfig, out bool useAppConfig) && useAppConfig)
+                        {
+                            ServerIpAdress = AppConfig.ServerIpAdress ?? "";
+                            serverPort = AppConfig.ServerPort;
+                        }
                         if (String.IsNullOrEmpty(gamename))
                         {
                             System.Console.WriteLine("Enter Gamename:");
@@ -138,11 +146,11 @@ namespace t.lib.Console
                         var config = AppConfig;
                         config.GameRounds = gamerounds;
                         config.RequiredAmountOfPlayers = players;
-                        GameSocketServer gameSocketServer = new GameSocketServer(AppConfig, AppConfig.ServerIpAdress ?? "", AppConfig.ServerPort, AppConfig.BroadcastPort, ServiceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new InvalidOperationException($"Could not resolve {nameof(ILogger<GameSocketServer>)}"));
+                        GameSocketServer gameSocketServer = new GameSocketServer(AppConfig, ServerIpAdress, serverPort, AppConfig.BroadcastPort, ServiceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new InvalidOperationException($"Could not resolve {nameof(ILogger<GameSocketServer>)}"));
                         Task gameServerTask = gameSocketServer.StartListeningAsync(gamename, cancellationTokenServer.Token);
                         //give the server time to boot up
                         await Task.Delay(TimeSpan.FromSeconds(1));
-                        Task joinGameTask = OnJoinLanGameAsync(GameSocketServer.GetLanIpAdress().ToString(), config.ServerPort, playerName);
+                        Task joinGameTask = OnJoinLanGameAsync(ServerIpAdress, config.ServerPort, playerName);
 
                         Task[] tasks = new Task[] { gameServerTask, joinGameTask };
 
@@ -169,7 +177,7 @@ namespace t.lib.Console
         private static void ShowOptions()
         {
             System.Console.WriteLine("Welcome to t");
-            System.Console.WriteLine("[start] a game -gamename=katzenserver -gamerounds=2 -players=4 -playername=martin");
+            System.Console.WriteLine("[start] a game -gamename=katzenserver -gamerounds=2 -players=4 -playername=martin -useappconfig=true");
             System.Console.WriteLine("[join] -ip=127.0.0.1 -port=11000 -name=martin");
             System.Console.WriteLine("[find] and join games");
             System.Console.WriteLine("[version] shows the version of the app");

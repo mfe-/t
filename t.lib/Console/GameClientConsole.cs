@@ -85,8 +85,9 @@ namespace t.lib.Console
                         await OnJoinLanGameAsync(ipadress, port, playername);
                         break;
                     case "find":
-                        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                        var publicGames = await GameSocketClient.FindLanGamesAsync(15000, cancellationTokenSource.Token);
+                        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                        cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+                        var publicGames = await GameSocketClient.FindLanGamesAsync(AppConfig.BroadcastPort, cancellationTokenSource.Token);
                         await OnFoundLanGames(publicGames);
                         break;
                     case "start":

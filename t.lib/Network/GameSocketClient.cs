@@ -235,7 +235,7 @@ namespace t.lib.Network
             return cardValue;
         }
         /// <inheritdoc/>
-        protected override Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj) 
+        protected override Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj)
             => Task.CompletedTask;
         public void ExitGame()
         {
@@ -313,20 +313,29 @@ namespace t.lib.Network
             //Client uses as receive udp client
             using UdpClient udpClient = new UdpClient(udpPort);
             List<PublicGame> publicGames = new List<PublicGame>();
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                //IPEndPoint object will allow us to read datagrams sent from any source.
-                var receivedResults = await udpClient.ReceiveAsync();
-
-                if (TryGetBroadcastMessage(receivedResults.Buffer, out var ipadress, out var port, out var gameName,
-                    out var requiredAmountOfPlayers, out var currentAmountPlayers, out var gameRound))
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    if (!publicGames.Any(a => a.ServerIpAddress != ipadress))
+
+                    //IPEndPoint object will allow us to read datagrams sent from any source.
+                    var receivedResults = await udpClient.ReceiveAsync(cancellationToken);
+
+                    if (TryGetBroadcastMessage(receivedResults.Buffer, out var ipadress, out var port, out var gameName,
+                        out var requiredAmountOfPlayers, out var currentAmountPlayers, out var gameRound))
                     {
-                        publicGames.Add(new(ipadress, port.Value, requiredAmountOfPlayers.Value, currentAmountPlayers.Value, gameRound.Value, gameName));
+                        if (!publicGames.Any(a => a.ServerIpAddress != ipadress))
+                        {
+                            publicGames.Add(new(ipadress, port.Value, requiredAmountOfPlayers.Value, currentAmountPlayers.Value, gameRound.Value, gameName));
+                        }
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                //timeout
+            }
+
             return publicGames;
         }
     }

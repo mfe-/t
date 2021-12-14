@@ -3,7 +3,7 @@ using Moq;
 using System;
 using System.Text;
 using t.lib;
-using t.lib.EventArgs;
+using t.lib.Game.EventArgs;
 using t.lib.Server;
 using t.lib.Game;
 using Xunit;

@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using t.lib.Game;
+﻿using System.Collections.Generic;
 
-namespace t.lib.EventArgs
+namespace t.lib.Game.EventArgs
 {
     public class PlayerWonEventArgs
     {

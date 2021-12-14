@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using t.lib;
-using t.lib.EventArgs;
+using t.lib.Game.EventArgs;
 using Xunit;
 using Xunit.Abstractions;
 using t.lib.Game;

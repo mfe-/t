@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using t.lib.EventArgs;
+using t.lib.Game.EventArgs;
 
 [assembly: InternalsVisibleTo("t.TestProject1")]
 namespace t.lib.Game
@@ -16,7 +16,7 @@ namespace t.lib.Game
         public event EventHandler<System.EventArgs>? GameStartedEvent;
         public event EventHandler<NextRoundEventArgs>? NextRoundEvent;
         public event EventHandler<PlayerWonEventArgs>? PlayerWonEvent;
-        public event EventHandler<EventArgs<Player>>? NewPlayerRegisteredEvent;
+        public event EventHandler<NewPlayerRegisteredEventArgs>? NewPlayerRegisteredEvent;
         public event EventHandler<System.EventArgs>? RequiredAmountOfPlayersReachedEvent;
         public GameLogic()
         {
@@ -66,7 +66,7 @@ namespace t.lib.Game
             if (Cards.Count == 0) throw new InvalidOperationException(InitializeAndStartNewGameMessage);
             if (Players.Count == CardCapacity) throw new InvalidOperationException($"Game only designed for {CardCapacity} players");
             Players.Add(player);
-            NewPlayerRegisteredEvent?.Invoke(this, new EventArgs<Player>(player));
+            NewPlayerRegisteredEvent?.Invoke(this, new NewPlayerRegisteredEventArgs(player));
             if (Players.Count == RequiredAmountOfPlayers)
             {
                 RequiredAmountOfPlayersReachedEvent?.Invoke(this, System.EventArgs.Empty);

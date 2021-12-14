@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using t.lib.EventArgs;
+using t.lib.Game.EventArgs;
 using t.lib.Game;
 
 namespace t.lib.Network
@@ -16,7 +16,6 @@ namespace t.lib.Network
         private readonly IPAddress _serverIpAdress;
         private readonly int _serverPort;
         private int? totalGameRounds;
-        private int GameRound;
         private Socket? _senderSocket;
         internal Player? _player;
 
@@ -77,7 +76,6 @@ namespace t.lib.Network
             }
 
             Game.Start(totalPoints: values.Totalpoints);
-            GameRound++;
             return Task.CompletedTask;
         }
 
@@ -237,7 +235,8 @@ namespace t.lib.Network
             return cardValue;
         }
         /// <inheritdoc/>
-        protected override Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj) => Task.CompletedTask;
+        protected override Task BroadcastMessageAsync(GameActionProtocol gameActionProtocol, object? obj) 
+            => Task.CompletedTask;
         public void ExitGame()
         {
             try

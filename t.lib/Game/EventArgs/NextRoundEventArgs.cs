@@ -1,6 +1,4 @@
-﻿using t.lib.Game;
-
-namespace t.lib.EventArgs
+﻿namespace t.lib.Game.EventArgs
 {
     public record NextRoundEventArgs
     {

@@ -12,7 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using t.lib.EventArgs;
+using t.lib.Game.EventArgs;
 using t.lib.Game;
 using t.lib.Server;
 

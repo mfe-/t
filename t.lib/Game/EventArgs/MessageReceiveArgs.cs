@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using t.lib.Game;
 
-namespace t.lib.EventArgs
+namespace t.lib.Game.EventArgs
 {
     public class MessageReceiveArgs : System.EventArgs
     {

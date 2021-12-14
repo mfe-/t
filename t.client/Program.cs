@@ -15,7 +15,7 @@ using t.lib.Network;
 
 namespace t.Client
 {
-    public class Program
+    public static class Program
     {
         public static async Task<int> Main(String[] args)
         {
@@ -41,17 +41,9 @@ namespace t.Client
                     };
                     config.AddCommandLine(args, switchMappings);
                 }
-                //services.Configure<AppConfig>(options => Configuration.GetSection("AppConfig").Bind(options));
             }).ConfigureServices((hostContext, services) =>
             {
                 services.AddOptions();
-
-                //services.AddHostedService(serviceProvider =>
-                //    new GameSocketClient(
-                //        IPAddress.Parse(hostContext.Configuration.GetValue<string>("AppConfig:ServerIpAdress")),
-                //        hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"),
-                //        serviceProvider.GetService<ILogger<GameSocketClient>>() ?? throw new ArgumentNullException(),
-                //        hostContext.Configuration.GetValue<string>("AppConfig:DefaultPlayerName")));
 
                 var appConfig = hostContext.Configuration.GetSection("AppConfig").Get<AppConfig>();
                 Func<IServiceProvider, GameSocketServer> GameSocketServerFactory = serviceProvider =>
@@ -64,7 +56,7 @@ namespace t.Client
                             hostContext.Configuration.GetValue<string>("AppConfig:ServerIpAdress"),
                             hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"),
                             hostContext.Configuration.GetValue<int>("AppConfig:BroadcastPort"),
-                            serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new ArgumentNullException());
+                            serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new InvalidOperationException($"{nameof(ILogger<GameSocketServer>)} is null. Could not resolve service!"));
                     }
                     else
                     {
@@ -73,19 +65,19 @@ namespace t.Client
                             hostContext.Configuration.GetValue<string>("AppConfig:ServerIpAdress"),
                             hostContext.Configuration.GetValue<int>("AppConfig:ServerPort"),
                             hostContext.Configuration.GetValue<int>("AppConfig:BroadcastPort"),
-                            serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new ArgumentNullException(),
+                            serviceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new InvalidOperationException($"{nameof(ILogger<GameSocketServer>)} is null. Could not resolve service!"),
                             identifier);
                     }
                 };
 
                 Func<IServiceProvider, GameClientConsole> GameClientConsoleFactory = serviceProvider => new GameClientConsole(serviceProvider.GetRequiredService<IServiceProvider>(),
-                                        serviceProvider.GetService<ILogger<GameClientConsole>>() ?? throw new ArgumentNullException(nameof(ILogger<GameClientConsole>)),
-                                        appConfig ?? throw new ArgumentNullException(nameof(AppConfig)), ReadLineAsync);
+                                        serviceProvider.GetService<ILogger<GameClientConsole>>() ?? throw new InvalidOperationException($"{nameof(ILogger<GameClientConsole>)} is null. Could not resolve service!"),
+                                        appConfig ?? throw new InvalidOperationException($"{nameof(AppConfig)} is null which was not expected!"), ReadLineAsync);
 
                 services.AddScoped(GameClientConsoleFactory);
                 services.AddHostedService(GameClientConsoleFactory);
-                //services.AddScoped(GameSocketServerFactory);
-                //services.AddHostedService(GameSocketServerFactory);
+                services.AddScoped(GameSocketServerFactory);
+                services.AddHostedService(GameSocketServerFactory);
 
             }).ConfigureLogging((hostingContext, logging) =>
             {
@@ -96,7 +88,7 @@ namespace t.Client
             var host = builder.Build();
 
             var gameClientConsole = host.Services.GetService<GameClientConsole>();
-            if (gameClientConsole == null) throw new NullReferenceException($"{nameof(gameClientConsole)} is null!");
+            if (gameClientConsole == null) throw new InvalidOperationException($"{nameof(gameClientConsole)} is null!");
             await gameClientConsole.ParseStartArgumentsAsync(args);
 
 
@@ -107,19 +99,6 @@ namespace t.Client
             string? s = Console.ReadLine();
             return Task.FromResult(s ?? String.Empty);
         }
-
-        //Parser parser = new Parser(with =>
-        //{
-        //    with.HelpWriter = System.Console.Out;
-        //    with.AutoVersion = false;
-        //    with.AutoHelp = true;
-        //});
-        //parser.ParseArguments(
-        //    s.Split(" "),
-        //        typeof(JoinServerParam).Assembly.GetTypes().Where(t => t.GetCustomAttribute<VerbAttribute>() != null).ToArray())
-        //    .MapResult(
-        //        (JoinServerParam param) => gameClient.OnJoinLanGameAsync(param.ServerIpAdress, param.ServerPort),
-        //        errs => Task.CompletedTask);
     }
 }
 

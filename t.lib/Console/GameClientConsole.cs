@@ -137,12 +137,12 @@ namespace t.lib.Console
                         var config = AppConfig;
                         config.GameRounds = gamerounds;
                         config.RequiredAmountOfPlayers = players;
-                        GameSocketServer gameSocketServer = new GameSocketServer(AppConfig, AppConfig.ServerIpAdress ?? "", AppConfig.ServerPort, AppConfig.BroadcastPort, ServiceProvider.GetService<ILogger<GameSocketServer>>());
+                        GameSocketServer gameSocketServer = new GameSocketServer(AppConfig, AppConfig.ServerIpAdress ?? "", AppConfig.ServerPort, AppConfig.BroadcastPort, ServiceProvider.GetService<ILogger<GameSocketServer>>() ?? throw new InvalidOperationException($"Could not resolve {nameof(ILogger<GameSocketServer>)}"));
                         Task gameServerTask = gameSocketServer.StartListeningAsync(gamename, cancellationTokenServer.Token);
                         //give the server time to boot up
                         await Task.Delay(TimeSpan.FromSeconds(1));
                         Task joinGameTask = OnJoinLanGameAsync(GameSocketServer.GetLanIpAdress().ToString(), config.ServerPort, playerName);
-                        
+
                         Task[] tasks = new Task[] { gameServerTask, joinGameTask };
 
                         await Task.WhenAll(tasks);

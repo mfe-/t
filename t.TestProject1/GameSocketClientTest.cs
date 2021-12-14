@@ -46,7 +46,7 @@ namespace t.TestProject1
 
             mockGameSocketClient.Protected().SetupGet<GameLogic>("Game").Returns(game);
 
-            GameSocketClient client = mockGameSocketClient.Object;
+            Assert.Equal(1, game.Players.Count);
         }
     }
 }

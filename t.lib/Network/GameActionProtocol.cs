@@ -9,7 +9,9 @@ namespace t.lib.Network
     [DebuggerDisplay("PlayerId = {PlayerId} Phase={Constants.ToString(Phase)}")]
     public struct GameActionProtocol
     {
-        //0b000010
+        /// <summary>
+        /// protocol version which is used
+        /// </summary>
         public byte Version;
         /// <summary>
         /// submitter id

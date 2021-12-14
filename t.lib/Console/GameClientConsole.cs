@@ -98,8 +98,13 @@ namespace t.lib.Console
                         int.TryParse((param.FirstOrDefault(a => a.Contains("gamerounds")) ?? "").Replace("-gamerounds=", ""), out int gamerounds);
                         int.TryParse((param.FirstOrDefault(a => a.Contains("players")) ?? "").Replace("-players=", ""), out int players);
                         string useappconfig = (param.FirstOrDefault(a => a.Contains("useappconfig")) ?? "").Replace("-useappconfig=", "");
+                        string ip = (param.FirstOrDefault(a => a.Contains("ip")) ?? "").Replace("-ip=", "");
 
                         var ServerIpAdress = GameSocketServer.GetLanIpAdress().ToString();
+                        if (!string.IsNullOrEmpty(ip))
+                        {
+                            ServerIpAdress = ip;
+                        }
                         int serverPort = AppConfig.ServerPort;
                         if (!string.IsNullOrEmpty(useappconfig) && bool.TryParse(useappconfig, out bool useAppConfig) && useAppConfig)
                         {
@@ -177,7 +182,7 @@ namespace t.lib.Console
         private static void ShowOptions()
         {
             System.Console.WriteLine("Welcome to t");
-            System.Console.WriteLine("[start] a game -gamename=katzenserver -gamerounds=2 -players=4 -playername=martin -useappconfig=true");
+            System.Console.WriteLine("[start] a game -gamename=katzenserver -gamerounds=2 -players=4 -playername=martin -useappconfig=true -ip=127.0.0.1");
             System.Console.WriteLine("[join] -ip=127.0.0.1 -port=11000 -name=martin");
             System.Console.WriteLine("[find] and join games");
             System.Console.WriteLine("[version] shows the version of the app");

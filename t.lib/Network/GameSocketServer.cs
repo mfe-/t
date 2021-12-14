@@ -25,7 +25,7 @@ namespace t.lib.Network
         private readonly int? _TotalPoints;
         private readonly int _GameRounds;
         private readonly IPAddress _ServerIpAddress;
-        private readonly ConcurrentDictionary<Guid, ConnectionState> _playerConnections = new();
+        private readonly ConcurrentDictionary<Guid, PlayerConnection> _playerConnections = new();
         public GameSocketServer(AppConfig appConfig, string serverIpAdress, int serverPort, int udpPort, ILogger logger) : base(logger)
         {
             if (appConfig.GameRounds < 1) throw new ArgumentException("At least one game round should be played!");
@@ -205,7 +205,7 @@ namespace t.lib.Network
                         }
                         else
                         {
-                            var connectionState = new ConnectionState(connection);
+                            var connectionState = new PlayerConnection(connection);
                             _ = Task.Run(() => ClientHandler(connectionState));
                         }
                     }
@@ -236,7 +236,7 @@ namespace t.lib.Network
         /// </remarks>
         private Guid? _FirstPlayerJoined = null;
         private volatile byte GlobalGamePhase = PhaseConstants.StartGame;
-        private async Task ClientHandler(ConnectionState connectionState)
+        private async Task ClientHandler(PlayerConnection connectionState)
         {
             try
             {
@@ -366,7 +366,7 @@ namespace t.lib.Network
             }
         }
 
-        private async Task HandleRegisterPlayerAsync(ConnectionState connectionState, GameActionProtocol gameActionProtocolRec)
+        private async Task HandleRegisterPlayerAsync(PlayerConnection connectionState, GameActionProtocol gameActionProtocolRec)
         {
             var player = GetPlayer(gameActionProtocolRec);
             connectionState.Player = player;
@@ -456,7 +456,7 @@ namespace t.lib.Network
         /// <param name="broadcastleftPlayer">if true, broadcast which player left the game</param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">if no player was found to connection it throws the exception</exception>
-        private async Task HandleConnectionResetAsync(ConnectionState connectionState, bool broadcastleftPlayer = false)
+        private async Task HandleConnectionResetAsync(PlayerConnection connectionState, bool broadcastleftPlayer = false)
         {
             _logger.LogInformation("Player {playername}@{ip} {playerguid} left", connectionState.Player?.Name ?? "unknown", connectionState.SocketClient.RemoteEndPoint, connectionState.Player?.PlayerId);
             if (connectionState.Player == null)
@@ -470,7 +470,7 @@ namespace t.lib.Network
                 Game.OnLeavePlayerEvent(player);
             }
 
-            bool successful = _playerConnections.TryRemove(connectionState.Player.PlayerId, out ConnectionState? removedConnectionState);
+            bool successful = _playerConnections.TryRemove(connectionState.Player.PlayerId, out PlayerConnection? removedConnectionState);
             if (!successful) throw new InvalidOperationException($"Could not remove player from {nameof(_playerConnections)}");
             //if our "main" player left we need to look for a new one
             if (connectionState.Player.PlayerId == _FirstPlayerJoined)

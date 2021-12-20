@@ -4,7 +4,7 @@
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
 		<Nullable>enable</Nullable>
-		<StartArguments>-join -ip=192.168.0.16 -port=11000 -name=surface3</StartArguments>
+		<!--<StartArguments>-join -ip=192.168.0.16 -port=11000 -name=surface3</StartArguments>-->
     <!--<StartArguments>-start  -gamename=katzenserver -gamerounds=2 -players=2 -playername=martin</StartArguments>-->
 		<RuntimeIdentifiers>win10-x64;osx-x64</RuntimeIdentifiers>
 	</PropertyGroup>

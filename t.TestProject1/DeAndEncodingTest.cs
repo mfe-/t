@@ -42,12 +42,13 @@ namespace t.TestProject1
 
         }
         [Theory]
+        [InlineData("asdf", 2)]
         [InlineData("martin", 4)]
         [InlineData("katharina", 6)]
         [InlineData("asdf\ro\n", 6)]
         public void GameActionProtocol_ToPlayer_test(string expectedPlayerName, int expectedRequiredPlayer)
         {
-            Guid guid = Guid.Parse("6d88b7c1-5b8b-4068-b510-b4ff01309670");
+            Guid guid = Guid.Parse("9a4c1ca4-2fa2-407d-9cf7-53defb8d756c");
             Player expectedPlayer = new Player(expectedPlayerName, guid);
             GameSocketServer gameSocketServer = GameSocketFactory();
             var gameActionProtocol = gameSocketServer.GameActionProtocolFactory(PhaseConstants.NewPlayer, expectedPlayer, number: expectedRequiredPlayer);

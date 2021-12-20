@@ -23,7 +23,7 @@ namespace t.TestProject1
             expectedGameActionProtocol.Version = PhaseConstants.Version;
             expectedGameActionProtocol.PlayerId = Guid.Parse("6d88b7c1-5b8b-4068-b510-b4ff01309670");
             expectedGameActionProtocol.Phase = PhaseConstants.RegisterPlayer;
-            string playerName = $"martin{Environment.NewLine}";
+            string playerName = $"martin{GameSocketBase.Seperator}";
             expectedGameActionProtocol.Payload = Encoding.ASCII.GetBytes(playerName);
             expectedGameActionProtocol.PayloadSize = (byte)expectedGameActionProtocol.Payload.Length;
 
@@ -57,7 +57,7 @@ namespace t.TestProject1
             int requiredPlayer = gameSocketServer.GetNumber(gameActionProtocol);
 
             Assert.Equal(expectedPlayer.PlayerId, player.PlayerId);
-            Assert.Equal(expectedPlayer.Name.Replace(Environment.NewLine, String.Empty), player.Name);
+            Assert.Equal(expectedPlayer.Name.Replace(GameSocketBase.Seperator, String.Empty), player.Name);
             Assert.Equal(expectedRequiredPlayer, requiredPlayer);
         }
 

@@ -104,7 +104,7 @@ namespace t.lib.Network
             else if (gameActionProtocol.Phase == PhaseConstants.RegisterPlayer)
             {
                 if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(PhaseConstants.NewPlayer)} requires argument {nameof(player)}");
-                gameActionProtocol.Payload = Encoding.ASCII.GetBytes($"{player.Name}{Environment.NewLine}");
+                gameActionProtocol.Payload = Encoding.ASCII.GetBytes($"{player.Name}{Seperator}");
             }
             else if (gameActionProtocol.Phase == PhaseConstants.StartGame)
             {
@@ -178,16 +178,16 @@ namespace t.lib.Network
             }
             return gameActionProtocol;
         }
-
+        public static string Seperator = "\r\n";
         private static GameActionProtocol GameActionProtocolNewPlayer(Player? player, int? number, ref GameActionProtocol gameActionProtocol)
         {
             if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(PhaseConstants.NewPlayer)} requires argument {nameof(player)}");
             if (number == null) throw new ArgumentNullException(nameof(number), $"The parameter {nameof(number)} is required as it is used as {nameof(GameLogic.RequiredAmountOfPlayers)}");
             //encode playerid and playername into payload
             var playerid = player.PlayerId.ToByteArray();
-            if (!player.Name.Contains(Environment.NewLine))
+            if (!player.Name.Contains(Seperator))
             {
-                player.Name = $"{player.Name}{Environment.NewLine}";
+                player.Name = $"{player.Name}{Seperator}";
             }
             var playername = Encoding.ASCII.GetBytes(player.Name);
             var nbytes = BitConverter.GetBytes(number.Value);
@@ -293,7 +293,7 @@ namespace t.lib.Network
             var playerNameBytes = span.Slice(Marshal.SizeOf(typeof(Guid)), playerNameLength);
             var playername = Encoding.ASCII.GetString(playerNameBytes);
 
-            return new Player(playername.Replace(System.Environment.NewLine, String.Empty), playerId);
+            return new Player(playername.Replace(Seperator, String.Empty), playerId);
         }
 
         private static int GetPlayerNameLength(int payloadSize, Span<byte> span)
@@ -340,8 +340,8 @@ namespace t.lib.Network
         protected Player GetRegisterePlayer(ref GameActionProtocol gameActionProtocol)
         {
             if (gameActionProtocol.Phase != PhaseConstants.RegisterPlayer) throw new ArgumentException($"{nameof(PhaseConstants.RegisterPlayer)} required for argument {nameof(gameActionProtocol.Phase)}");
-            string playername = Encoding.ASCII.GetString(gameActionProtocol.Payload).Replace(Environment.NewLine, String.Empty);
-            Player player = new Player(playername.Replace(System.Environment.NewLine, String.Empty), gameActionProtocol.PlayerId);
+            string playername = Encoding.ASCII.GetString(gameActionProtocol.Payload).Replace(Seperator, String.Empty);
+            Player player = new Player(playername.Replace(Seperator, String.Empty), gameActionProtocol.PlayerId);
             return player;
         }
         public NextRoundEventArgs GetNextRoundEventArgs(GameActionProtocol gameActionPRotocol)

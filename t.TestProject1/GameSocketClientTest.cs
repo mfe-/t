@@ -36,7 +36,7 @@ namespace t.TestProject1
                 buffer = protocol.ToByteArray();
                 return buffer.Length;
             });
-
+            //for protected .Setup we need to use ItExp<>
             mockGameSocketClient.Protected().SetupGet<ISocket>("SenderSocket").Returns(mockSocket.Object);
             Player localPlayer = new Player("martin", Guid.NewGuid());
 

@@ -8,22 +8,25 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using t.App.Service;
 
 namespace t.App.View;
 
 public class NewGamePageViewModel : BaseViewModel
 {
-    public NewGamePageViewModel(ILogger<NewGamePageViewModel> logger) : base(logger)
+    private readonly NavigationService navigationService;
+    public NewGamePageViewModel(ILogger<NewGamePageViewModel> logger, NavigationService navigationService) : base(logger)
     {
         StartGameCommand = new Command(async () => await StartGameAsync());
+        this.navigationService = navigationService;
     }
     public string Title { get; set; } = "Create a new game";
 
     public ICommand StartGameCommand { get; }
 
-    private Task StartGameAsync()
+    private async Task StartGameAsync()
     {
-        return Task.CompletedTask;
+        await navigationService.NavigateToAsync(typeof(GamePage));
     }
 
     private string _GameName = string.Empty;

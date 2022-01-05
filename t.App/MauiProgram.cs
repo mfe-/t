@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using t.App.Service;
 using t.App.View;
+using t.lib;
 
 namespace t.App
 {
@@ -33,8 +34,15 @@ namespace t.App
                     };
                 });
 
+            AppConfig appConfig = new AppConfig();
+
+            builder.Services.AddSingleton(appConfig);
+
             builder.Services.AddTransient<MainPage>();
             builder.Services.AddSingleton<MainPageViewModel>();
+
+            builder.Services.AddTransient<GamePage>();
+            builder.Services.AddSingleton<GamePageViewModel>();
 
             builder.Services.AddTransient<NewGamePage>();
             builder.Services.AddSingleton<NewGamePageViewModel>();

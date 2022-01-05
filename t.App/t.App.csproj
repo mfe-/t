@@ -54,6 +54,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="View\GamePage.xaml.cs">
+	    <DependentUpon>GamePage.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="View\SettingPage.xaml.cs">
 	    <DependentUpon>SettingPage.xaml</DependentUpon>
 	  </Compile>
@@ -69,6 +72,9 @@
 	  <MauiXaml Update="App.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="View\GamePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="View\SettingPage.xaml">
 	    <SubType>Designer</SubType>
 	    <Generator>MSBuild:Compile</Generator>
@@ -79,6 +85,14 @@
 	  <MauiXaml Update="View\NewGamePage.xaml">
 	    <Generator></Generator>
 	  </MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Models\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\t.lib\t.lib.csproj" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">

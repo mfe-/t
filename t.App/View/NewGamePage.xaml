@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:t.App.View"
+             x:Class="t.App.View.NewGamePage"
+             Title="{Binding Path=Title}"
+             BackgroundColor="{DynamicResource SecondaryColor}">
+    <ContentPage.Content>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*" />
+                <ColumnDefinition Width="5*" />
+                <ColumnDefinition Width="5*" />
+            </Grid.ColumnDefinitions>
+            <Grid GridLayout.Column="1" Margin="15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5*" />
+                    <ColumnDefinition Width="5*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Label Text="Game name" GridLayout.Column="0" GridLayout.Row="0" />
+                <Entry Text="{Binding Path=GameName}" GridLayout.Column="1" GridLayout.Row="0" />
+
+                <Label Text="Your player name" GridLayout.Column="0" GridLayout.Row="1" />
+                <Entry Text="{Binding Path=PlayerName}" GridLayout.Column="1" GridLayout.Row="1" />
+
+                <Label Text="Game Rounds to play" GridLayout.Column="0" GridLayout.Row="2" />
+                <Entry Text="{Binding Path=GameRounds}" GridLayout.Column="1" GridLayout.Row="2" />
+
+                <Label Text="Required Players" GridLayout.Column="0" GridLayout.Row="3" />
+                <Entry Text="{Binding Path=RequiredPlayers}" GridLayout.Column="1" GridLayout.Row="3" />
+
+                <Button Text="Start game" 
+                        Command="{Binding Path=StartGameCommand}"
+                        GridLayout.Column="1" GridLayout.Row="4"></Button>
+            </Grid>
+        </Grid>
+
+    </ContentPage.Content>
+</ContentPage>

@@ -2,11 +2,11 @@
 using Microsoft.Maui.Essentials;
 using System;
 
-namespace t.App
+namespace t.App.View
 {
-    public partial class MainPage : ContentPage
+    public partial class JoinGamePage : ContentPage
     {
-        public MainPage()
+        public JoinGamePage()
         {
             InitializeComponent();
         }

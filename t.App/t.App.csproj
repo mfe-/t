@@ -8,7 +8,8 @@
 		<UseMaui>true</UseMaui>
 		<SingleProject>true</SingleProject>
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
 		<!-- Display name -->
 		<ApplicationTitle>t.App</ApplicationTitle>
 
@@ -49,7 +50,33 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="NewGame.xaml">
+	  <MauiXaml Remove="JoinGamePage.xaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="View\SettingPage.xaml.cs">
+	    <DependentUpon>SettingPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="View\JoinGamePage.xaml.cs">
+	    <DependentUpon>JoinGamePage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="View\NewGamePage.xaml.cs">
+	    <DependentUpon>NewGamePage.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiXaml Update="App.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="View\SettingPage.xaml">
+	    <SubType>Designer</SubType>
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="View\JoinGamePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="View\NewGamePage.xaml">
 	    <Generator></Generator>
 	  </MauiXaml>
 	</ItemGroup>

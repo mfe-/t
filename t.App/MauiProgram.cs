@@ -1,12 +1,18 @@
-﻿using Microsoft.Maui;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using t.App.Service;
+using t.App.View;
 
 namespace t.App
 {
     public static class MauiProgram
     {
+        public static MauiApp? MauiApp;
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
@@ -17,7 +23,37 @@ namespace t.App
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
-            return builder.Build();
+
+            builder.Services.AddSingleton(
+                provider =>
+                {
+                    return new NavigationPage(provider.GetRequiredService<MainPage>())
+                    {
+                        //BindingContext = provider.GetRequiredService<MainPageViewModel>()
+                    };
+                });
+
+            builder.Services.AddTransient<MainPage>();
+            builder.Services.AddSingleton<MainPageViewModel>();
+
+            builder.Services.AddTransient<NewGamePage>();
+            builder.Services.AddSingleton<NewGamePageViewModel>();
+
+            builder.Services.AddTransient<JoinGamePage>();
+            builder.Services.AddSingleton<JoinGamePageViewModel>();
+
+            builder.Services.AddTransient<SettingPage>();
+            builder.Services.AddSingleton<SettingPageViewModel>();
+
+            builder.Services.AddSingleton(
+                provider => new NavigationService(
+                provider.GetRequiredService<IServiceProvider>(),
+                provider.GetRequiredService<ILogger<NavigationService>>(),
+                provider.GetRequiredService<NavigationPage>()));
+
+            MauiApp = builder.Build();
+
+            return MauiApp;
         }
     }
 }

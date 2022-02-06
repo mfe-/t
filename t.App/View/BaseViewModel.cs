@@ -6,7 +6,7 @@ namespace t.App.View;
 
 public class BaseViewModel : INotifyPropertyChanged
 {
-    private readonly ILogger logger;
+    protected readonly ILogger logger;
 
     public BaseViewModel(ILogger logger)
     {

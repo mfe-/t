@@ -13,7 +13,6 @@ namespace t.App
 {
     public static class MauiProgram
     {
-        public static MauiApp? MauiApp;
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
@@ -59,9 +58,9 @@ namespace t.App
                 provider.GetRequiredService<ILogger<NavigationService>>(),
                 provider.GetRequiredService<NavigationPage>()));
 
-            MauiApp = builder.Build();
+            builder.Services.AddSingleton<GameService>();
 
-            return MauiApp;
+            return builder.Build();
         }
     }
 }

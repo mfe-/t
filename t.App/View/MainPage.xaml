@@ -14,7 +14,7 @@
                 SemanticProperties.HeadingLevel="Level1"
                 FontSize="32"
                 HorizontalOptions="Center"
-                Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.NewGamePage" />
+                Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.NewGamePageViewModel" />
 
             <Button 
                 Text="Join Game"
@@ -23,7 +23,7 @@
                 SemanticProperties.Description="Join an lan Game"
                 FontSize="32"
                 HorizontalOptions="Center"
-                Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.JoinGamePage" />
+                Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.JoinGamePageViewModel" />
 
             <Button 
                 Text="Settings"
@@ -34,7 +34,7 @@
                 FontAttributes="Bold"
                 x:Name="CounterLabel"
                 HorizontalOptions="Center"
-                Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.SettingPage" />
+                Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.SettingPageViewModel" />
 
             <Button 
                 Text="Exit"

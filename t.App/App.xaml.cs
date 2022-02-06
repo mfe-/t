@@ -10,11 +10,11 @@ namespace t.App
 {
     public partial class App : Microsoft.Maui.Controls.Application
     {
-        public App()
+        public App(IServiceProvider serviceProvider)
         {
             InitializeComponent();
-            var navigationPage = MauiProgram.MauiApp?.Services.GetService<NavigationPage>();
-            var mainPageViewModel = MauiProgram.MauiApp?.Services.GetService<MainPageViewModel>();
+            var navigationPage = serviceProvider.GetService<NavigationPage>();
+            var mainPageViewModel = serviceProvider.GetService<MainPageViewModel>();
             if (navigationPage != null) navigationPage.BindingContext = mainPageViewModel;
             MainPage = navigationPage;
 

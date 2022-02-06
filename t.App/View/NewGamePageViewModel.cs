@@ -15,10 +15,14 @@ namespace t.App.View;
 public class NewGamePageViewModel : BaseViewModel
 {
     private readonly NavigationService navigationService;
-    public NewGamePageViewModel(ILogger<NewGamePageViewModel> logger, NavigationService navigationService) : base(logger)
+    private readonly GameService gameService;
+
+    public NewGamePageViewModel(ILogger<NewGamePageViewModel> logger, NavigationService navigationService, GameService gameService)
+        : base(logger)
     {
         StartGameCommand = new Command(async () => await StartGameAsync());
         this.navigationService = navigationService;
+        this.gameService = gameService;
     }
     public string Title { get; set; } = "Create a new game";
 
@@ -26,7 +30,8 @@ public class NewGamePageViewModel : BaseViewModel
 
     private async Task StartGameAsync()
     {
-        await navigationService.NavigateToAsync(typeof(GamePage));
+        await gameService.StartGameServerAsync(GameName,PlayerName, int.Parse(GameRounds), int.Parse(RequiredPlayers));
+        await navigationService.NavigateToAsync(typeof(GamePageViewModel));
     }
 
     private string _GameName = string.Empty;

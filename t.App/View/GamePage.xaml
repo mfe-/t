@@ -5,10 +5,11 @@
              x:Class="t.App.View.GamePage"
              NavigationPage.HasNavigationBar="False"
              NavigationPage.HasBackButton="False"
+             Title="{Binding Path=Title}"
              BackgroundColor="{DynamicResource SecondaryColor}">
     <ContentPage.Content>
         <Grid>
-            
+            <ListView ItemsSource="{Binding Path=Players}"></ListView>
         </Grid>
 
     </ContentPage.Content>

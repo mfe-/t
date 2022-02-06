@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using t.App.Service;
+using t.lib.Game;
 
 namespace t.App.View
 {
@@ -33,11 +35,14 @@ namespace t.App.View
             if (sender != this) return;
             if (GameClientViewModel == null)
             {
+                Players = new ObservableCollection<Player>();
                 GameClientViewModel = new GameClientViewModel(logger, new lib.AppConfig(), null);
                 await gameService.JoinStartedGameServerAsync(GameClientViewModel);
             }
         }
 
         public GameClientViewModel? GameClientViewModel { get; set; }
+
+        public ObservableCollection<Player> Players { get; set; }
     }
 }

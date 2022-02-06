@@ -29,7 +29,7 @@ namespace t.lib.Network
             ActionDictionary.Add(PhaseConstants.ErrorOccoured, OnProtocolErrorAsync);
             ActionDictionary.Add(PhaseConstants.RegisterPlayer, OnPlayerRegisterAsync);
         }
-        protected virtual GameLogic Game => _game;
+        internal virtual GameLogic Game => _game;
         protected virtual Task OnPlayerRegisterAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             if (gameActionProtocol.Phase != PhaseConstants.RegisterPlayer) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(PhaseConstants.RegisterPlayer)}");

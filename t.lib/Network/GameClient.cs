@@ -26,13 +26,14 @@ namespace t.lib.Network
             this.args = Environment.GetCommandLineArgs() ?? new string[0];
             this.onChoiceCommandFunc = onChoiceCommandFunc;
         }
+        private GameSocketClient? gameSocketClient;
         public virtual async Task OnJoinLanGameAsync(string ServerIpAdress, int port, string playerName)
         {
             ThrowException(ServerIpAdress, port, playerName);
 
             IPAddress iPAddress = IPAddress.Parse(ServerIpAdress);
 
-            GameSocketClient gameSocketClient = new GameSocketClient(iPAddress, port, logger);
+            gameSocketClient = new(iPAddress, port, logger);
             await gameSocketClient.JoinGameAsync(playerName);
 
             MessageReceiveArgs messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, onChoiceCommandFunc,
@@ -42,6 +43,14 @@ namespace t.lib.Network
 
             gameSocketClient.ExitGame();
 
+        }
+        public GameLogic Game
+        {
+            get
+            {
+                if (gameSocketClient == null) throw new InvalidOperationException($"Before accessing you need to call {nameof(OnJoinLanGameAsync)}");
+                return gameSocketClient.Game;
+            }
         }
 
         private static void ThrowException(string ServerIpAdress, int port, string playerName)

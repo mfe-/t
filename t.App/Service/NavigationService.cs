@@ -11,14 +11,14 @@ using static t.App.Service.NavigationService;
 
 namespace t.App.Service;
 
-public class NavigationService : IObservable<PageAppearing>
+public class NavigationService
 {
     private readonly IServiceProvider serviceProvider;
     private readonly ILogger logger;
     private readonly NavigationPage startPage;
     public delegate Task EventHandlerAsync<EventArg>(object? sender, EventArg e);
-    public event EventHandlerAsync<EventArgs> AppearedEvent;
-    public event EventHandlerAsync<EventArgs> DisappearedEvent;
+    public event EventHandlerAsync<EventArgs>? AppearedEvent;
+    public event EventHandlerAsync<EventArgs>? DisappearedEvent;
 
     public NavigationService(IServiceProvider serviceProvider, ILogger logger, NavigationPage startPage)
     {
@@ -96,16 +96,6 @@ public class NavigationService : IObservable<PageAppearing>
             viewmodel = serviceProvider.GetService(viewmodelType);
         }
         return viewmodel;
-    }
-
-    private readonly List<IObserver<PageAppearing>> observers = new();
-
-    public IDisposable Subscribe(IObserver<PageAppearing> observer)
-    {
-        if (!observers.Contains(observer))
-            observers.Add(observer);
-
-        return new Unsubscriber<PageAppearing>(observers, observer);
     }
 }
 

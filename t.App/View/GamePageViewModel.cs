@@ -33,16 +33,20 @@ namespace t.App.View
         private async Task NavigationService_AppearedEvent(object? sender, EventArgs e)
         {
             if (sender != this) return;
-            if (GameClientViewModel == null)
+            if (GameClientViewModel == null && gameService.Current != null)
             {
-                Players = new ObservableCollection<Player>();
+                Title = gameService.Current.Gamename;
                 GameClientViewModel = new GameClientViewModel(logger, new lib.AppConfig(), null);
                 await gameService.JoinStartedGameServerAsync(GameClientViewModel);
+
             }
         }
 
-        public GameClientViewModel? GameClientViewModel { get; set; }
-
-        public ObservableCollection<Player> Players { get; set; }
+        private GameClientViewModel? _GameClientViewModel = null;
+        public GameClientViewModel? GameClientViewModel
+        {
+            get { return _GameClientViewModel; }
+            set { SetProperty(ref _GameClientViewModel, value, nameof(GameClientViewModel)); }
+        }
     }
 }

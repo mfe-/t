@@ -18,15 +18,13 @@ namespace t.lib.Network
         protected readonly ILogger logger;
         protected readonly AppConfig AppConfig;
         protected readonly string[] args;
-        protected readonly Func<Task<string>> onChoiceCommandFunc;
-        protected GameClient(ILogger logger, AppConfig appConfig, Func<Task<string>> onChoiceCommandFunc)
+        protected GameClient(ILogger logger, AppConfig appConfig)
         {
             this.logger = logger;
             this.AppConfig = appConfig;
             this.args = Environment.GetCommandLineArgs() ?? new string[0];
-            this.onChoiceCommandFunc = onChoiceCommandFunc;
         }
-        private GameSocketClient? gameSocketClient;
+        protected GameSocketClient? gameSocketClient;
         public virtual async Task OnJoinLanGameAsync(string ServerIpAdress, int port, string playerName)
         {
             ThrowException(ServerIpAdress, port, playerName);
@@ -36,7 +34,7 @@ namespace t.lib.Network
             gameSocketClient = new(iPAddress, port, logger);
             await gameSocketClient.JoinGameAsync(playerName);
 
-            MessageReceiveArgs messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, onChoiceCommandFunc,
+            var messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, GetCardChoiceAsync,
                 ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats, ShowPlayerOffered);
 
             await gameSocketClient.PlayGameAsync(messageReceiveArgs);
@@ -53,13 +51,12 @@ namespace t.lib.Network
             }
         }
 
-        private static void ThrowException(string ServerIpAdress, int port, string playerName)
+        protected void ThrowException(string ServerIpAdress, int port, string playerName)
         {
             if (String.IsNullOrEmpty(ServerIpAdress)) throw new ArgumentException(nameof(ServerIpAdress));
             if (String.IsNullOrEmpty(playerName)) throw new ArgumentException(nameof(playerName));
             if (port == 0) throw new ArgumentException("port 0 not allowed");
         }
-
         public abstract Task OnNextRoundAsync(NextRoundEventArgs e);
         public abstract Task ShowAvailableCardsAsync(IEnumerable<Card> availableCards);
         public abstract Task OnShowMenueAsync();
@@ -68,6 +65,8 @@ namespace t.lib.Network
         public abstract Task ShowPlayerWon(IEnumerable<Player> playerStats);
         public abstract Task ShowPlayerStats(IEnumerable<Player> playerStats);
         public abstract Task OnFoundLanGames(IEnumerable<PublicGame> publicGames);
+
+        public abstract Task<string> GetCardChoiceAsync();
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {

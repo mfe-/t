@@ -34,6 +34,8 @@ namespace t.App
                 });
 
             AppConfig appConfig = new AppConfig();
+            appConfig.ServerPort = 12000;
+            appConfig.BroadcastPort = 15000;
 
             builder.Services.AddSingleton(appConfig);
 

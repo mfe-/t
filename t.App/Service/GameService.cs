@@ -44,23 +44,31 @@ public class GameService
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         gameSocketServer.StartListeningAsync(gamename, gameConfig.CancellationTokenServer.Token)
-            .ContinueWith(t=>
+            .ContinueWith(t =>
             {
-                if(t.Exception!=null)
+                if (t.Exception != null)
                 {
                     this.logger.LogCritical(t.Exception, nameof(StartGameServerAsync), gameConfig);
                 }
             });
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         Current = gameConfig;
-        return Task.CompletedTask;    
+        return Task.CompletedTask;
     }
     public Task JoinStartedGameServerAsync(GameClient gameClient)
     {
         if (Current == null) throw new InvalidOperationException($"You need to call {nameof(StartGameServerAsync)} before starting this method!");
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
-        Current.JoinGameTask = gameClient.OnJoinLanGameAsync(Current.ServerIpAdress, Current.ServerPort, Current.PlayerName);
-        return Current.JoinGameTask;
+        Task.Factory.StartNew(
+            () => Current.JoinGameTask = gameClient.OnJoinLanGameAsync(Current.ServerIpAdress, Current.ServerPort, Current.PlayerName));
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
+
+        return Task.CompletedTask;
     }
+
+
+
 }
 

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace t.lib.Game
 {
     [DebuggerDisplay("Name={Name}, Points={Points}")]
-    public class Player
+    public class Player : INotifyPropertyChanged
     {
         public Player(string name, Guid playerid)
         {
@@ -13,6 +15,28 @@ namespace t.lib.Game
         }
         public Guid PlayerId { get; set; }
         public string Name { get; set; }
-        public int Points { get; set; }
+
+
+        private int _Points;
+        public int Points
+        {
+            get { return _Points; }
+            set { SetProperty(ref _Points, value, nameof(Points)); }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            var handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+        protected bool SetProperty<T>(ref T field, T value, string propertyName)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
     }
 }

@@ -61,6 +61,10 @@ namespace t.lib.Network
                 }
 
                 _logger.LogInformation($"Adding {(_guid != player.PlayerId ? "new" : "")} PlayerId {{PlayerId)}} {{Name}}", player.PlayerId, player.Name);
+                if (obj is Func<Player, Task> onnewPlayerFunc)
+                {
+                    onnewPlayerFunc.Invoke(player);
+                }
                 Game.RegisterPlayer(player);
             }
             return Task.CompletedTask;
@@ -78,9 +82,13 @@ namespace t.lib.Network
             Game.Start(totalPoints: values.Totalpoints);
             return Task.CompletedTask;
         }
-
+        /// <summary>
+        /// Returns the current player from the session
+        /// </summary>
+        /// <remarks>Start a new session with <see cref="JoinGameAsync"/></remarks>
+        public Player? Player => _player;
         // The port number for the remote device.  
-        public async Task JoinGameAsync(string name)
+        public async Task JoinGameAsync(string name, Func<Player, Task>? onPlayerJoinedAsync = null)
         {
             _guid = Guid.NewGuid();
             // Data buffer for incoming data.  
@@ -119,7 +127,7 @@ namespace t.lib.Network
                     int bytesRec = SenderSocket.Receive(bytes);
                     _logger.LogTrace("Received {0} bytes.", bytesRec);
                     gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
-                    await OnMessageReceiveAsync(gameActionProtocolRec, null);
+                    await OnMessageReceiveAsync(gameActionProtocolRec, onPlayerJoinedAsync);
                     //send ok
                     sendPayLoad = GameActionProtocolFactory(PhaseConstants.Ok).ToByteArray();
                     bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);

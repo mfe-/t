@@ -72,7 +72,7 @@ namespace t.Client
 
                 Func<IServiceProvider, GameClientConsole> GameClientConsoleFactory = serviceProvider => new GameClientConsole(serviceProvider.GetRequiredService<IServiceProvider>(),
                                         serviceProvider.GetService<ILogger<GameClientConsole>>() ?? throw new InvalidOperationException($"{nameof(ILogger<GameClientConsole>)} is null. Could not resolve service!"),
-                                        appConfig ?? throw new InvalidOperationException($"{nameof(AppConfig)} is null which was not expected!"), ReadLineAsync);
+                                        appConfig ?? throw new InvalidOperationException($"{nameof(AppConfig)} is null which was not expected!"));
 
                 services.AddScoped(GameClientConsoleFactory);
                 services.AddHostedService(GameClientConsoleFactory);
@@ -93,11 +93,6 @@ namespace t.Client
 
 
             return 0;
-        }
-        public static Task<string> ReadLineAsync()
-        {
-            string? s = Console.ReadLine();
-            return Task.FromResult(s ?? String.Empty);
         }
     }
 }

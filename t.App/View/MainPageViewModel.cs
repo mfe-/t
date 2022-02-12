@@ -12,7 +12,7 @@ namespace t.App.View
 {
     public class MainPageViewModel : BaseViewModel
     {
-        private readonly ILogger<MainPageViewModel> logger;
+        private new readonly ILogger<MainPageViewModel> logger;
         private readonly NavigationService navigationService;
 
         public MainPageViewModel(ILogger<MainPageViewModel> logger, NavigationService navigationService)

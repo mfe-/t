@@ -82,7 +82,11 @@ namespace t.lib.Network
             Game.Start(totalPoints: values.Totalpoints);
             return Task.CompletedTask;
         }
-
+        /// <summary>
+        /// Returns the current player from the session
+        /// </summary>
+        /// <remarks>Start a new session with <see cref="JoinGameAsync"/></remarks>
+        public Player? Player => _player;
         // The port number for the remote device.  
         public async Task JoinGameAsync(string name, Func<Player, Task>? onPlayerJoinedAsync = null)
         {

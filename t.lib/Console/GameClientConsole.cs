@@ -20,7 +20,7 @@ namespace t.lib.Console
     {
         public IServiceProvider ServiceProvider { get; }
 
-        public GameClientConsole(IServiceProvider serviceProvider, ILogger logger, AppConfig appConfig, Func<Task<string>> onCommandFunc) : base(logger, appConfig, onCommandFunc)
+        public GameClientConsole(IServiceProvider serviceProvider, ILogger logger, AppConfig appConfig) : base(logger, appConfig)
         {
             ServiceProvider = serviceProvider;
         }
@@ -46,7 +46,7 @@ namespace t.lib.Console
                 try
                 {
                     System.Console.WriteLine("Please enter your command:");
-                    command = await onChoiceCommandFunc();
+                    command = System.Console.ReadLine() ?? "";
                     string enteredCommand = PrepareCommandInput(command);
                     string[] param = ToParam(command, enteredCommand);
                     await ProcessEntertedCommand(enteredCommand, param);
@@ -286,6 +286,10 @@ namespace t.lib.Console
                     }
                 }
             }
+        }
+        public override Task<string> GetCardChoiceAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -18,15 +18,35 @@ public class NavigationService
         this.logger = logger;
         this.startPage = startPage;
     }
+    /// <summary>
+    /// Gets the current page which is displayed or navigated
+    /// </summary>
     public Page CurrentPage => startPage.CurrentPage;
-    public object? NavigationData { get; private set; }
-    public Task NavigateToAsync(Type toNavigate)
+    /// <summary>
+    /// Get or sets the data which is used by <see cref="NavigateToAsync(Type)"/>, <see cref="Page_Appearing(object?, EventArgs)"/> 
+    /// and <see cref="Page_Appearing(object?, EventArgs)"/>
+    /// </summary>
+    private object? NavigationData { get; set; }
+    /// <summary>
+    /// Navigates to the proper page, by looking up which page is "connected" by the <paramref name="viewmodelTypeToNavigate"/> type.
+    /// </summary>
+    /// <param name="viewmodelTypeToNavigate">The corresponding viewmodel of the page which should be navigated to</param>
+    /// <returns>A task that indicates the state of the computation of the executed function</returns>
+    public Task NavigateToAsync(Type viewmodelTypeToNavigate)
     {
-        return NavigateToAsync(toNavigate, (object?)null);
+        return NavigateToAsync(viewmodelTypeToNavigate, (object?)null);
     }
-    public async Task NavigateToAsync<T>(Type toNavigate, T? data = null) where T : class
+    /// <summary>
+    /// Navigates to the proper page, by looking up which page is "connected" by the <paramref name="viewmodelTypeToNavigate"/> type.
+    /// </summary>
+    /// <typeparam name="T">The type which is used for <paramref name="data"/></typeparam>
+    /// <param name="viewmodelTypeToNavigate">The corresponding viewmodel of the page which should be navigated to</param>
+    /// <param name="data">The data which should be passed to the next page</param>
+    /// <returns>A task that indicates the state of the computation of the executed function</returns>
+    /// <exception cref="InvalidOperationException">If no proper viewmodel instance can be resolved using <see cref="IServiceProvider.GetService(Type)"/></exception>
+    public async Task NavigateToAsync<T>(Type viewmodelTypeToNavigate, T? data = null) where T : class
     {
-        var viewmodel = serviceProvider.GetService(toNavigate);
+        var viewmodel = serviceProvider.GetService(viewmodelTypeToNavigate);
         if (viewmodel is object p)
         {
             var pageTypeString = GetPageType(viewmodel);
@@ -51,7 +71,7 @@ public class NavigationService
         }
         else
         {
-            throw new InvalidOperationException($"The resolved page for type {toNavigate} is not Type Page");
+            throw new InvalidOperationException($"Could not resolve the viewmodel instance of type {viewmodelTypeToNavigate}");
         }
     }
 

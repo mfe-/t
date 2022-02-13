@@ -19,6 +19,17 @@ namespace t.App.View
         private Task NavigationService_DisappearedEvent(object? sender, Models.EventArgs<object> e)
         {
             if (sender != this) return Task.CompletedTask;
+
+            //we exit the page
+            //stop client
+            GameClientViewModel?.Dispose();
+            GameClientViewModel = null;
+            //stop server instance if one was started
+            if (gameService.Current != null)
+            {
+                gameService.Current.CancellationTokenServer.Cancel();
+            }
+
             return Task.CompletedTask;
         }
 

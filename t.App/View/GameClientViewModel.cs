@@ -31,8 +31,8 @@ namespace t.App.View
             await gameSocketClient.JoinGameAsync(playerName, OnPlayerJoinedAsync);
 
             if (gameSocketClient.Player == null) throw new InvalidOperationException($"{nameof(gameSocketClient)}.{nameof(gameSocketClient.Player)} is expected to have a value!");
-            var player = Game.Players.First(a => a.PlayerId == gameSocketClient.Player.PlayerId);
-            PlayerCards = new ObservableCollection<Card>(Game.PlayerCards[player]);
+            CurrentPlayer = Game.Players.First(a => a.PlayerId == gameSocketClient.Player.PlayerId);
+            PlayerCards = new ObservableCollection<Card>(Game.PlayerCards[CurrentPlayer]);
 
             var messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, GetCardChoiceAsync,
                 ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats, ShowPlayerOffered);
@@ -45,6 +45,13 @@ namespace t.App.View
         private void Game_NewPlayerRegisteredEvent(object? sender, NewPlayerRegisteredEventArgs e)
         {
 
+        }
+
+        private Player? _CurrentPlayer;
+        public Player? CurrentPlayer
+        {
+            get { return _CurrentPlayer; }
+            set { SetProperty(ref _CurrentPlayer, value, nameof(CurrentPlayer)); }
         }
         private string _Title = "";
         public string Title
@@ -75,6 +82,11 @@ namespace t.App.View
                 if (!Players.Contains(player))
                 {
                     Players.Add(player);
+                }
+                if (CurrentPlayer != null)
+                {
+                    Players.OrderByDescending(a => a.PlayerId == CurrentPlayer.PlayerId);
+                    //Players = new ObservableCollection<Player>(Players.OrderBy(a => a.PlayerId == CurrentPlayer.PlayerId));
                 }
             }
             if (SynchronizationContext.Current != synchronizationContext)
@@ -180,8 +192,8 @@ namespace t.App.View
         public override Task ShowPlayerOffered(Player player, int offered, int forCard)
         {
             //remove the offered card from our player cards list so can't choose the same card again
-            if (gameSocketClient?.Player == null) throw new InvalidOperationException($"{nameof(gameSocketClient)}.{nameof(gameSocketClient.Player)} is expected to have a value!");
-            if (gameSocketClient?.Player.PlayerId == player.PlayerId)
+            if (CurrentPlayer == null) throw new InvalidOperationException($"{nameof(gameSocketClient)}.{nameof(gameSocketClient.Player)} is expected to have a value!");
+            if (CurrentPlayer.PlayerId == player.PlayerId)
             {
                 var card = PlayerCards.First(a => a.Value == offered);
                 PlayerCards.Remove(card);

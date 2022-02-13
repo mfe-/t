@@ -73,7 +73,6 @@ namespace t.Client
                                         appConfig ?? throw new InvalidOperationException($"{nameof(AppConfig)} is null which was not expected!"));
 
                 services.AddScoped(GameClientConsoleFactory);
-                services.AddHostedService(GameClientConsoleFactory);
                 services.AddScoped(GameSocketServerFactory);
                 services.AddHostedService(GameSocketServerFactory);
 

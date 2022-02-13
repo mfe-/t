@@ -14,7 +14,7 @@
 
     </ContentPage.Resources>
     <ContentPage.Content>
-        <Grid>
+        <Grid x:Name="gamepagegrid">
             <!---->
             <Grid.RowDefinitions>
                 <RowDefinition />
@@ -38,7 +38,8 @@
                                 <ColumnDefinition />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <Label GridLayout.Column="0" Text="{Binding Name}" FontAttributes="Bold" />
+                            <Label GridLayout.Column="0" Text="{Binding Name}" >
+                            </Label>
                             <Label GridLayout.Column="1" Text="{Binding Points}" />
                         </Grid>
                     </DataTemplate>

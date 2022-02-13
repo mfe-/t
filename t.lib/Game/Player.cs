@@ -13,7 +13,7 @@ namespace t.lib.Game
             Name = name;
             PlayerId = playerid;
         }
-        public Guid PlayerId { get; set; }
+        public Guid PlayerId { get; }
         public string Name { get; set; }
 
 
@@ -22,6 +22,19 @@ namespace t.lib.Game
         {
             get { return _Points; }
             set { SetProperty(ref _Points, value, nameof(Points)); }
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is Player player)
+            {
+                return player.PlayerId == this.PlayerId;
+            }
+            return false;
+        }
+        public override int GetHashCode()
+        {
+            return PlayerId.GetHashCode() + Name.GetHashCode();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

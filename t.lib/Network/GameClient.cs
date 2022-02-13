@@ -11,7 +11,7 @@ using t.lib.Game;
 
 namespace t.lib.Network
 {
-    public abstract class GameClient : IHostedService
+    public abstract class GameClient : IDisposable
     {
         protected readonly ILogger logger;
         protected readonly AppConfig AppConfig;
@@ -66,21 +66,10 @@ namespace t.lib.Network
 
         public abstract Task<string> GetCardChoiceAsync();
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public void Dispose()
         {
-            if (args.Any(a => !a.Contains("t.Client.dll")))
-            {
-                await ParseStartArgumentsAsync(args);
-            }
-            else
-            {
-                await OnShowMenueAsync();
-            }
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
+            gameSocketClient?.ExitGame();
+            gameSocketClient = null;
         }
     }
 }

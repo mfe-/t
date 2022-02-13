@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Net;
+using System.Net.Sockets;
 using System.Windows.Input;
 using t.App.Models;
 using t.lib;
@@ -28,17 +29,24 @@ namespace t.App.View
             gameSocketClient = new(iPAddress, port, logger);
             //join game
             Game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
-            await gameSocketClient.JoinGameAsync(playerName, OnPlayerJoinedAsync);
+            try
+            {
+                await gameSocketClient.JoinGameAsync(playerName, OnPlayerJoinedAsync);
 
-            if (gameSocketClient.Player == null) throw new InvalidOperationException($"{nameof(gameSocketClient)}.{nameof(gameSocketClient.Player)} is expected to have a value!");
-            var player = Game.Players.First(a => a.PlayerId == gameSocketClient.Player.PlayerId);
-            PlayerCards = new ObservableCollection<Card>(Game.PlayerCards[player]);
+                if (gameSocketClient.Player == null) throw new InvalidOperationException($"{nameof(gameSocketClient)}.{nameof(gameSocketClient.Player)} is expected to have a value!");
+                var player = Game.Players.First(a => a.PlayerId == gameSocketClient.Player.PlayerId);
+                PlayerCards = new ObservableCollection<Card>(Game.PlayerCards[player]);
 
-            var messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, GetCardChoiceAsync,
-                ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats, ShowPlayerOffered);
+                var messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, GetCardChoiceAsync,
+                    ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats, ShowPlayerOffered);
 
-            await gameSocketClient.PlayGameAsync(messageReceiveArgs);
-
+                await gameSocketClient.PlayGameAsync(messageReceiveArgs);
+            }
+            catch (SocketException e)
+            {
+                //todo show dialog or something with lost connection and return to overview
+                logger.LogCritical(e, e.ToString());
+            }
             gameSocketClient.ExitGame();
         }
 

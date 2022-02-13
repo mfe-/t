@@ -159,48 +159,41 @@ namespace t.lib.Network
             ThrowException(messageReceiveArgs);
             if (_player == null) throw new InvalidOperationException($"{nameof(_player)} not set!");
             if (SenderSocket == null) throw new InvalidOperationException($"{nameof(_senderSocket)} is not set! Make sure you called {nameof(JoinGameAsync)}");
-            try
+            GameActionProtocol gameActionProtocolRec;
+            GameActionProtocol gameActionProtocolSend;
+            gameActionProtocolRec.Phase = PhaseConstants.Ok;
+            int bytesSent;
+            byte[] bytes;
+            byte[] sendPayLoad;
+            while (gameActionProtocolRec.Phase != PhaseConstants.PlayerWon)
             {
-                GameActionProtocol gameActionProtocolRec;
-                GameActionProtocol gameActionProtocolSend;
-                gameActionProtocolRec.Phase = PhaseConstants.Ok;
-                int bytesSent;
-                byte[] bytes;
-                byte[] sendPayLoad;
-                while (gameActionProtocolRec.Phase != PhaseConstants.PlayerWon)
-                {
-                    // Receive the response from the remote device.  
-                    bytes = new byte[1024];
-                    int bytesRec = SenderSocket.Receive(bytes);
-                    gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
-                    // server should send next round or annaounce the winner
-                    _logger.LogTrace("Received {0} bytes.", bytesRec);
+                // Receive the response from the remote device.  
+                bytes = new byte[1024];
+                int bytesRec = SenderSocket.Receive(bytes);
+                gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
+                // server should send next round or annaounce the winner
+                _logger.LogTrace("Received {0} bytes.", bytesRec);
 
-                    await OnMessageReceiveAsync(gameActionProtocolRec, messageReceiveArgs);
-                    gameActionProtocolSend = GameActionProtocolFactory(PhaseConstants.Ok);
+                await OnMessageReceiveAsync(gameActionProtocolRec, messageReceiveArgs);
+                gameActionProtocolSend = GameActionProtocolFactory(PhaseConstants.Ok);
+                sendPayLoad = gameActionProtocolSend.ToByteArray();
+                if (gameActionProtocolRec.Phase == PhaseConstants.NextRound)
+                {
+                    //get picked card
+                    int pickedCard = await GetPlayerCardChoiceAsync(messageReceiveArgs.OnChoiceCommandFuncAsync);
+                    //send server picked card
+                    gameActionProtocolSend = GameActionProtocolFactory(PhaseConstants.PlayerReported, number: pickedCard);
                     sendPayLoad = gameActionProtocolSend.ToByteArray();
-                    if (gameActionProtocolRec.Phase == PhaseConstants.NextRound)
-                    {
-                        //get picked card
-                        int pickedCard = await GetPlayerCardChoiceAsync(messageReceiveArgs.OnChoiceCommandFuncAsync);
-                        //send server picked card
-                        gameActionProtocolSend = GameActionProtocolFactory(PhaseConstants.PlayerReported, number: pickedCard);
-                        sendPayLoad = gameActionProtocolSend.ToByteArray();
-                    }
-                    else if (gameActionProtocolRec.Phase == PhaseConstants.PlayerScored)
-                    {
-                        //send ok
-                    }
-                    _logger.LogDebug("Send as {ClientId} {PlayerName} Phase={Phase}", gameActionProtocolSend.PlayerId, _player.Name, PhaseConstants.ToString(gameActionProtocolSend.Phase));
-                    bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
-                    _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                 }
-                SenderSocket.Close();
+                else if (gameActionProtocolRec.Phase == PhaseConstants.PlayerScored)
+                {
+                    //send ok
+                }
+                _logger.LogDebug("Send as {ClientId} {PlayerName} Phase={Phase}", gameActionProtocolSend.PlayerId, _player.Name, PhaseConstants.ToString(gameActionProtocolSend.Phase));
+                bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
+                _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
             }
-            catch (SocketException e)
-            {
-                _logger.LogCritical(e, e.ToString());
-            }
+            SenderSocket.Close();
         }
 
         private void ThrowException(MessageReceiveArgs messageReceiveArgs)

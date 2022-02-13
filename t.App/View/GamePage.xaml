@@ -28,9 +28,9 @@
             </Grid.ColumnDefinitions>
 
             <!-- player list -->
-            <CollectionView x:Name="playersCollectionView" SelectionMode="None"
+            <CollectionView x:Name="playersCollectionView" SelectionMode="None" 
                         ItemsSource="{Binding Path=GameClientViewModel.Players,Mode=TwoWay}"
-                            GridLayout.Row="0" GridLayout.Column="2">
+                            GridLayout.Row="0" GridLayout.Column="2" SelectedItem="{Binding Path=GameClientViewModel.CurrentPlayer,Mode=TwoWay}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Grid>
@@ -38,7 +38,12 @@
                                 <ColumnDefinition />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <Label GridLayout.Column="0" Text="{Binding Name}" >
+                            <Label GridLayout.Column="0" Text="{Binding Name}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Path=IsCurrentPlayer}" Value="True">
+                                        <Setter Property="FontAttributes" Value="Bold" />
+                                    </DataTrigger>
+                                </Label.Triggers>
                             </Label>
                             <Label GridLayout.Column="1" Text="{Binding Points}" />
                         </Grid>

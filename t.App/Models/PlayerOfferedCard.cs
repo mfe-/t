@@ -2,5 +2,5 @@
 
 namespace t.App.Models
 {
-    public record PlayerOfferedCard(Player Player, Card Card);
+    public record PlayerOfferedCard(t.lib.Game.Player Player, Card Card);
 }

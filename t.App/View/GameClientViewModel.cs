@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Windows.Input;
 using t.App.Models;
+using t.App.Service;
 using t.lib;
 using t.lib.Game;
 using t.lib.Game.EventArgs;
@@ -28,13 +29,13 @@ namespace t.App.View
 
             gameSocketClient = new(iPAddress, port, logger);
             //join game
-            Game.NewPlayerRegisteredEvent += Game_NewPlayerRegisteredEvent;
             try
             {
                 await gameSocketClient.JoinGameAsync(playerName, OnPlayerJoinedAsync);
 
                 if (gameSocketClient.Player == null) throw new InvalidOperationException($"{nameof(gameSocketClient)}.{nameof(gameSocketClient.Player)} is expected to have a value!");
                 CurrentPlayer = Game.Players.First(a => a.PlayerId == gameSocketClient.Player.PlayerId);
+                Players.First(a => a.PlayerId == CurrentPlayer.PlayerId).IsCurrentPlayer = true;
                 PlayerCards = new ObservableCollection<Card>(Game.PlayerCards[CurrentPlayer]);
 
                 var messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, GetCardChoiceAsync,
@@ -50,13 +51,8 @@ namespace t.App.View
             gameSocketClient.ExitGame();
         }
 
-        private void Game_NewPlayerRegisteredEvent(object? sender, NewPlayerRegisteredEventArgs e)
-        {
-
-        }
-
-        private Player? _CurrentPlayer;
-        public Player? CurrentPlayer
+        private t.lib.Game.Player? _CurrentPlayer;
+        public t.lib.Game.Player? CurrentPlayer
         {
             get { return _CurrentPlayer; }
             set { SetProperty(ref _CurrentPlayer, value, nameof(CurrentPlayer)); }
@@ -68,8 +64,8 @@ namespace t.App.View
             set { SetProperty(ref _Title, value, nameof(Title)); }
         }
 
-        private ObservableCollection<Player> _Players = new();
-        public ObservableCollection<Player> Players
+        private ObservableCollection<Models.Player> _Players = new();
+        public ObservableCollection<Models.Player> Players
         {
             get { return _Players; }
             set { SetProperty(ref _Players, value, nameof(Players)); }
@@ -83,24 +79,20 @@ namespace t.App.View
             set { SetProperty(ref _PlayersOfferedCard, value, nameof(PlayersOfferedCard)); }
         }
 
-        public virtual Task OnPlayerJoinedAsync(Player player)
+        public virtual Task OnPlayerJoinedAsync(t.lib.Game.Player player)
         {
-            void AddJoinedPlayer(Player player)
+            void AddJoinedPlayer(t.lib.Game.Player player)
             {
                 if (!Players.Contains(player))
                 {
-                    Players.Add(player);
-                }
-                if (CurrentPlayer != null)
-                {
-                    Players.OrderByDescending(a => a.PlayerId == CurrentPlayer.PlayerId);
-                    Players = new ObservableCollection<Player>(Players.OrderByDescending(a => a.PlayerId == CurrentPlayer.PlayerId));
+                    var p = Mapper.ToPlayer(player);
+                    Players.Add(p);
                 }
             }
             if (SynchronizationContext.Current != synchronizationContext)
             {
-                synchronizationContext?.Post((player) => AddJoinedPlayer(player as Player
-                    ?? throw new ArgumentNullException(nameof(player), $"Expected type of {nameof(Player)}")), player);
+                synchronizationContext?.Post((player) => AddJoinedPlayer(player as t.lib.Game.Player
+                    ?? throw new ArgumentNullException(nameof(player), $"Expected type of {nameof(t.lib.Game.Player)}")), player);
             }
             else
             {
@@ -108,6 +100,7 @@ namespace t.App.View
             }
             return Task.CompletedTask;
         }
+
         public override Task OnFoundLanGames(IEnumerable<PublicGame> publicGames)
         {
             return Task.CompletedTask;
@@ -197,7 +190,7 @@ namespace t.App.View
             PlayersOfferedCard.Clear();
             return pickedCard.Value.ToString();
         }
-        public override Task ShowPlayerOffered(Player player, int offered, int forCard)
+        public override Task ShowPlayerOffered(t.lib.Game.Player player, int offered, int forCard)
         {
             //remove the offered card from our player cards list so can't choose the same card again
             if (CurrentPlayer == null) throw new InvalidOperationException($"{nameof(gameSocketClient)}.{nameof(gameSocketClient.Player)} is expected to have a value!");
@@ -211,14 +204,15 @@ namespace t.App.View
             return Task.CompletedTask;
         }
 
-        public override Task ShowPlayerStats(IEnumerable<Player> playerStats)
+        public override Task ShowPlayerStats(IEnumerable<t.lib.Game.Player> playerStats)
         {
             //playerstats contains player lsit with points
-            Players = new ObservableCollection<Player>(playerStats);
+            Players = new ObservableCollection<Models.Player>(playerStats.Select(a => Mapper.ToPlayer(a)));
+            Players.First(a => a.PlayerId == CurrentPlayer.PlayerId).IsCurrentPlayer = true;
             return Task.CompletedTask;
         }
 
-        public override Task ShowPlayerWon(IEnumerable<Player> playerStats)
+        public override Task ShowPlayerWon(IEnumerable<t.lib.Game.Player> playerStats)
         {
             return Task.CompletedTask;
         }

@@ -1,10 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
 using t.App.Models;
 using t.lib;
 using t.lib.Network;
@@ -24,7 +18,7 @@ public class GameService
         this.appConfig = appConfig;
     }
 
-    public GameConfig? Current { get; private set; }
+    public GameConfig? Current { get; set; }
 
     public Task StartGameServerAsync(string gamename, string playername, int gameRounds, int requiredAmountOfPlayers)
     {

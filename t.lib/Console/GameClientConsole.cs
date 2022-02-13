@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -12,7 +10,6 @@ using System.Threading.Tasks;
 using t.lib.Game.EventArgs;
 using t.lib.Game;
 using t.lib.Network;
-using t.lib.Server;
 
 namespace t.lib.Console
 {

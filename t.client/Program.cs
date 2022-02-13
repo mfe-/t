@@ -6,8 +6,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
 using t.lib;
 using t.lib.Console;

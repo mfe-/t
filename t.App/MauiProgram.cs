@@ -1,10 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Hosting;
+﻿using Microsoft.Extensions.Logging;
 using t.App.Service;
 using t.App.View;
 using t.lib;

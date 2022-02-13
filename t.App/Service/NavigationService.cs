@@ -1,13 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
 using t.App.Models;
-using static t.App.Service.NavigationService;
 
 namespace t.App.Service;
 
@@ -17,8 +9,8 @@ public class NavigationService
     private readonly ILogger logger;
     private readonly NavigationPage startPage;
     public delegate Task EventHandlerAsync<EventArg>(object? sender, EventArg e);
-    public event EventHandlerAsync<EventArgs>? AppearedEvent;
-    public event EventHandlerAsync<EventArgs>? DisappearedEvent;
+    public event EventHandlerAsync<EventArgs<object>>? AppearedEvent;
+    public event EventHandlerAsync<EventArgs<object>>? DisappearedEvent;
 
     public NavigationService(IServiceProvider serviceProvider, ILogger logger, NavigationPage startPage)
     {
@@ -27,7 +19,12 @@ public class NavigationService
         this.startPage = startPage;
     }
     public Page CurrentPage => startPage.CurrentPage;
-    public async Task NavigateToAsync(Type toNavigate)
+    public object? NavigationData { get; private set; }
+    public Task NavigateToAsync(Type toNavigate)
+    {
+        return NavigateToAsync(toNavigate, (object?)null);
+    }
+    public async Task NavigateToAsync<T>(Type toNavigate, T? data = null) where T : class
     {
         var viewmodel = serviceProvider.GetService(toNavigate);
         if (viewmodel is object p)
@@ -42,6 +39,7 @@ public class NavigationService
                     page.BindingContext = viewmodel;
                     page.Appearing += Page_Appearing;
                     page.Disappearing += Page_Disappearing;
+                    NavigationData = data;
                     await CurrentPage.Navigation.PushAsync(page);
                 }
             }
@@ -71,7 +69,7 @@ public class NavigationService
         if (sender is Page page)
         {
             var viewmodel = GetViewModelFromPage(page);
-            DisappearedEvent?.Invoke(viewmodel ?? sender, e);
+            DisappearedEvent?.Invoke(viewmodel ?? sender, new EventArgs<object>(NavigationData));
             page.Disappearing -= Page_Disappearing;
         }
     }
@@ -81,7 +79,7 @@ public class NavigationService
         if (sender is Page page)
         {
             var viewmodel = GetViewModelFromPage(page);
-            AppearedEvent?.Invoke(viewmodel ?? sender, e);
+            AppearedEvent?.Invoke(viewmodel ?? sender, new EventArgs<object>(NavigationData));
             page.Appearing -= Page_Appearing;
         }
     }

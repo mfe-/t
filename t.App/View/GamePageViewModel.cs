@@ -1,13 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using t.App.Service;
-using t.lib.Game;
 
 namespace t.App.View
 {
@@ -22,16 +14,15 @@ namespace t.App.View
             this.gameService = gameService;
             this.navigationService.AppearedEvent += NavigationService_AppearedEvent;
             this.navigationService.DisappearedEvent += NavigationService_DisappearedEvent;
-            this.DebugCommand = new Command<object>(async (param) => await OnDebugAsync(param));
-
         }
-        private Task NavigationService_DisappearedEvent(object? sender, EventArgs e)
+
+        private Task NavigationService_DisappearedEvent(object? sender, Models.EventArgs<object> e)
         {
             if (sender != this) return Task.CompletedTask;
             return Task.CompletedTask;
         }
 
-        private async Task NavigationService_AppearedEvent(object? sender, EventArgs e)
+        private async Task NavigationService_AppearedEvent(object? sender, Models.EventArgs<object> e)
         {
             if (sender != this) return;
             if (GameClientViewModel == null && gameService.Current != null)
@@ -41,13 +32,6 @@ namespace t.App.View
                 await gameService.JoinStartedGameServerAsync(GameClientViewModel);
 
             }
-        }
-
-        public ICommand DebugCommand { get; }
-
-        protected Task OnDebugAsync(object param)
-        {
-            return Task.CompletedTask;
         }
 
         private GameClientViewModel? _GameClientViewModel = null;

@@ -1,10 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using t.App.Service;
-using t.App.View;
+﻿using t.App.View;
 
 namespace t.App
 {

@@ -1,11 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui;
-using Microsoft.Maui.Hosting;
-using Microsoft.UI;
+﻿using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using t.App.View;
-using Windows.ApplicationModel;
 using WinRT.Interop;
 
 // To learn more about WinUI, the WinUI project structure,

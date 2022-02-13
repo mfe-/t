@@ -94,7 +94,7 @@ namespace t.App.View
                 if (CurrentPlayer != null)
                 {
                     Players.OrderByDescending(a => a.PlayerId == CurrentPlayer.PlayerId);
-                    //Players = new ObservableCollection<Player>(Players.OrderBy(a => a.PlayerId == CurrentPlayer.PlayerId));
+                    Players = new ObservableCollection<Player>(Players.OrderByDescending(a => a.PlayerId == CurrentPlayer.PlayerId));
                 }
             }
             if (SynchronizationContext.Current != synchronizationContext)

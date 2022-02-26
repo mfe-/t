@@ -4,6 +4,7 @@ namespace t.App.Controls;
 
 public partial class CardView : ContentView
 {
+    
 	public CardView()
 	{
 		InitializeComponent();
@@ -18,7 +19,10 @@ public partial class CardView : ContentView
 
     public static void CardChanged(BindableObject bindable, object oldValue, object newValue)
     {
+        if(newValue is Card)
+        {
 
+        }
     }
 
 }

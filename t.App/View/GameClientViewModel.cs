@@ -208,7 +208,7 @@ namespace t.App.View
         {
             //playerstats contains player lsit with points
             Players = new ObservableCollection<Models.Player>(playerStats.Select(a => Mapper.ToPlayer(a)));
-            Players.First(a => a.PlayerId == CurrentPlayer.PlayerId).IsCurrentPlayer = true;
+            Players.First(a => a.PlayerId == CurrentPlayer?.PlayerId).IsCurrentPlayer = true;
             return Task.CompletedTask;
         }
 

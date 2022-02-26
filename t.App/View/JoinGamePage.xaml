@@ -11,7 +11,7 @@
                 <ColumnDefinition Width="5*" />
                 <ColumnDefinition Width="5*" />
             </Grid.ColumnDefinitions>
-            <Grid GridLayout.Column="1" Margin="15">
+            <Grid Grid.Column="1" Margin="15">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="5*" />
                     <ColumnDefinition Width="5*" />
@@ -24,18 +24,18 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <Label Text="Server Ip" GridLayout.Column="0" GridLayout.Row="0" />
-                <Entry Text="{Binding Path=ServerIp}" GridLayout.Column="1" GridLayout.Row="0" />
+                <Label Text="Server Ip" Grid.Column="0" Grid.Row="0" />
+                <Entry Text="{Binding Path=ServerIp}" Grid.Column="1" Grid.Row="0" />
 
-                <Label Text="Server Port" GridLayout.Column="0" GridLayout.Row="1" />
-                <Entry Text="{Binding Path=ServerPort}" GridLayout.Column="1" GridLayout.Row="1" />
+                <Label Text="Server Port" Grid.Column="0" Grid.Row="1" />
+                <Entry Text="{Binding Path=ServerPort}" Grid.Column="1" Grid.Row="1" />
 
-                <Label Text="Player name" GridLayout.Column="0" GridLayout.Row="2" />
-                <Entry Text="{Binding Path=PlayerName}" GridLayout.Column="1" GridLayout.Row="2" />
+                <Label Text="Player name" Grid.Column="0" Grid.Row="2" />
+                <Entry Text="{Binding Path=PlayerName}" Grid.Column="1" Grid.Row="2" />
 
                 <Button Text="Join Game" 
                         Command="{Binding Path=JoinGameCommand}"
-                        GridLayout.Column="1" GridLayout.Row="4"></Button>
+                        Grid.Column="1" Grid.Row="4"></Button>
             </Grid>
         </Grid>
     </ContentPage.Content>

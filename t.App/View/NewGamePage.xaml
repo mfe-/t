@@ -12,7 +12,7 @@
                 <ColumnDefinition Width="5*" />
                 <ColumnDefinition Width="5*" />
             </Grid.ColumnDefinitions>
-            <Grid GridLayout.Column="1" Margin="15">
+            <Grid Grid.Column="1" Margin="15">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="5*" />
                     <ColumnDefinition Width="5*" />
@@ -25,33 +25,33 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <Label Text="Game name" GridLayout.Column="0" GridLayout.Row="0" />
+                <Label Text="Game name" Grid.Column="0" Grid.Row="0" />
                 <Entry Text="{Binding Path=GameName}" 
                        MaxLength="10"
                        Keyboard="Text"
-                       GridLayout.Column="1" GridLayout.Row="0" />
+                       Grid.Column="1" Grid.Row="0" />
 
-                <Label Text="Your player name" GridLayout.Column="0" GridLayout.Row="1" />
+                <Label Text="Your player name" Grid.Column="0" Grid.Row="1" />
                 <Entry Text="{Binding Path=PlayerName}" 
                        MaxLength="10"
                        Keyboard="Text"
-                       GridLayout.Column="1" GridLayout.Row="1" />
+                       Grid.Column="1" Grid.Row="1" />
 
-                <Label Text="Game Rounds to play" GridLayout.Column="0" GridLayout.Row="2" />
+                <Label Text="Game Rounds to play" Grid.Column="0" Grid.Row="2" />
                 <Entry Text="{Binding Path=GameRounds}" 
                        Keyboard="Numeric"
                        MaxLength="2"
-                       GridLayout.Column="1" GridLayout.Row="2" />
+                       Grid.Column="1" Grid.Row="2" />
 
-                <Label Text="Required Players" GridLayout.Column="0" GridLayout.Row="3" />
+                <Label Text="Required Players" Grid.Column="0" Grid.Row="3" />
                 <Entry Text="{Binding Path=RequiredPlayers}" 
                        Keyboard="Numeric"
                        MaxLength="1"
-                       GridLayout.Column="1" GridLayout.Row="3"  />
+                       Grid.Column="1" Grid.Row="3"  />
 
                 <Button Text="Start game" 
                         Command="{Binding Path=StartGameCommand}"
-                        GridLayout.Column="1" GridLayout.Row="4"></Button>
+                        Grid.Column="1" Grid.Row="4"></Button>
             </Grid>
         </Grid>
 

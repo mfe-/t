@@ -2,12 +2,29 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="t.App.Controls.CardView"
-             BackgroundColor="Green"
-             MinimumWidthRequest="50"
-             HeightRequest="50"
+             
+             Margin="0"
              x:Name="cardview">
+             <ContentView.Resource></ContentView.Resource>
     <ContentView.Content>
-        <Label Text="{Binding Path=Card.Value, Source={Reference cardview},Mode=TwoWay}" 
+            <Frame CornerRadius="30" 
+           HasShadow="True"
+           IsClippedToBounds="True"
+           Padding="0">
+    <Grid BackgroundColor="Green">
+                <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Path=Card.Value, Source={Reference cardview},Mode=TwoWay}" 
                VerticalOptions="Center" HorizontalOptions="Center" />
+    </Grid>
+    </Frame>
     </ContentView.Content>
 </ContentView>

@@ -19,7 +19,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
-                <RowDefinition />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions >
                 <ColumnDefinition />
@@ -30,7 +30,7 @@
             <!-- player list -->
             <CollectionView x:Name="playersCollectionView" SelectionMode="None" 
                         ItemsSource="{Binding Path=GameClientViewModel.Players,Mode=TwoWay}"
-                            GridLayout.Row="0" GridLayout.Column="2" SelectedItem="{Binding Path=GameClientViewModel.CurrentPlayer,Mode=TwoWay}">
+                         Grid.Row="0" Grid.Column="2" SelectedItem="{Binding Path=GameClientViewModel.CurrentPlayer,Mode=TwoWay}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Grid>
@@ -38,26 +38,26 @@
                                 <ColumnDefinition />
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <Label GridLayout.Column="0" Text="{Binding Name}">
+                            <Label Grid.Column="0" Text="{Binding Name}">
                                 <Label.Triggers>
                                     <DataTrigger TargetType="Label" Binding="{Binding Path=IsCurrentPlayer}" Value="True">
                                         <Setter Property="FontAttributes" Value="Bold" />
                                     </DataTrigger>
                                 </Label.Triggers>
                             </Label>
-                            <Label GridLayout.Column="1" Text="{Binding Points}" />
+                            <Label Grid.Column="1" Text="{Binding Points}" />
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
             <!-- Card to play-->
-            <Grid GridLayout.Row="1" GridLayout.Column="1">
+            <Grid Grid.Row="1" Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />
                 </Grid.RowDefinitions>
-                <controls:CardView GridLayout.Row="0"
+                <controls:CardView Grid.Row="0"
                                    Card="{Binding Path=GameClientViewModel.CurrentCard,Mode=OneWay}" >
                     <controls:CardView.Triggers>
                         <Trigger TargetType="controls:CardView" Property="Card" Value="{x:Null}">
@@ -65,7 +65,7 @@
                         </Trigger>
                     </controls:CardView.Triggers>
                 </controls:CardView>
-                <CollectionView GridLayout.Row="1" 
+                <CollectionView Grid.Row="1" 
                                 x:Name="collectionPlayersOfferedCard" SelectionMode="None"
                                 ItemsSource="{Binding Path=GameClientViewModel.PlayersOfferedCard,Mode=TwoWay}"
                                 ItemsLayout="HorizontalList">
@@ -76,33 +76,38 @@
                                     <ColumnDefinition />
                                     <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
-                                <Label GridLayout.Column="0" Text="{Binding Player.Name}" />
-                                <controls:CardView GridLayout.Column="1" Card="{Binding Card}"></controls:CardView>
+                                <Label Grid.Column="0" Text="{Binding Player.Name}" />
+                                <controls:CardView Grid.Column="1" Card="{Binding Card}"></controls:CardView>
                             </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </Grid>
 
-
+          
             <!-- player list -->
-            <CollectionView x:Name="playersCardCollectionView" SelectionMode="Single"
+            <controls:CardCollectionView x:Name="playersCardCollectionView" SelectionMode="Single"
                             ItemsSource="{Binding Path=GameClientViewModel.PlayerCards,Mode=TwoWay}" 
-                            ItemsLayout="HorizontalList"
-                            HorizontalOptions="CenterAndExpand"
                             SelectionChangedCommand="{Binding Path=GameClientViewModel.PickCardCommand}"
                             SelectionChangedCommandParameter="{Binding Path=SelectedItem,Source={Reference playersCardCollectionView}}"
                             SelectedItem="{Binding Path=GameClientViewModel.SelectedCard}"
                             IsEnabled="{Binding Path=GameClientViewModel.CanPlayerChooseCard,Mode=OneWay}"
-                            GridLayout.Row="2" GridLayout.Column="0" GridLayout.ColumnSpan="3">
-                <CollectionView.ItemTemplate>
+                            Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                            VerticalOptions="Fill"
+                            Rotation="0"
+                            Background="Blue"
+                            HorizontalOptions="StartAndExpand">
+                <controls:CardCollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Padding="5">
-                            <controls:CardView GridLayout.Row="1" GridLayout.Column="1"  Card="{Binding}" />
+                        <Grid>
+                            <controls:CardView Card="{Binding}" />
                         </Grid>
                     </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+                </controls:CardCollectionView.ItemTemplate>
+                <controls:CardCollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Horizontal" />
+                </controls:CardCollectionView.ItemsLayout>
+            </controls:CardCollectionView>
         </Grid>
 
     </ContentPage.Content>

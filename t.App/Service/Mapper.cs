@@ -4,7 +4,7 @@
     {
         public static Models.Player ToPlayer(lib.Game.Player player)
         {
-            return new Models.Player(player.Name, player.PlayerId);
+            return new Models.Player(player.Name, player.PlayerId) { Points = player.Points };
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using Microsoft.UI;
-using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
+﻿//using Microsoft.UI;
+//using Microsoft.UI.Windowing;
+//using Microsoft.UI.Xaml;
 using t.App.View;
-using WinRT.Interop;
+//using WinRT.Interop;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -25,18 +25,19 @@ namespace t.App.WinUI
 
         protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
-        {
-            base.OnLaunched(args);
+        //doesnt work since last vs upgrade
+        //protected override void OnLaunched(LaunchActivatedEventArgs args)
+        //{
+        //    base.OnLaunched(args);
 
-            Microsoft.Maui.Essentials.Platform.OnLaunched(args);
-            //https://stackoverflow.com/a/70419653/740651
-            var currentWindow = Application.Windows[0]?.Handler?.NativeView;
-            IntPtr _windowHandle = WindowNative.GetWindowHandle(currentWindow);
-            var windowId = Win32Interop.GetWindowIdFromWindow(_windowHandle);
+        //    Microsoft.Maui.Essentials.Platform.OnLaunched(args);
+        //    //https://stackoverflow.com/a/70419653/740651
+        //    var currentWindow = Application.Windows[0]?.Handler?.NativeView;
+        //    IntPtr _windowHandle = WindowNative.GetWindowHandle(currentWindow);
+        //    var windowId = Win32Interop.GetWindowIdFromWindow(_windowHandle);
 
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.Title = Services.GetService<MainPageViewModel>()?.Title;
-        }
+        //    AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+        //    appWindow.Title = Services.GetService<MainPageViewModel>()?.Title;
+        //}
     }
 }

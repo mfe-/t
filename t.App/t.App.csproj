@@ -8,13 +8,13 @@
 		<UseMaui>true</UseMaui>
 		<SingleProject>true</SingleProject>
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
 		<!-- Display name -->
 		<ApplicationTitle>t.App</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.t.App</ApplicationId>
+		<ApplicationId>get.the.solution.t.App</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationVersion>1</ApplicationVersion>
@@ -45,61 +45,61 @@
 
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
 		<!-- Required - WinUI does not yet have buildTransitive for everything -->
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0-preview3" />
-		<PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.29-preview3" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0" />
+		<PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Remove="JoinGamePage.xaml" />
+		<MauiXaml Remove="JoinGamePage.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="View\GamePage.xaml.cs">
-	    <DependentUpon>GamePage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="View\SettingPage.xaml.cs">
-	    <DependentUpon>SettingPage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="View\JoinGamePage.xaml.cs">
-	    <DependentUpon>JoinGamePage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="View\NewGamePage.xaml.cs">
-	    <DependentUpon>NewGamePage.xaml</DependentUpon>
-	  </Compile>
+		<Compile Update="View\GamePage.xaml.cs">
+			<DependentUpon>GamePage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="View\SettingPage.xaml.cs">
+			<DependentUpon>SettingPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="View\JoinGamePage.xaml.cs">
+			<DependentUpon>JoinGamePage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="View\NewGamePage.xaml.cs">
+			<DependentUpon>NewGamePage.xaml</DependentUpon>
+		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="App.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="View\GamePage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="View\SettingPage.xaml">
-	    <SubType>Designer</SubType>
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="View\JoinGamePage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="View\NewGamePage.xaml">
-	    <Generator></Generator>
-	  </MauiXaml>
+		<MauiXaml Update="App.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="View\GamePage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="View\SettingPage.xaml">
+			<SubType>Designer</SubType>
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="View\JoinGamePage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="View\NewGamePage.xaml">
+			<Generator></Generator>
+		</MauiXaml>
 	</ItemGroup>
 
 	<ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-	  <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
-	  <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0" />
+		<PackageReference Include="Microsoft.Graphics.Win2D" Version="1.0.0.30" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\t.App.Controls\t.App.Controls.csproj" />
-	  <ProjectReference Include="..\t.lib\t.lib.csproj" />
+		<ProjectReference Include="..\t.App.Controls\t.App.Controls.csproj" />
+		<ProjectReference Include="..\t.lib\t.lib.csproj" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
 		<OutputType>WinExe</OutputType>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	</PropertyGroup>
-	
+
 </Project>

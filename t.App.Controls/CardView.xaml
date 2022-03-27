@@ -5,26 +5,38 @@
              
              Margin="0"
              x:Name="cardview">
-             <ContentView.Resource></ContentView.Resource>
+    <ContentView.Resources>
+        <ResourceDictionary Source="Themes\Generic.xaml" />
+    </ContentView.Resources>
     <ContentView.Content>
-            <Frame CornerRadius="30" 
+        
+        
+        <Frame CornerRadius="30" 
            HasShadow="True"
            IsClippedToBounds="True"
            Padding="0">
-    <Grid BackgroundColor="Green">
+            <Grid BackgroundColor="{x:StaticResource CardYellow}">
                 <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Path=Card.Value, Source={Reference cardview},Mode=TwoWay}" 
-               VerticalOptions="Center" HorizontalOptions="Center" />
-    </Grid>
-    </Frame>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="2*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Label 
+                Text="Welcome to .NET Multi-platform App UI"
+                Grid.Row="1"
+                SemanticProperties.HeadingLevel="Level1"
+                SemanticProperties.Description="Welcome to dot net Multi platform App U I"
+                FontSize="18"
+                HorizontalOptions="Center" />
+                <Label Grid.Row="1" Grid.ColumnSpan="3" Background="Green"
+                       Text="{Binding Path=Card.Value, Source={Reference cardview},Mode=TwoWay}"
+                       VerticalOptions="Center" HorizontalOptions="Center" />
+            </Grid>
+        </Frame>
     </ContentView.Content>
 </ContentView>

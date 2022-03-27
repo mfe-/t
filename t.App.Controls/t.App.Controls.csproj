@@ -15,16 +15,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Folder Include="Themes\" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <ProjectReference Include="..\t.lib\t.lib.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <MauiXaml Update="CardView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Themes\Generic.xaml">
+	    <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
 	  </MauiXaml>
 	</ItemGroup>
 

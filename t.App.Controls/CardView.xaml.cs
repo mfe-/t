@@ -24,5 +24,18 @@ public partial class CardView : ContentView
 
         }
     }
+    protected override void OnApplyTemplate()
+    {
+        base.OnApplyTemplate();
+    }
+
+    protected override void OnBindingContextChanged()
+    {
+        base.OnBindingContextChanged();
+    }
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+    }
 
 }

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:local="clr-namespace:t.App.Controls.Themes"
+                    >
+    <!--x:Class="t.App.Controls.Themes.Generic">-->
+    <Color x:Key="CardYellow">#F1DA76</Color>
+    
+    <!--
+    Theme-level dictionaries are stored in a subfolder named Themes. 
+    The files in the Themes folder correspond to themes. 
+    For example, you might have Aero.NormalColor.xaml, Luna.NormalColor.xaml, Royale.NormalColor.xaml, and so on. 
+    You can also have a file named Generic.xaml. 
+    When the system looks for a resource at the themes level, it first looks for it in the theme-specific file and then looks for it in Generic.xaml.
+    -->
+    
+    
+    
+</ResourceDictionary>

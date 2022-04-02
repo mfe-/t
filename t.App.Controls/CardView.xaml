@@ -6,36 +6,73 @@
              Margin="0"
              x:Name="cardview">
     <ContentView.Resources>
-        <ResourceDictionary Source="Themes\Generic.xaml" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes\Generic.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style TargetType="Label">
+                <Setter Property="FontSize" Value="50" />
+                <Setter Property="TextColor" Value="{x:StaticResource CardLabelForeground}" />
+                <Setter Property="FontFamily" Value="HalogenBold" />
+            </Style>
+
+        </ResourceDictionary>
     </ContentView.Resources>
     <ContentView.Content>
-        
-        
+
+
         <Frame CornerRadius="30" 
            HasShadow="True"
            IsClippedToBounds="True"
            Padding="0">
             <Grid BackgroundColor="{x:StaticResource CardYellow}">
+                <Grid.Resources>
+                </Grid.Resources>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="2*" />
+                    <RowDefinition Height="4*" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Label 
-                Text="Welcome to .NET Multi-platform App UI"
-                Grid.Row="1"
-                SemanticProperties.HeadingLevel="Level1"
-                SemanticProperties.Description="Welcome to dot net Multi platform App U I"
-                FontSize="18"
-                HorizontalOptions="Center" />
-                <Label Grid.Row="1" Grid.ColumnSpan="3" Background="Green"
-                       Text="{Binding Path=Card.Value, Source={Reference cardview},Mode=TwoWay}"
-                       VerticalOptions="Center" HorizontalOptions="Center" />
+                <Label Text="{Binding Path=Card.Value, Source={Reference cardview},Mode=TwoWay}"
+                       TextColor="{x:StaticResource CardLabelForeground}"
+                       Grid.Row="1"
+                       Grid.Column="0"
+                       HorizontalOptions="Center" />
+
+                <Label Text="{Binding Path=Card.Value, Source={Reference cardview},Mode=TwoWay}"
+                       Grid.Row="1"
+                       Grid.Column="3"
+                       HorizontalOptions="Center" />
+
+                <!-- middle -->
+                <Frame CornerRadius="500" 
+                       HasShadow="True"
+                       IsClippedToBounds="True"
+                       Padding="0"
+                       Grid.Row="1" Grid.Column="1">
+                    <Label TextColor="{x:StaticResource CardYellow}"
+                           Text="{Binding Path=Card.Value, Source={Reference cardview},Mode=TwoWay}"
+                           FontSize="100"
+                           VerticalOptions="Center" HorizontalOptions="Center" />
+                </Frame>
+
+                <Label Text="{Binding Path=Card.Value, Source={Reference cardview},Mode=TwoWay}"
+                       TextColor="{x:StaticResource CardLabelForeground}"
+                       Grid.Row="3"
+                       Grid.Column="0"
+                       HorizontalOptions="Center" />
+
+                <Label Text="{Binding Path=Card.Value, Source={Reference cardview},Mode=TwoWay}"
+                       TextColor="{x:StaticResource CardLabelForeground}"
+                       Grid.Row="3"
+                       Grid.Column="3"
+                       HorizontalOptions="Center" />
             </Grid>
         </Frame>
     </ContentView.Content>

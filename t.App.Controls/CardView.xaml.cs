@@ -4,12 +4,12 @@ namespace t.App.Controls;
 
 public partial class CardView : ContentView
 {
-    
-	public CardView()
-	{
-		InitializeComponent();
-	}
-	public static readonly BindableProperty CardProperty = BindableProperty.Create(nameof(Card), typeof(Card), typeof(CardView), default(Card), propertyChanged: CardChanged);
+
+    public CardView()
+    {
+        InitializeComponent();
+    }
+    public static readonly BindableProperty CardProperty = BindableProperty.Create(nameof(Card), typeof(Card), typeof(CardView), default(Card), propertyChanged: CardChanged);
 
     public Card Card
     {
@@ -19,7 +19,7 @@ public partial class CardView : ContentView
 
     public static void CardChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        if(newValue is Card)
+        if (newValue is Card)
         {
 
         }

@@ -5,7 +5,9 @@
                     >
     <!--x:Class="t.App.Controls.Themes.Generic">-->
     <Color x:Key="CardYellow">#F1DA76</Color>
-    
+
+    <Color x:Key="CardLabelForeground">#FFFFFF</Color>
+
     <!--
     Theme-level dictionaries are stored in a subfolder named Themes. 
     The files in the Themes folder correspond to themes. 

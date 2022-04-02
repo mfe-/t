@@ -15,6 +15,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\Fonts\Halogen-Bold.otf" />
+	  <None Remove="Resources\Fonts\Halogen-Bold.ttf" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <ProjectReference Include="..\t.lib\t.lib.csproj" />
 	</ItemGroup>
 
@@ -25,6 +30,11 @@
 	  <MauiXaml Update="Themes\Generic.xaml">
 	    <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
 	  </MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiFont Include="Resources\Fonts\Halogen-Bold.otf" />
+	  <EmbeddedResource Include="Resources\Fonts\Halogen-Bold.ttf" />
 	</ItemGroup>
 
 </Project>

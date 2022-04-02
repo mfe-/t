@@ -288,5 +288,8 @@ namespace t.lib.Console
         {
             throw new NotImplementedException();
         }
+
+        public override Task OnPlayerKickedAsync(PlayerLeftEventArgs playerLeftEventArgs)
+            => Task.CompletedTask;
     }
 }

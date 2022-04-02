@@ -33,7 +33,7 @@ namespace t.lib.Network
             await gameSocketClient.JoinGameAsync(playerName);
 
             var messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, GetCardChoiceAsync,
-                ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats, ShowPlayerOffered);
+                ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats, ShowPlayerOffered, OnPlayerKickedAsync);
 
             await gameSocketClient.PlayGameAsync(messageReceiveArgs);
 
@@ -63,13 +63,24 @@ namespace t.lib.Network
         public abstract Task ShowPlayerWon(IEnumerable<Player> playerStats);
         public abstract Task ShowPlayerStats(IEnumerable<Player> playerStats);
         public abstract Task OnFoundLanGames(IEnumerable<PublicGame> publicGames);
+        public abstract Task OnPlayerKickedAsync(PlayerLeftEventArgs playerLeftEventArgs);
 
         public abstract Task<string> GetCardChoiceAsync();
 
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            // Cleanup
             gameSocketClient?.ExitGame();
             gameSocketClient = null;
+        }
+        ~GameClient()
+        {
+            Dispose(false);
         }
     }
 }

@@ -39,7 +39,7 @@ namespace t.App.View
                 PlayerCards = new ObservableCollection<Card>(Game.PlayerCards[CurrentPlayer]);
 
                 var messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, GetCardChoiceAsync,
-                    ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats, ShowPlayerOffered);
+                    ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats, ShowPlayerOffered, OnPlayerKickedAsync);
 
                 await gameSocketClient.PlayGameAsync(messageReceiveArgs);
             }
@@ -213,6 +213,10 @@ namespace t.App.View
         }
 
         public override Task ShowPlayerWon(IEnumerable<t.lib.Game.Player> playerStats)
+        {
+            return Task.CompletedTask;
+        }
+        public override Task OnPlayerKickedAsync(PlayerLeftEventArgs playerLeftEventArgs)
         {
             return Task.CompletedTask;
         }

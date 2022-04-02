@@ -41,7 +41,10 @@ namespace t.lib.Network
             {
                 Game.Players.Remove(removePlayer);
             }
-
+            if (arg2 is MessageReceiveArgs messageReceiveArgs)
+            {
+                messageReceiveArgs.OnPlayerKickedAsync.Invoke(new PlayerLeftEventArgs(player));
+            }
             return Task.CompletedTask;
         }
 

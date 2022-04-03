@@ -10,8 +10,33 @@
              Title="{Binding Path=GameClientViewModel.Title}"
              BackgroundColor="{DynamicResource SecondaryColor}">
     <ContentPage.Resources>
+        <Style TargetType="controls:CardView">
+            <Setter Property="WidthRequest" Value="120" />
+            <Setter Property="HeightRequest" Value="200" />
+        </Style>
 
+        <DataTemplate x:Key="cardviewFirstDataTemplate">
+            <StackLayout Margin="-80,0,0,0">
+                <controls:CardView Card="{Binding}" Margin="0" />
+            </StackLayout>
+        </DataTemplate>
+        <DataTemplate x:Key="cardviewOtherDataTemplate">
+            <StackLayout Margin="-10,0,0,0">
+                <controls:CardView Card="{Binding}"  />
+            </StackLayout>
+        </DataTemplate>
+        <DataTemplate x:Key="cardviewLastDataTemplate">
+            <StackLayout Margin="10,0,10,0">
+                <controls:CardView Card="{Binding}"  />
+            </StackLayout>
+        </DataTemplate>
 
+        <controls:CardCollectionDataTemplateSelector x:Key="CardCollectionDataTemplateSelector" 
+                                                     FirstItem="{StaticResource cardviewFirstDataTemplate}"
+                                                     OtherItem="{StaticResource cardviewOtherDataTemplate}"
+                                                     LastItem="{StaticResource cardviewLastDataTemplate}"/>
+
+        <controls:CardConverter x:Key="CardConverter" />
     </ContentPage.Resources>
     <ContentPage.Content>
         <Grid x:Name="gamepagegrid">
@@ -58,7 +83,7 @@
                     <RowDefinition />
                 </Grid.RowDefinitions>
                 <controls:CardView Grid.Row="0"
-                                   Card="{Binding Path=GameClientViewModel.CurrentCard,Mode=OneWay}" >
+                                   Card="{Binding Path=GameClientViewModel.CurrentCard,Mode=OneWay}">
                     <controls:CardView.Triggers>
                         <Trigger TargetType="controls:CardView" Property="Card" Value="{x:Null}">
                             <Setter Property="IsVisible" Value="False" />
@@ -84,7 +109,7 @@
                 </CollectionView>
             </Grid>
 
-          
+
             <!-- player list -->
             <controls:CardCollectionView x:Name="playersCardCollectionView" SelectionMode="Single"
                             ItemsSource="{Binding Path=GameClientViewModel.PlayerCards,Mode=TwoWay}" 
@@ -95,17 +120,10 @@
                             Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
                             VerticalOptions="Fill"
                             Rotation="0"
-                            Background="Blue"
-                            HorizontalOptions="StartAndExpand">
-                <controls:CardCollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <controls:CardView Card="{Binding}" />
-                        </Grid>
-                    </DataTemplate>
-                </controls:CardCollectionView.ItemTemplate>
+                            HorizontalOptions="StartAndExpand"
+                            ItemTemplate="{StaticResource CardCollectionDataTemplateSelector}">
                 <controls:CardCollectionView.ItemsLayout>
-                    <GridItemsLayout Orientation="Horizontal" />
+                    <GridItemsLayout Orientation="Horizontal"  />
                 </controls:CardCollectionView.ItemsLayout>
             </controls:CardCollectionView>
         </Grid>

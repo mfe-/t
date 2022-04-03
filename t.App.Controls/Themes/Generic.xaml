@@ -5,6 +5,16 @@
                     >
     <!--x:Class="t.App.Controls.Themes.Generic">-->
     <Color x:Key="CardYellow">#F1DA76</Color>
+    <Color x:Key="CardBlue">#A3D7E3</Color>
+    <Color x:Key="CardOrange">#FBD1A3</Color>
+    <Color x:Key="CardGreen">#BAE4A6</Color>
+    <Color x:Key="CardGray">#C6C6C6</Color>
+    <Color x:Key="CardPink">#FDBDE0</Color>
+    <Color x:Key="CardLila">#D4A7D5</Color>
+    <Color x:Key="CardTurquoise">#84D7C0</Color>
+    <Color x:Key="CardRed">#FF7E8F</Color>
+    <Color x:Key="CardDarkBlue">#A7B5E1</Color>
+
 
     <Color x:Key="CardLabelForeground">#FFFFFF</Color>
 

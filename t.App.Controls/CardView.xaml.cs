@@ -1,3 +1,4 @@
+using System.Linq;
 using t.lib.Game;
 
 namespace t.App.Controls;
@@ -24,6 +25,37 @@ public partial class CardView : ContentView
 
         }
     }
+    //https://www.dotnetforall.com/understanding-measureoverride-and-arrangeoverride/
+    //protected override Size ArrangeOverride(Rect bounds)
+    //{
+    //    var size = base.ArrangeOverride(bounds);
+
+    //    //we only need 1/3 of the width
+    //    var newSize = new Size(size.Height * (0.3d), size.Height);
+
+    //    // Get the collection of children
+    //    var mychildren = Children;
+
+    //    // Get total number of children
+    //    int count = mychildren.Count;
+
+    //    // Arrange children
+    //    if (count > 1) throw new NotSupportedException();
+
+    //    var child = mychildren.First();
+    //    if (child is VisualElement visual)
+    //    {
+    //        visual.Arrange(new Rect(0,0,newSize.Width,newSize.Height));
+    //        //if(visual is ContentView contentView)
+    //        //{
+    //        //    contentView.DesiredSize
+    //        //    contentView.Arrange(new Rect(0, 0, newSize.Width, newSize.Height));
+    //        //}
+    //    }
+
+    //    // Return final size of the panel
+    //    return newSize;
+    //}
     protected override void OnApplyTemplate()
     {
         base.OnApplyTemplate();

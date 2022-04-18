@@ -39,7 +39,7 @@
         <controls:CardConverter x:Key="CardConverter" />
     </ContentPage.Resources>
     <ContentPage.Content>
-        <Grid x:Name="gamepagegrid">
+        <Grid x:Name="gamepagegrid" BackgroundColor="AliceBlue">
             <!---->
             <Grid.RowDefinitions>
                 <RowDefinition />
@@ -53,9 +53,11 @@
             </Grid.ColumnDefinitions>
 
             <!-- player list -->
-            <CollectionView x:Name="playersCollectionView" SelectionMode="None" 
-                        ItemsSource="{Binding Path=GameClientViewModel.Players,Mode=TwoWay}"
-                         Grid.Row="0" Grid.Column="2" SelectedItem="{Binding Path=GameClientViewModel.CurrentPlayer,Mode=TwoWay}">
+            <CollectionView x:Name="playersCollectionView" SelectionMode="None"
+                            ItemsSource="{Binding Path=GameClientViewModel.Players,Mode=TwoWay}"
+                            Grid.Row="0" Grid.Column="2" 
+                            SelectedItem="{Binding Path=GameClientViewModel.CurrentPlayer,Mode=TwoWay}"
+                            BackgroundColor="AntiqueWhite">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Grid>
@@ -77,7 +79,7 @@
             </CollectionView>
 
             <!-- Card to play-->
-            <Grid Grid.Row="1" Grid.Column="1">
+            <Grid Grid.Row="1" Grid.Column="1" BackgroundColor="Aqua">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />
@@ -111,21 +113,23 @@
 
 
             <!-- player list -->
-            <controls:CardCollectionView x:Name="playersCardCollectionView" SelectionMode="Single"
-                            ItemsSource="{Binding Path=GameClientViewModel.PlayerCards,Mode=TwoWay}" 
-                            SelectionChangedCommand="{Binding Path=GameClientViewModel.PickCardCommand}"
-                            SelectionChangedCommandParameter="{Binding Path=SelectedItem,Source={Reference playersCardCollectionView}}"
-                            SelectedItem="{Binding Path=GameClientViewModel.SelectedCard}"
-                            IsEnabled="{Binding Path=GameClientViewModel.CanPlayerChooseCard,Mode=OneWay}"
-                            Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
-                            VerticalOptions="Fill"
-                            Rotation="0"
-                            HorizontalOptions="StartAndExpand"
-                            ItemTemplate="{StaticResource CardCollectionDataTemplateSelector}">
-                <controls:CardCollectionView.ItemsLayout>
+            <CollectionView x:Name="playersCardCollectionView" SelectionMode="Single"
+                                         ItemsSource="{Binding Path=GameClientViewModel.PlayerCards,Mode=TwoWay}" 
+                                         SelectionChangedCommand="{Binding Path=GameClientViewModel.PickCardCommand}"
+                                         SelectionChangedCommandParameter="{Binding Path=SelectedItem,Source={Reference playersCardCollectionView}}"
+                                         SelectedItem="{Binding Path=GameClientViewModel.SelectedCard}"
+                                         IsEnabled="{Binding Path=GameClientViewModel.CanPlayerChooseCard,Mode=OneWay}"
+                                         Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                                         VerticalOptions="Fill"
+                                         Rotation="0"
+                                         Margin="0"
+                                         HorizontalOptions="Center"
+                                         BackgroundColor="Aquamarine"
+                                         ItemTemplate="{StaticResource CardCollectionDataTemplateSelector}">
+                <CollectionView.ItemsLayout>
                     <GridItemsLayout Orientation="Horizontal"  />
-                </controls:CardCollectionView.ItemsLayout>
-            </controls:CardCollectionView>
+                </CollectionView.ItemsLayout>
+            </CollectionView>
         </Grid>
 
     </ContentPage.Content>

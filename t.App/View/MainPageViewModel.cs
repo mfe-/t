@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Windows.Input;
 using t.App.Service;
+using t.lib.Game;
 
 namespace t.App.View
 {
@@ -20,6 +21,15 @@ namespace t.App.View
         public String Title { get; set; } = "t.App";
 
         public ICommand NavigateCommand { get; }
+
+
+
+        private Card _Card = new Card(1);
+        public Card Card
+        {
+            get { return _Card; }
+            set { SetProperty(ref _Card, value, nameof(Card)); }
+        }
 
         private async Task NavigateAsync(string uri)
         {

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:t.App.Controls;assembly=t.App.Controls"
+             x:Class="t.App.View.DebugPage"
+             Title="DebugPage"
+             x:Name="debugpage">
+    <ContentPage.Resources>
+        <x:Double x:Key="WidthCard">90</x:Double>
+        <x:Double x:Key="HeightCard">150</x:Double>
+
+        <Style x:Key="CardViewMargin" TargetType="{x:Type controls:CardView}">
+            <Setter Property="Margin" Value="0,0,5,0" />
+        </Style>
+
+    </ContentPage.Resources>
+    <Grid RowDefinitions="*,*,*" ColumnDefinitions="*,2*,*">
+        <Grid Grid.Row="0" Grid.Column="1" BackgroundColor="AliceBlue"></Grid>
+        <Grid Grid.Row="1" Grid.Column="0" BackgroundColor="Crimson">
+
+        </Grid>
+        <Grid Grid.Row="1" Grid.Column="1" BackgroundColor="BlanchedAlmond">
+            <StackLayout Orientation="Horizontal" Padding="3">
+                <controls:CardView Card="{Binding Path=CurrentCard}" 
+                                   Margin="0,0,5,0"
+                                   WidthRequest="100" 
+                                   HeightRequest="170" />
+                <controls:CardView Card="{Binding Path=SelectedCardPlayer1}" 
+                                   Margin="0,0,5,0"
+                                   WidthRequest="{StaticResource WidthCard}" 
+                                   HeightRequest="{StaticResource HeightCard}"  />
+            </StackLayout>
+        </Grid>
+        <Grid Grid.Row="1" Grid.Column="2" BackgroundColor="Coral">
+        </Grid>
+        <Grid Grid.Row="2" Grid.ColumnSpan="3" BackgroundColor="Bisque">
+            <controls:CardItemsView ItemsSource="{Binding Path=Cards}" 
+                                    SelectedItem="{Binding Path=SelectedCardPlayer1}"
+                                    HorizontalOptions="Center" VerticalOptions="Center">
+                <controls:CardItemsView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <controls:CardView Card="{Binding}" 
+                                               WidthRequest="{StaticResource WidthCard}" 
+                                               HeightRequest="{StaticResource HeightCard}" 
+                                               TranslationYOffset="9"></controls:CardView>
+                        </ViewCell>
+                    </DataTemplate>
+                </controls:CardItemsView.ItemTemplate>
+            </controls:CardItemsView>
+        </Grid>
+    </Grid>
+</ContentPage>

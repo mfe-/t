@@ -50,6 +50,9 @@ namespace t.App
             builder.Services.AddTransient<SettingPage>();
             builder.Services.AddSingleton<SettingPageViewModel>();
 
+            builder.Services.AddTransient<DebugPage>();
+            builder.Services.AddTransient<DebugPageViewModel>();
+
             builder.Services.AddSingleton(
                 provider => new NavigationService(
                 provider.GetRequiredService<IServiceProvider>(),

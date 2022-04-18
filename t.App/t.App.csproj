@@ -73,6 +73,9 @@
     <MauiXaml Update="App.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
+    <MauiXaml Update="View\DebugPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
     <MauiXaml Update="View\GamePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>

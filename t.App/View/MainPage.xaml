@@ -1,11 +1,12 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:t.App.Controls;assembly=t.App.Controls"
              x:Class="t.App.View.MainPage"
              Title="{Binding Path=Title}"
              BackgroundColor="{DynamicResource SecondaryColor}">
 
     <ScrollView>
-        <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,*"
+        <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*"
               Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
 
             <Button 
@@ -42,9 +43,24 @@
                 Grid.Row="3"
                 SemanticProperties.Hint="Exit the app"
                 HorizontalOptions="Center"
-                Command="{Binding Path=ExitCommand}" CommandParameter="t.App.View.SettingPage"/>
+                Command="{Binding Path=ExitCommand}" CommandParameter="t.App.View.SettingPageViewModel"/>
+
+            <Button 
+                Text="Debug page"
+                FontSize="32"
+                Grid.Row="4"
+                SemanticProperties.Hint="Debug test page"
+                HorizontalOptions="Center"
+                Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.DebugPageViewModel"/>
 
 
         </Grid>
     </ScrollView>
+    <!--<Grid>
+
+        <ContentView />
+        <controls:CardView Card="{Binding Path=Card}" WidthRequest="120" HeightRequest="200">
+
+        </controls:CardView>
+    </Grid>-->
 </ContentPage>

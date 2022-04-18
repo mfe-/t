@@ -15,7 +15,7 @@
             <Style TargetType="Label">
                 <Setter Property="TextColor" Value="{x:StaticResource CardLabelForeground}" />
                 <Setter Property="FontFamily" Value="HalogenBold" />
-                <Setter Property="VisualStateManager.VisualStateGroups">
+                <!--<Setter Property="VisualStateManager.VisualStateGroups">
                     <Setter.Value>
                         <VisualStateGroupList>
                             <VisualStateGroup>
@@ -38,7 +38,7 @@
                             </VisualStateGroup>
                         </VisualStateGroupList>
                     </Setter.Value>
-                </Setter>
+                </Setter>-->
             </Style>
 
             <Style x:Key="LabelMiddle" TargetType="Label">
@@ -140,13 +140,11 @@
         </ResourceDictionary>
     </ContentView.Resources>
     <ContentView.Content>
-
-
         <Frame CornerRadius="30" 
            HasShadow="True"
            IsClippedToBounds="True"
            Padding="0">
-            <Grid>
+            <Grid x:Name="Grid_PART">
                 <Grid.Resources>
                 </Grid.Resources>
                 <Grid.RowDefinitions>
@@ -188,6 +186,7 @@
                        Grid.ColumnSpan="3"
                        BackgroundColor="White"
                        VerticalOptions="Center">
+                    <!---->
                     <Label Style="{StaticResource LabelMiddle}"
                            x:Name="labelmiddle"
                            Text="{Binding Path=Card.Value, Source={Reference cardview},Mode=TwoWay}"

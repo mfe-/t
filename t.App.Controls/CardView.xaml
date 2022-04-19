@@ -140,11 +140,13 @@
         </ResourceDictionary>
     </ContentView.Resources>
     <ContentView.Content>
+        
+        
         <Frame CornerRadius="30" 
            HasShadow="True"
            IsClippedToBounds="True"
            Padding="0">
-            <Grid x:Name="Grid_PART">
+            <Grid>
                 <Grid.Resources>
                 </Grid.Resources>
                 <Grid.RowDefinitions>
@@ -186,7 +188,6 @@
                        Grid.ColumnSpan="3"
                        BackgroundColor="White"
                        VerticalOptions="Center">
-                    <!---->
                     <Label Style="{StaticResource LabelMiddle}"
                            x:Name="labelmiddle"
                            Text="{Binding Path=Card.Value, Source={Reference cardview},Mode=TwoWay}"

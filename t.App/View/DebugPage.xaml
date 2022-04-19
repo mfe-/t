@@ -9,8 +9,42 @@
         <x:Double x:Key="WidthCard">90</x:Double>
         <x:Double x:Key="HeightCard">150</x:Double>
 
-        <Style x:Key="CardViewMargin" TargetType="{x:Type controls:CardView}">
-            <Setter Property="Margin" Value="0,0,5,0" />
+        <controls:ValuesComparerMultiValueConverter x:Key="ValuesComparerMultiValueConverter" />
+
+        <Style x:Key="cardView" TargetType="{x:Type controls:CardView}">
+            <Setter Property="WidthRequest" Value="{StaticResource WidthCard}" />
+            <Setter Property="HeightRequest" Value="{StaticResource HeightCard}" />
+        </Style>
+
+        <Style x:Key="cardViewInList" BasedOn="{StaticResource cardView}" TargetType="{x:Type controls:CardView}">
+            <Style.Triggers>
+                <!-- Check if current card is selected card -->
+                <DataTrigger TargetType="controls:CardView" Value="True">
+                    <DataTrigger.Binding>
+                        <MultiBinding Converter="{StaticResource ValuesComparerMultiValueConverter}" ConverterParameter="TreatNullAsFalse">
+                            <MultiBinding.Bindings>
+                                <!-- current card -->
+                                <Binding /> 
+                                <!-- selected card -->
+                                <Binding Path="SelectedItem" Source="{x:Reference cardList}" />
+                            </MultiBinding.Bindings>
+                        </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="IsVisible" Value="False" />
+                </DataTrigger>
+                <!--check if current card is unselected card -->
+                <DataTrigger TargetType="controls:CardView" Value="False">
+                    <DataTrigger.Binding>
+                        <MultiBinding Converter="{StaticResource ValuesComparerMultiValueConverter}" ConverterParameter="TreatNullAsFalse">
+                            <MultiBinding.Bindings>
+                                <Binding />
+                                <Binding Path="SelectedItem" Source="{x:Reference cardList}" />
+                            </MultiBinding.Bindings>
+                        </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="IsVisible" Value="True" />
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
 
     </ContentPage.Resources>
@@ -27,23 +61,29 @@
                                    HeightRequest="170" />
                 <controls:CardView Card="{Binding Path=SelectedCardPlayer1}" 
                                    Margin="0,0,5,0"
-                                   WidthRequest="{StaticResource WidthCard}" 
-                                   HeightRequest="{StaticResource HeightCard}"  />
+                                   Style="{StaticResource cardView}"  />
+                <Label x:Name="label1" 
+                       Text="{Binding Source={x:Reference cardList}, Path=SelectedItem}"
+                       WidthRequest="100"
+                       HeightRequest="100" 
+                       BackgroundColor="Green"/>
             </StackLayout>
         </Grid>
         <Grid Grid.Row="1" Grid.Column="2" BackgroundColor="Coral">
         </Grid>
         <Grid Grid.Row="2" Grid.ColumnSpan="3" BackgroundColor="Bisque">
-            <controls:CardItemsView ItemsSource="{Binding Path=Cards}" 
+            <controls:CardItemsView x:Name="cardList"
+                                    ItemsSource="{Binding Path=Cards}" 
                                     SelectedItem="{Binding Path=SelectedCardPlayer1}"
                                     HorizontalOptions="Center" VerticalOptions="Center">
                 <controls:CardItemsView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
-                            <controls:CardView Card="{Binding}" 
-                                               WidthRequest="{StaticResource WidthCard}" 
-                                               HeightRequest="{StaticResource HeightCard}" 
-                                               TranslationYOffset="9"></controls:CardView>
+                            <controls:CardView Card="{Binding}"
+                                               Style="{StaticResource cardViewInList}"
+                                               TranslationYOffset="9">
+
+                            </controls:CardView>
                         </ViewCell>
                     </DataTemplate>
                 </controls:CardItemsView.ItemTemplate>

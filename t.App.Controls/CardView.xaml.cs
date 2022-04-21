@@ -29,14 +29,17 @@ public partial class CardView : ContentView
     }
     private async void OnMouseOverChanged(bool isMouseover)
     {
-        if (isMouseover)
+        if (IsEnabled)
         {
-            await this.TranslateTo(0, -TranslationYOffset, 250, Easing.Linear);
-            await this.TranslateTo(0, 0, 250, Easing.Linear);
-        }
-        else
-        {
-            //BackgroundColor = Colors.Yellow;
+            if (isMouseover)
+            {
+                await this.TranslateTo(0, -TranslationYOffset, 250, Easing.Linear);
+                await this.TranslateTo(0, 0, 250, Easing.Linear);
+            }
+            else
+            {
+                //BackgroundColor = Colors.Yellow;
+            }
         }
     }
 
@@ -92,7 +95,7 @@ public partial class CardView : ContentView
     protected override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
-        
+
         //VisualStateManager.GoToState .GoToElementState(rect, "MouseEnter", true);
     }
 

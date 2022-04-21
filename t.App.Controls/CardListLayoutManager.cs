@@ -34,11 +34,26 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
             {
                 cardView = card;
             }
-            var current = child.Measure(widthConstraint, heightConstraint);
-            maxWidth = Math.Max(current.Width, maxWidth);
-            totalWidth += current.Width;
-            totalHeight = Math.Max(current.Height, totalHeight);
+            if (child is View view)
+            {
+                //only reserv sapce for the control if its visible
+                if(view.IsVisible)
+                {
+                    //call measure on the control itself to get the size of it
+                    var current = child.Measure(widthConstraint, heightConstraint);
+                    maxWidth = Math.Max(current.Width, maxWidth);
+                    totalWidth += current.Width;
+                    totalHeight = Math.Max(current.Height, totalHeight);
+                }
+            }
+            else
+            {
+                throw new NotImplementedException($"{nameof(IView)} not implemented.");
+            }
+
         }
+        //if we don't have enough space left we need to overlap the cards
+        //the overlapping is stored in Spacing
         if (widthConstraint < totalWidth)
         {
             var a = totalAmountItems * maxWidth;
@@ -69,11 +84,21 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
             {
                 cardView = card;
             }
-            var width = child.DesiredSize.Width;
-            var height = child.DesiredSize.Height;
-            child.Arrange(new Rect(x, y, width, height));
-            totalWidth = Math.Max(totalHeight, y + height);
-            x += (width - Spacing);
+            if (child is View view)
+            {
+                if(view.IsVisible)
+                {
+                    var width = child.DesiredSize.Width;
+                    var height = child.DesiredSize.Height;
+                    child.Arrange(new Rect(x, y, width, height));
+                    totalWidth = Math.Max(totalHeight, y + height);
+                    x += (width - Spacing);
+                }
+            }
+            else
+            {
+                throw new NotImplementedException($"{nameof(IView)} not implemented.");
+            }
         }
 
         return new Size(totalWidth + padding.HorizontalThickness,

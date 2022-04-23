@@ -3,12 +3,12 @@ using t.lib.Game;
 
 namespace t.App.Controls;
 
+
 public partial class CardView : ContentView
 {
 
     public CardView()
     {
-        InitializeComponent();
     }
     public static readonly BindableProperty CardProperty = BindableProperty.Create(nameof(Card), typeof(Card), typeof(CardView), default(Card));
 

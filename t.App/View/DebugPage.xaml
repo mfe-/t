@@ -75,7 +75,9 @@
             <controls:CardItemsView x:Name="cardList"
                                     ItemsSource="{Binding Path=Cards}" 
                                     SelectedItem="{Binding Path=SelectedCardPlayer1}"
-                                    HorizontalOptions="Center" VerticalOptions="Center">
+                                    HorizontalOptions="Center" VerticalOptions="Center"
+                                    SelectionChangedCommand="{Binding Path=SelectCommand}"
+                                    IsEnabled="{Binding Path=CardsEnabledPlayer1}">
                 <controls:CardItemsView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>

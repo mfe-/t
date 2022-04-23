@@ -3,8 +3,10 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace t.App.Controls;
 
@@ -12,12 +14,11 @@ public class CardItemsView : StackLayout
 {
     public CardItemsView()
     {
+        void CardItemsView_Loaded(object? sender, EventArgs e)
+        {
+
+        };
         Loaded += CardItemsView_Loaded;
-    }
-
-    private void CardItemsView_Loaded(object? sender, EventArgs e)
-    {
-
     }
 
     public static readonly BindableProperty ItemTemplateProperty =
@@ -96,11 +97,29 @@ public class CardItemsView : StackLayout
         }
     }
 
+    public static readonly BindableProperty SelectionChangedCommandProperty = BindableProperty.Create(nameof(SelectionChangedCommand), typeof(ICommand), typeof(CardItemsView), null);
+    public ICommand? SelectionChangedCommand
+    {
+        get { return (ICommand?)GetValue(SelectionChangedCommandProperty); }
+        set { SetValue(SelectionChangedCommandProperty, value); }
+    }
+
+    public static readonly BindableProperty SelectionChangedCommandParameterProperty = BindableProperty.Create(nameof(SelectionChangedCommandParameter), typeof(object), typeof(CardItemsView), null);
+    public object? SelectionChangedCommandParameter
+    {
+        get { return (object?)GetValue(SelectionChangedCommandParameterProperty); }
+        set { SetValue(SelectionChangedCommandParameterProperty, value); }
+    }
     private void TapGestureRecognizer_Tapped(object? sender, EventArgs e)
     {
+        if (!IsEnabled) return;
         if (sender is View view)
         {
             SelectedItem = GetItem(view);
+            if (SelectionChangedCommand != null && SelectionChangedCommand.CanExecute(SelectedItem ?? SelectionChangedCommandParameter))
+            {
+                SelectionChangedCommand.Execute(SelectedItem ?? SelectionChangedCommandParameter);
+            }
         }
     }
 
@@ -137,6 +156,9 @@ public class CardItemsView : StackLayout
         {
             viewCell.Parent = this;
             viewCell.BindingContext = item;
+            //due to a maui bug https://github.com/dotnet/maui/issues/5287 we need to propagate IsEnalbed on the child
+            viewCell.IsEnabled = IsEnabled;
+            viewCell.View.IsEnabled = IsEnabled;
             return viewCell.View;
         }
         throw new NotSupportedException($"{templateContent} is not supported.");
@@ -151,7 +173,24 @@ public class CardItemsView : StackLayout
     {
         return new CardListLayoutManager(this);
     }
-
-
+    public void UpdateChilds()
+    {
+        foreach (var child in Children)
+        {
+            if (child is View view)
+            {
+                view.IsEnabled = this.IsEnabled;
+            }
+        }
+    }
+    protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        base.OnPropertyChanged(propertyName);
+        if (propertyName == nameof(IsEnabled))
+        {
+            //due to a maui bug https://github.com/dotnet/maui/issues/5287 we need to propagate IsEnalbed on the child
+            UpdateChilds();
+        }
+    }
 
 }

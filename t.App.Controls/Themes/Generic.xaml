@@ -4,6 +4,9 @@
                     xmlns:controls="clr-namespace:t.App.Controls"
                     >
     <!--x:Class="t.App.Controls.Themes.Generic">-->
+    <!-- 
+    Card colors
+    -->
     <Color x:Key="CardYellow">#F1DA76</Color>
     <Color x:Key="CardBlue">#A3D7E3</Color>
     <Color x:Key="CardOrange">#FBD1A3</Color>
@@ -14,10 +17,32 @@
     <Color x:Key="CardTurquoise">#84D7C0</Color>
     <Color x:Key="CardRed">#FF7E8F</Color>
     <Color x:Key="CardDarkBlue">#A7B5E1</Color>
+    <Color x:Key="CardBack">#000000</Color>
 
 
     <Color x:Key="CardLabelForeground">#FFFFFF</Color>
 
+    <LinearGradientBrush x:Key="CardLinearGradientBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="{x:StaticResource CardYellow}" Offset="0.1"/>
+        <GradientStop Color="{x:StaticResource CardBlue}" Offset="0.2"/>
+        <GradientStop Color="{x:StaticResource CardOrange}" Offset="0.3"/>
+        <GradientStop Color="{x:StaticResource CardGreen}" Offset="0.4"/>
+        <GradientStop Color="{x:StaticResource CardGray}" Offset="0.5"/>
+        <GradientStop Color="{x:StaticResource CardPink}" Offset="0.6"/>
+        <GradientStop Color="{x:StaticResource CardTurquoise}" Offset="0.7"/>
+        <GradientStop Color="{x:StaticResource CardLila}" Offset="0.8"/>
+        <GradientStop Color="{x:StaticResource CardRed}" Offset="0.9"/>
+        <GradientStop Color="{x:StaticResource CardDarkBlue}" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <Style x:Key="CardLabelStyle" TargetType="{x:Type Label}">
+        <Setter Property="TextColor" Value="{x:StaticResource CardLabelForeground}" />
+        <Setter Property="FontFamily" Value="HalogenBold" />
+    </Style>
+
+    <!--
+    Represents the view of a card with the actual number
+    -->
     <ControlTemplate x:Key="CardViewControlTemplate">
         <Frame CornerRadius="30"
                HasShadow="True"
@@ -220,6 +245,44 @@
                 </StackLayout>
             </Grid>
         </Frame>
+    </ControlTemplate>
+
+    <!--
+    Represents the view of a card from the back
+    -->
+    <ControlTemplate x:Key="CardViewBackControlTemplate">
+        <Border StrokeThickness="4"
+        Background="{StaticResource CardBack}"
+        HorizontalOptions="Center"
+                Stroke="White">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="20,20,20,20" />
+            </Border.StrokeShape>
+            <Grid x:Name="PART_Grid">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Grid.Row="1" Grid.ColumnSpan="3" 
+                        Stroke="White" 
+                        Rotation="-45" Margin="-5,0,0,0"
+                        >
+                    <!--Background="{StaticResource CardLinearGradientBrush}">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20,20,20,20" />
+                    </Border.StrokeShape>-->
+                    <Label Text="Card" VerticalOptions="Center" HorizontalOptions="Center"
+                       Style="{StaticResource CardLabelStyle}"/>
+                </Border>
+            </Grid>
+
+        </Border>
     </ControlTemplate>
 
     <Style TargetType="{x:Type controls:CardView}">

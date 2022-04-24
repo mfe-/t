@@ -16,6 +16,7 @@
             <Setter Property="HeightRequest" Value="{StaticResource HeightCard}" />
         </Style>
 
+
         <Style x:Key="cardViewInList" BasedOn="{StaticResource cardView}" TargetType="{x:Type controls:CardView}">
             <Style.Triggers>
                 <!-- Check if current card is selected card -->
@@ -24,7 +25,7 @@
                         <MultiBinding Converter="{StaticResource ValuesComparerMultiValueConverter}" ConverterParameter="TreatNullAsFalse">
                             <MultiBinding.Bindings>
                                 <!-- current card -->
-                                <Binding /> 
+                                <Binding />
                                 <!-- selected card -->
                                 <Binding Path="SelectedItem" Source="{x:Reference cardList}" />
                             </MultiBinding.Bindings>
@@ -49,7 +50,27 @@
 
     </ContentPage.Resources>
     <Grid RowDefinitions="*,*,*" ColumnDefinitions="*,2*,*">
-        <Grid Grid.Row="0" Grid.Column="1" BackgroundColor="AliceBlue"></Grid>
+        <Grid Grid.Row="0" Grid.Column="1" BackgroundColor="AliceBlue">
+            <controls:CardItemsView x:Name="player2cardlist"
+                                    ItemsSource="{Binding Path=Cards}" 
+                                    SelectedItem="{Binding Path=SelectedCardPlayer1}"
+                                    HorizontalOptions="Center" VerticalOptions="Center"
+                                    SelectionChangedCommand="{Binding Path=SelectCommand}"
+                                    IsEnabled="{Binding Path=CardsEnabledPlayer1}">
+                <controls:CardItemsView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <controls:CardView Card="{Binding Player2Cards}"
+                                               Style="{StaticResource cardViewInList}"
+                                               ControlTemplate="{StaticResource CardViewBackControlTemplate}"
+                                               TranslationYOffset="0">
+
+                            </controls:CardView>
+                        </ViewCell>
+                    </DataTemplate>
+                </controls:CardItemsView.ItemTemplate>
+            </controls:CardItemsView>
+        </Grid>
         <Grid Grid.Row="1" Grid.Column="0" BackgroundColor="Crimson">
 
         </Grid>
@@ -62,11 +83,11 @@
                 <controls:CardView Card="{Binding Path=SelectedCardPlayer1}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"  />
-                <Label x:Name="label1" 
-                       Text="{Binding Source={x:Reference cardList}, Path=SelectedItem}"
-                       WidthRequest="100"
-                       HeightRequest="100" 
-                       BackgroundColor="Green"/>
+                <controls:CardView Card="{x:Null}" 
+                                   Margin="0,0,5,0"
+                                   Style="{StaticResource cardView}"
+                                   ControlTemplate="{StaticResource CardViewBackControlTemplate}">
+                </controls:CardView>
             </StackLayout>
         </Grid>
         <Grid Grid.Row="1" Grid.Column="2" BackgroundColor="Coral">

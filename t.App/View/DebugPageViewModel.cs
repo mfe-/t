@@ -32,6 +32,20 @@ namespace t.App.View
             new Card(10)
         };
 
+        public ObservableCollection<Card> Player2Cards { get; set; } = new ObservableCollection<Card>()
+        {
+            new Card(1),
+            new Card(2),
+            new Card(3),
+            new Card(4),
+            new Card(5),
+            new Card(6),
+            new Card(7),
+            new Card(8),
+            new Card(9),
+            new Card(10)
+        };
+
 
         private Card? _CurrentCard;
         public Card? CurrentCard

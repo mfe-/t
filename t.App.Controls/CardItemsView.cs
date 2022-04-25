@@ -33,7 +33,7 @@ public class CardItemsView : StackLayout
     public static readonly BindableProperty ItemsSourceProperty =
         BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(CardItemsView), null, propertyChanged: OnItemsSourceChanged);
 
-    private static void OnItemsSourceChanged(BindableObject bindable, object oldValue, object newValue)
+    private static void OnItemsSourceChanged(BindableObject? bindable, object oldValue, object newValue)
     {
         if (bindable is CardItemsView cardItemsView && newValue is IEnumerable enumerable)
         {
@@ -44,7 +44,11 @@ public class CardItemsView : StackLayout
             }
         }
     }
-
+    /// <summary>
+    /// It the <seealso cref="ItemsSource"/> gets updated we need to add or remove the container control for the item
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void NotifyCollectionChanged_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (sender == ItemsSource)

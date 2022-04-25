@@ -36,11 +36,15 @@ public partial class CardView : ContentView
                 await this.TranslateTo(0, -TranslationYOffset, 250, Easing.Linear);
                 await this.TranslateTo(0, 0, 250, Easing.Linear);
             }
-            else
-            {
-                //BackgroundColor = Colors.Yellow;
-            }
         }
+    }
+
+    public async Task HighlightAnimationAsync()
+    {
+        double scale = this.Scale;
+
+        await this.ScaleTo(scale * 1.5, 250);
+        await this.ScaleTo(scale, 250);
     }
 
     public bool IsMouseOver

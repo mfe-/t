@@ -16,9 +16,10 @@ namespace t.App.View
         {
             CurrentCard = new Card(3);
             SelectCommand = new Command<object>(OnSelect);
+            NextRoundCommand = new Command(OnNextRound);
         }
 
-        public ObservableCollection<Card> Cards { get; set; } = new ObservableCollection<Card>()
+        public ObservableCollection<Card> Player1Cards { get; set; } = new ObservableCollection<Card>()
         {
             new Card(1),
             new Card(2),
@@ -62,6 +63,13 @@ namespace t.App.View
         }
 
 
+        private Card? _SelectedCardPlayer2;
+        public Card? SelectedCardPlayer2
+        {
+            get { return _SelectedCardPlayer2; }
+            set { SetProperty(ref _SelectedCardPlayer2, value, nameof(SelectedCardPlayer2)); }
+        }
+
         private bool _CardsEnabledPlayer1 = true;
         public bool CardsEnabledPlayer1
         {
@@ -71,9 +79,30 @@ namespace t.App.View
 
         public ICommand SelectCommand { get; }
 
-        public void OnSelect(object param)
+        private void OnSelect(object param)
         {
+            if (SelectedCardPlayer1 != null)
+            {
+                Player1Cards.Remove(SelectedCardPlayer1);
+            }
             CardsEnabledPlayer1 = false;
+        }
+
+
+        private string? _NextRound;
+        public string? NextRound
+        {
+            get { return _NextRound; }
+            set { SetProperty(ref _NextRound, value, nameof(NextRound)); }
+        }
+
+        public ICommand NextRoundCommand { get; }
+        int i = 1;
+        private void OnNextRound()
+        {
+            i++;
+            NextRound = $"Next round {i}";
+            CardsEnabledPlayer1 = true;
         }
     }
 }

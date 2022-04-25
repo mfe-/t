@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:t.App.Controls;assembly=t.App.Controls"
+             xmlns:behaviour="clr-namespace:t.App.Controls.Behaviour;assembly=t.App.Controls"
              x:Class="t.App.View.DebugPage"
              Title="DebugPage"
              x:Name="debugpage">
@@ -49,68 +50,85 @@
         </Style>
 
     </ContentPage.Resources>
-    <Grid RowDefinitions="*,*,*" ColumnDefinitions="*,2*,*">
-        <Grid Grid.Row="0" Grid.Column="1" BackgroundColor="AliceBlue">
-            <controls:CardItemsView x:Name="player2cardlist"
-                                    ItemsSource="{Binding Path=Cards}" 
-                                    SelectedItem="{Binding Path=SelectedCardPlayer1}"
+    <Grid>
+        <Grid ZIndex="1" >
+            <Label x:Name="nextRoundLabel" 
+                   IsVisible="False"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"
+                   Text="{Binding Path=NextRound}"
+                   TextColor="{StaticResource CardLila}">
+            </Label>
+            <Grid.Behaviors>
+                <behaviour:NextRoundLabelAnimation AssociatedObject="{x:Reference nextRoundLabel}" 
+                                                   StartAnimation="{Binding NextRound}"  />
+            </Grid.Behaviors>
+        </Grid>
+
+
+        <Grid ZIndex="0" RowDefinitions="*,*,*" ColumnDefinitions="*,2*,*">
+            <Grid Grid.Row="0" Grid.Column="1" BackgroundColor="AliceBlue">
+                <controls:CardItemsView x:Name="player2cardlist"
+                                    ItemsSource="{Binding Path=Player2Cards}" 
+                                    SelectedItem="{Binding Path=SelectedCardPlayer2}"
                                     HorizontalOptions="Center" VerticalOptions="Center"
-                                    SelectionChangedCommand="{Binding Path=SelectCommand}"
-                                    IsEnabled="{Binding Path=CardsEnabledPlayer1}">
-                <controls:CardItemsView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <controls:CardView Card="{Binding Player2Cards}"
+                                    IsEnabled="False">
+                    <controls:CardItemsView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <controls:CardView Card="{Binding}"
                                                Style="{StaticResource cardViewInList}"
                                                ControlTemplate="{StaticResource CardViewBackControlTemplate}"
                                                TranslationYOffset="0">
 
-                            </controls:CardView>
-                        </ViewCell>
-                    </DataTemplate>
-                </controls:CardItemsView.ItemTemplate>
-            </controls:CardItemsView>
-        </Grid>
-        <Grid Grid.Row="1" Grid.Column="0" BackgroundColor="Crimson">
+                                </controls:CardView>
+                            </ViewCell>
+                        </DataTemplate>
+                    </controls:CardItemsView.ItemTemplate>
+                </controls:CardItemsView>
+            </Grid>
+            <Grid Grid.Row="1" Grid.Column="0" BackgroundColor="Crimson">
 
-        </Grid>
-        <Grid Grid.Row="1" Grid.Column="1" BackgroundColor="BlanchedAlmond">
-            <StackLayout Orientation="Horizontal" Padding="3">
-                <controls:CardView Card="{Binding Path=CurrentCard}" 
+            </Grid>
+            <Grid Grid.Row="1" Grid.Column="1" BackgroundColor="BlanchedAlmond">
+                <StackLayout Orientation="Horizontal" Padding="3">
+                    <controls:CardView Card="{Binding Path=CurrentCard}" 
                                    Margin="0,0,5,0"
                                    WidthRequest="100" 
                                    HeightRequest="170" />
-                <controls:CardView Card="{Binding Path=SelectedCardPlayer1}" 
+                    <controls:CardView Card="{Binding Path=SelectedCardPlayer1}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"  />
-                <controls:CardView Card="{x:Null}" 
+                    <controls:CardView Card="{x:Null}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"
                                    ControlTemplate="{StaticResource CardViewBackControlTemplate}">
-                </controls:CardView>
-            </StackLayout>
-        </Grid>
-        <Grid Grid.Row="1" Grid.Column="2" BackgroundColor="Coral">
-        </Grid>
-        <Grid Grid.Row="2" Grid.ColumnSpan="3" BackgroundColor="Bisque">
-            <controls:CardItemsView x:Name="cardList"
-                                    ItemsSource="{Binding Path=Cards}" 
+                    </controls:CardView>
+                </StackLayout>
+            </Grid>
+            <Grid Grid.Row="1" Grid.Column="2" BackgroundColor="Coral">
+                <Button Text="Next Round" Command="{Binding Path=NextRoundCommand}" />
+            </Grid>
+            <Grid Grid.Row="2" Grid.ColumnSpan="3" BackgroundColor="Bisque">
+                <controls:CardItemsView x:Name="cardList"
+                                    ItemsSource="{Binding Path=Player1Cards}" 
                                     SelectedItem="{Binding Path=SelectedCardPlayer1}"
                                     HorizontalOptions="Center" VerticalOptions="Center"
                                     SelectionChangedCommand="{Binding Path=SelectCommand}"
                                     IsEnabled="{Binding Path=CardsEnabledPlayer1}">
-                <controls:CardItemsView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <controls:CardView Card="{Binding}"
+                    <controls:CardItemsView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <controls:CardView Card="{Binding}"
                                                Style="{StaticResource cardViewInList}"
                                                TranslationYOffset="9">
 
-                            </controls:CardView>
-                        </ViewCell>
-                    </DataTemplate>
-                </controls:CardItemsView.ItemTemplate>
-            </controls:CardItemsView>
+                                </controls:CardView>
+                            </ViewCell>
+                        </DataTemplate>
+                    </controls:CardItemsView.ItemTemplate>
+                </controls:CardItemsView>
+            </Grid>
         </Grid>
     </Grid>
 </ContentPage>

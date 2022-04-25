@@ -60,8 +60,8 @@ public class EventToCommandBehavior : BehaviorBase<BindableObject>
             typeof(string),
             typeof(EventToCommandBehavior));
 
-    protected EventInfo _eventInfo;
-    protected Delegate _handler;
+    protected EventInfo? _eventInfo;
+    protected Delegate? _handler;
 
     /// <summary>
     /// Parameter path to extract property from <see cref="EventArgs"/> instance to pass to <see cref="ICommand.Execute"/>
@@ -145,7 +145,7 @@ public class EventToCommandBehavior : BehaviorBase<BindableObject>
     {
         if (_handler != null)
         {
-            _eventInfo.RemoveEventHandler(AssociatedObject, _handler);
+            _eventInfo?.RemoveEventHandler(AssociatedObject, _handler);
         }
         _handler = null;
         _eventInfo = null;
@@ -154,7 +154,7 @@ public class EventToCommandBehavior : BehaviorBase<BindableObject>
 
     private void AddEventHandler(EventInfo eventInfo, object item, Action<object, EventArgs> action)
     {
-        var eventParameters = eventInfo.EventHandlerType
+        var eventParameters = eventInfo.EventHandlerType?
             .GetRuntimeMethods().First(m => m.Name == "Invoke")
             .GetParameters()
             .Select(p => Expression.Parameter(p.ParameterType))
@@ -185,7 +185,7 @@ public class EventToCommandBehavior : BehaviorBase<BindableObject>
         {
             //Walk the ParameterPath for nested properties.
             var propertyPathParts = EventArgsParameterPath.Split('.');
-            object propertyValue = eventArgs;
+            object? propertyValue = eventArgs;
             foreach (var propertyPathPart in propertyPathParts)
             {
                 var propInfo = propertyValue.GetType().GetRuntimeProperty(propertyPathPart);

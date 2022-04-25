@@ -11,13 +11,12 @@
                 <ResourceDictionary Source="Themes\Generic.xaml;assembly=t.App.Controls"/>
             </ResourceDictionary.MergedDictionaries>
 
+            <Style TargetType="Label">
+                <Setter Property="FontFamily" Value="HalogenBold" />
+            </Style>
+
             <Color x:Key="PrimaryColor">#512bdf</Color>
             <Color x:Key="SecondaryColor">White</Color>
-
-            <Style TargetType="Label">
-                <Setter Property="TextColor" Value="{DynamicResource PrimaryColor}" />
-                <Setter Property="FontFamily" Value="OpenSansRegular" />
-            </Style>
 
             <Style TargetType="Button">
                 <Setter Property="TextColor" Value="{DynamicResource SecondaryColor}" />

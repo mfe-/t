@@ -278,7 +278,7 @@
                         <RoundRectangle CornerRadius="20,20,20,20" />
                     </Border.StrokeShape>-->
                     <Label Text="Card" VerticalOptions="Center" HorizontalOptions="Center"
-                       Style="{StaticResource CardLabelStyle}"/>
+                       Style="{StaticResource CardLabelStyle}" FontSize="25" FontAttributes="Bold"/>
                 </Border>
             </Grid>
 

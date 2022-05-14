@@ -51,28 +51,36 @@ public class CardItemsView : StackLayout
     /// <param name="e"></param>
     private void NotifyCollectionChanged_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (sender == ItemsSource)
+        try
         {
-            if (e.Action == NotifyCollectionChangedAction.Remove && e.OldItems is not null)
+            if (sender == ItemsSource)
             {
-                foreach (var item in e.OldItems)
+                if (e.Action == NotifyCollectionChangedAction.Remove && e.OldItems is not null)
                 {
-                    var container = GetContainer(item);
-                    if (container is View view && view.GestureRecognizers.Count != 0 && view.GestureRecognizers[0] is TapGestureRecognizer tap)
+                    foreach (var item in e.OldItems)
                     {
-                        tap.Tapped -= TapGestureRecognizer_Tapped;
-                        view.GestureRecognizers.Remove(tap);
+                        var container = GetContainer(item);
+                        if (container is View view && view.GestureRecognizers.Count != 0 && view.GestureRecognizers[0] is TapGestureRecognizer tap)
+                        {
+                            tap.Tapped -= TapGestureRecognizer_Tapped;
+                            view.GestureRecognizers.Remove(tap);
+                        }
+                        this.Children.Remove(container);
                     }
-                    this.Children.Remove(container);
                 }
-            }
-            else if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems is not null)
-            {
-                foreach (var item in e.NewItems)
+                else if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems is not null)
                 {
-                    AddItem(item);
+                    foreach (var item in e.NewItems)
+                    {
+                        AddItem(item);
+                    }
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            //since the last visual studio update maui throws here an exception...
+            System.Diagnostics.Debug.WriteLine(ex);
         }
     }
     private void AddItems(IEnumerable enumerable)

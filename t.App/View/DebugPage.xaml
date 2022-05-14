@@ -51,6 +51,7 @@
 
     </ContentPage.Resources>
     <Grid>
+        <!-- hidden overlayer -->
         <Grid ZIndex="1" >
             <Label x:Name="nextRoundLabel" 
                    IsVisible="False"
@@ -67,10 +68,13 @@
 
 
         <Grid ZIndex="0" RowDefinitions="*,*,*" ColumnDefinitions="*,2*,*">
+            <Grid Grid.Row="0" Grid.Column="0">
+                <Button Text="Next Round" Command="{Binding Path=NextRoundCommand}" />
+            </Grid>
             <Grid Grid.Row="0" Grid.Column="1" BackgroundColor="AliceBlue">
                 <controls:CardItemsView x:Name="player2cardlist"
-                                    ItemsSource="{Binding Path=Player2Cards}" 
-                                    SelectedItem="{Binding Path=SelectedCardPlayer2}"
+                                    ItemsSource="{Binding Path=Player2Container.PlayerCards}" 
+                                    SelectedItem="{Binding Path=Player2Container.SelectedCardPlayer}"
                                     HorizontalOptions="Center" VerticalOptions="Center"
                                     IsEnabled="False">
                     <controls:CardItemsView.ItemTemplate>
@@ -88,31 +92,88 @@
                 </controls:CardItemsView>
             </Grid>
             <Grid Grid.Row="1" Grid.Column="0" BackgroundColor="Crimson">
-
+                <controls:CardItemsView x:Name="player3cardlist"
+                                        
+                                        ItemsSource="{Binding Path=Player3Container.PlayerCards}" 
+                                        SelectedItem="{Binding Path=Player3Container.SelectedCardPlayer}"
+                                        HorizontalOptions="Center" VerticalOptions="Center"
+                                        IsEnabled="False">
+                    <controls:CardItemsView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <Label Text="asdf0 " />
+                            </ViewCell>
+                        </DataTemplate>
+                    </controls:CardItemsView.ItemTemplate>
+                </controls:CardItemsView>
             </Grid>
-            <Grid Grid.Row="1" Grid.Column="1" BackgroundColor="BlanchedAlmond">
-                <StackLayout Orientation="Horizontal" Padding="3">
-                    <controls:CardView Card="{Binding Path=CurrentCard}" 
-                                   Margin="0,0,5,0"
+            <Grid Grid.Row="1" Grid.Column="1" BackgroundColor="BlanchedAlmond" 
+                  ColumnDefinitions="*,*,*,*,*" RowDefinitions="Auto,Auto">
+                <controls:CardView Card="{Binding Path=CurrentCard}" 
+                                   Margin="5,0,5,0"
                                    WidthRequest="100" 
-                                   HeightRequest="170" />
-                    <controls:CardView Card="{Binding Path=SelectedCardPlayer1}" 
-                                   Margin="0,0,5,0"
-                                   Style="{StaticResource cardView}"  />
-                    <controls:CardView Card="{x:Null}" 
+                                   HeightRequest="170"
+                                   Grid.Column="0"/>
+                <controls:CardView Card="{Binding Path=Player1Container.SelectedCardPlayer}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"
-                                   ControlTemplate="{StaticResource CardViewBackControlTemplate}">
-                    </controls:CardView>
-                </StackLayout>
+                                   Grid.Column="1"/>
+                <Label Grid.Row="1" Grid.Column="1" Text="{Binding Path=Player1Container.Player.Name}" 
+                       HorizontalTextAlignment="Center" />
+                <controls:CardView Card="{Binding Path=Player2Container.SelectedCardPlayer}" 
+                                   Margin="0,0,5,0"
+                                   Style="{StaticResource cardView}"
+                                   ControlTemplate="{StaticResource CardViewBackControlTemplate}"
+                                   Grid.Column="2">
+                </controls:CardView>
+                <Label Grid.Row="1" Grid.Column="2" Text="{Binding Path=Player2.Name}"
+                       HorizontalTextAlignment="Center"/>
+                <controls:CardView Card="{Binding Path=Player3Container.SelectedCardPlayer}" 
+                                   Margin="0,0,5,0"
+                                   Style="{StaticResource cardView}"
+                                   ControlTemplate="{StaticResource CardViewBackControlTemplate}"
+                                   Grid.Column="3">
+                </controls:CardView>
+                <controls:CardView Card="{Binding Path=Player4Container.SelectedCardPlayer}" 
+                                   Margin="0,0,5,0"
+                                   Style="{StaticResource cardView}"
+                                   ControlTemplate="{StaticResource CardViewBackControlTemplate}"
+                                   Grid.Column="4">
+                </controls:CardView>
+
+                <!--<controls:CardItemsView x:Name="selectedCardList"
+                    ItemsSource="{Binding Path=PlayerContainers}" 
+                                        SelectedItem="{x:Null}"
+                                        HorizontalOptions="Center" VerticalOptions="Center"
+                                        SelectionChangedCommand="{x:Null}"
+                                        IsEnabled="{x:Null}"
+                                        Grid.Column="1">
+                    <controls:CardItemsView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                --><!--<Grid RowDefinitions="Auto,Auto">--><!--
+                                    <controls:CardView Card="{Binding SelectedCardPlayer}"
+                                                       Style="{StaticResource cardViewInList}"
+                                                       TranslationYOffset="3"
+                                                       Grid.Row="0">
+
+                                    </controls:CardView>
+                                    --><!--<Label Grid.Row="1" 
+                                           Text="{Binding Path=Player.Name}" HorizontalTextAlignment="Center" />
+                                </Grid>--><!--
+                            </ViewCell>
+                        </DataTemplate>
+                    </controls:CardItemsView.ItemTemplate>
+                </controls:CardItemsView>-->
+
             </Grid>
             <Grid Grid.Row="1" Grid.Column="2" BackgroundColor="Coral">
-                <Button Text="Next Round" Command="{Binding Path=NextRoundCommand}" />
+
             </Grid>
             <Grid Grid.Row="2" Grid.ColumnSpan="3" BackgroundColor="Bisque">
                 <controls:CardItemsView x:Name="cardList"
-                                    ItemsSource="{Binding Path=Player1Cards}" 
-                                    SelectedItem="{Binding Path=SelectedCardPlayer1}"
+                                    ItemsSource="{Binding Path=Player1Container.PlayerCards}" 
+                                    SelectedItem="{Binding Path=Player1Container.SelectedCardPlayer}"
                                     HorizontalOptions="Center" VerticalOptions="Center"
                                     SelectionChangedCommand="{Binding Path=SelectCommand}"
                                     IsEnabled="{Binding Path=CardsEnabledPlayer1}">

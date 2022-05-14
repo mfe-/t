@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,10 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
 
         var totalAmountItems = stackLayout.Count;
         CardView? cardView = null;
+        //if(stackLayout is CardItemsView views)
+        //{
+        //    if (views.Count == 2) Debugger.Break();
+        //}
         foreach (var child in stackLayout)
         {
             if (cardView == null && child is CardView card)
@@ -36,8 +41,8 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
             }
             if (child is View view)
             {
-                //only reserv sapce for the control if its visible
-                if(view.IsVisible)
+                //only reserve space for the control if its visible
+                if (view.IsVisible)
                 {
                     //call measure on the control itself to get the size of it
                     var current = child.Measure(widthConstraint, heightConstraint);

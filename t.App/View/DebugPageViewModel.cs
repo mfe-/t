@@ -6,7 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using t.App.Models;
 using t.lib.Game;
+using Player = t.App.Models.Player;
 
 namespace t.App.View
 {
@@ -17,36 +19,50 @@ namespace t.App.View
             CurrentCard = new Card(3);
             SelectCommand = new Command<object>(OnSelect);
             NextRoundCommand = new Command(OnNextRound);
+            Player1Container = new() { Player = new Player("martin", Guid.Empty) };
+            Player2Container = new() { Player = new Player("stefan", Guid.Empty) };
+
+            //PlayerContainers = new();
+            //PlayerContainers.Add(Player1Container);
+            //PlayerContainers.Add(Player2Container);
         }
 
-        public ObservableCollection<Card> Player1Cards { get; set; } = new ObservableCollection<Card>()
-        {
-            new Card(1),
-            new Card(2),
-            new Card(3),
-            new Card(4),
-            new Card(5),
-            new Card(6),
-            new Card(7),
-            new Card(8),
-            new Card(9),
-            new Card(10)
-        };
+        //private ObservableCollection<PlayerCardContainer> _PlayerContainers;
+        //public ObservableCollection<PlayerCardContainer> PlayerContainers
+        //{
+        //    get { return _PlayerContainers; }
+        //    set { SetProperty(ref _PlayerContainers, value, nameof(PlayerContainers)); }
+        //}
 
-        public ObservableCollection<Card> Player2Cards { get; set; } = new ObservableCollection<Card>()
+        private PlayerCardContainer? _Player1Container;
+        public PlayerCardContainer? Player1Container
         {
-            new Card(1),
-            new Card(2),
-            new Card(3),
-            new Card(4),
-            new Card(5),
-            new Card(6),
-            new Card(7),
-            new Card(8),
-            new Card(9),
-            new Card(10)
-        };
+            get { return _Player1Container; }
+            set { SetProperty(ref _Player1Container, value, nameof(Player1Container)); }
+        }
 
+        private PlayerCardContainer? _Player2Container;
+        public PlayerCardContainer? Player2Container
+        {
+            get { return _Player2Container; }
+            set { SetProperty(ref _Player2Container, value, nameof(Player2Container)); }
+        }
+
+
+        private PlayerCardContainer? _Player3Container;
+        public PlayerCardContainer? Player3Container
+        {
+            get { return _Player3Container; }
+            set { SetProperty(ref _Player3Container, value, nameof(Player3Container)); }
+        }
+
+
+        private PlayerCardContainer? _Player4Container;
+        public PlayerCardContainer? Player4Container
+        {
+            get { return _Player4Container; }
+            set { SetProperty(ref _Player4Container, value, nameof(Player4Container)); }
+        }
 
         private Card? _CurrentCard;
         public Card? CurrentCard
@@ -55,20 +71,8 @@ namespace t.App.View
             set { SetProperty(ref _CurrentCard, value, nameof(CurrentCard)); }
         }
 
-        private Card? _SelectedCardPlayer1;
-        public Card? SelectedCardPlayer1
-        {
-            get { return _SelectedCardPlayer1; }
-            set { SetProperty(ref _SelectedCardPlayer1, value, nameof(SelectedCardPlayer1)); }
-        }
 
 
-        private Card? _SelectedCardPlayer2;
-        public Card? SelectedCardPlayer2
-        {
-            get { return _SelectedCardPlayer2; }
-            set { SetProperty(ref _SelectedCardPlayer2, value, nameof(SelectedCardPlayer2)); }
-        }
 
         private bool _CardsEnabledPlayer1 = true;
         public bool CardsEnabledPlayer1
@@ -81,9 +85,9 @@ namespace t.App.View
 
         private void OnSelect(object param)
         {
-            if (SelectedCardPlayer1 != null)
+            if (Player1Container?.SelectedCardPlayer != null)
             {
-                Player1Cards.Remove(SelectedCardPlayer1);
+                Player1Container.PlayerCards.Remove(Player1Container.SelectedCardPlayer);
             }
             CardsEnabledPlayer1 = false;
         }

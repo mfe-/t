@@ -177,7 +177,7 @@ namespace t.lib.Network
             }
             return gameActionProtocol;
         }
-        public static string Seperator = "\r\n";
+        public static readonly string Seperator = "\r\n";
         private static GameActionProtocol GameActionProtocolNewPlayer(Player? player, int? number, ref GameActionProtocol gameActionProtocol)
         {
             if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(PhaseConstants.NewPlayer)} requires argument {nameof(player)}");

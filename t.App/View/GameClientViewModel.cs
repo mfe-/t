@@ -15,11 +15,18 @@ namespace t.App.View
 {
     public class GameClientViewModel : GameClient, INotifyPropertyChanged
     {
+        private const int ShowAllOfferedPlayerCardsSeconds = 2;
         private readonly SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
         public GameClientViewModel(ILogger logger, AppConfig appConfig)
             : base(logger, appConfig)
         {
             PickCardCommand = new Command<Card>(OnPickCard);
+        }
+        private string _Title = "";
+        public string Title
+        {
+            get { return _Title; }
+            set { SetProperty(ref _Title, value, nameof(Title)); }
         }
         public override async Task OnJoinLanGameAsync(string ServerIpAdress, int port, string playerName)
         {
@@ -31,12 +38,10 @@ namespace t.App.View
             //join game
             try
             {
+                //waits until all players joined
                 await gameSocketClient.JoinGameAsync(playerName, OnPlayerJoinedAsync);
 
                 if (gameSocketClient.Player == null) throw new InvalidOperationException($"{nameof(gameSocketClient)}.{nameof(gameSocketClient.Player)} is expected to have a value!");
-                CurrentPlayer = Game.Players.First(a => a.PlayerId == gameSocketClient.Player.PlayerId);
-                Players.First(a => a.PlayerId == CurrentPlayer.PlayerId).IsCurrentPlayer = true;
-                PlayerCards = new ObservableCollection<Card>(Game.PlayerCards[CurrentPlayer]);
 
                 var messageReceiveArgs = new MessageReceiveArgs(OnNextRoundAsync, GetCardChoiceAsync,
                     ShowAvailableCardsAsync, ShowPlayerWon, ShowPlayerStats, ShowPlayerOffered, OnPlayerKickedAsync);
@@ -50,43 +55,73 @@ namespace t.App.View
             }
             gameSocketClient.ExitGame();
         }
-
-        private t.lib.Game.Player? _CurrentPlayer;
-        public t.lib.Game.Player? CurrentPlayer
-        {
-            get { return _CurrentPlayer; }
-            set { SetProperty(ref _CurrentPlayer, value, nameof(CurrentPlayer)); }
-        }
-        private string _Title = "";
-        public string Title
-        {
-            get { return _Title; }
-            set { SetProperty(ref _Title, value, nameof(Title)); }
-        }
-
-        private ObservableCollection<Models.Player> _Players = new();
-        public ObservableCollection<Models.Player> Players
+        private ObservableCollection<PlayerCardContainer> _Players = new();
+        public ObservableCollection<PlayerCardContainer> Players
         {
             get { return _Players; }
             set { SetProperty(ref _Players, value, nameof(Players)); }
         }
-
-
-        private ObservableCollection<PlayerOfferedCard> _PlayersOfferedCard = new();
-        public ObservableCollection<PlayerOfferedCard> PlayersOfferedCard
+        private PlayerCardContainer? _Player1Container;
+        public PlayerCardContainer? Player1Container
         {
-            get { return _PlayersOfferedCard; }
-            set { SetProperty(ref _PlayersOfferedCard, value, nameof(PlayersOfferedCard)); }
+            get { return _Player1Container; }
+            set { SetProperty(ref _Player1Container, value, nameof(Player1Container)); }
         }
 
+        private PlayerCardContainer? _Player2Container;
+        public PlayerCardContainer? Player2Container
+        {
+            get { return _Player2Container; }
+            set { SetProperty(ref _Player2Container, value, nameof(Player2Container)); }
+        }
+
+
+        private PlayerCardContainer? _Player3Container;
+        public PlayerCardContainer? Player3Container
+        {
+            get { return _Player3Container; }
+            set { SetProperty(ref _Player3Container, value, nameof(Player3Container)); }
+        }
+
+
+        private PlayerCardContainer? _Player4Container;
+        public PlayerCardContainer? Player4Container
+        {
+            get { return _Player4Container; }
+            set { SetProperty(ref _Player4Container, value, nameof(Player4Container)); }
+        }
+        /// <summary>
+        /// Adds the joined player to the current viewmodel instance
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public virtual Task OnPlayerJoinedAsync(t.lib.Game.Player player)
         {
             void AddJoinedPlayer(t.lib.Game.Player player)
             {
-                if (!Players.Contains(player))
+                if (!Players.Any(a => Mapper.ToPlayer(player).PlayerId == a.Player.PlayerId))
                 {
                     var p = Mapper.ToPlayer(player);
-                    Players.Add(p);
+                    var playerCardContainer = new PlayerCardContainer(p);
+                    if (Players.Count == 0)
+                    {
+                        p.IsCurrentPlayer = true;
+                        Player1Container = playerCardContainer;
+                    }
+                    else if (Players.Count == 1)
+                    {
+                        Player2Container = playerCardContainer;
+                    }
+                    else if (Players.Count == 2)
+                    {
+                        Player3Container = playerCardContainer;
+                    }
+                    else if (Players.Count == 3)
+                    {
+                        Player4Container = playerCardContainer;
+                    }
+                    Players.Add(playerCardContainer);
                 }
             }
             if (SynchronizationContext.Current != synchronizationContext)
@@ -120,19 +155,58 @@ namespace t.App.View
             get { return _PlayerCards; }
             set { SetProperty(ref _PlayerCards, value, nameof(PlayerCards)); }
         }
+        private bool? _StartAnimationNextRound;
+        public bool? StartAnimationNextRound
+        {
+            get { return _StartAnimationNextRound; }
+            set { SetProperty(ref _StartAnimationNextRound, value, nameof(StartAnimationNextRound)); }
+        }
 
-        public override Task OnNextRoundAsync(NextRoundEventArgs e)
+        private string? _NextRound;
+        public string? NextRound
+        {
+            get { return _NextRound; }
+            set { SetProperty(ref _NextRound, value, nameof(NextRound)); }
+        }
+
+        private string? _WinnerText;
+        public string? WinnerText
+        {
+            get { return _WinnerText; }
+            set { SetProperty(ref _WinnerText, value, nameof(WinnerText)); }
+        }
+        public override async Task OnNextRoundAsync(NextRoundEventArgs e)
         {
             Title = $"Round {e.Round}";
-            CurrentCard = e.Card;
-            CanPlayerChooseCard = true;
-            Task.Run(async () =>
+            if(Players.Any(a=>a.PlayerCards.Count==0))
             {
-                await Task.Delay(TimeSpan.FromSeconds(10));
-                PlayersOfferedCard.Clear();
-            });
+                //make sure player got cards to play
+                foreach (var playerCardContainer in Players)
+                {
+                    var player = Game.Players.First(a => playerCardContainer.Player.PlayerId == a.PlayerId);
+                    playerCardContainer.PlayerCards = new ObservableCollection<Card>(Game.PlayerCards[player]);
+                }
+            }
+            if (Game.Round > 1)
+            {
+                foreach (var container in Players)
+                {
+                    container.IsBackCardVisible = false;
+                }
+                await Task.Delay(TimeSpan.FromSeconds(ShowAllOfferedPlayerCardsSeconds));
+                foreach (var container in Players)
+                {
+                    container.IsBackCardVisible = true;
+                }
+            }
 
-            return Task.CompletedTask;
+            CurrentCard = e.Card;
+            CardsEnabledPlayer1 = true;
+
+            foreach (var container in Players)
+            {
+                container.SelectedCardPlayer = null;
+            }
         }
 
         public override Task OnShowMenueAsync()
@@ -150,71 +224,96 @@ namespace t.App.View
             //maybe update available cards if ncecessary
             return Task.CompletedTask;
         }
-
-
-
         public ICommand PickCardCommand { get; }
 
         private void OnPickCard(Card param)
         {
             if (param == null) return;
-            if (!CanPlayerChooseCard) return;
+            if (!CardsEnabledPlayer1) return;
             PickCardTaskCompletionSource?.SetResult(param);
         }
 
 
-        private bool _CanPlayerChooseCard = false;
-        public bool CanPlayerChooseCard
+        private bool _CardsEnabledPlayer1 = true;
+        public bool CardsEnabledPlayer1
         {
-            get { return _CanPlayerChooseCard; }
-            set { SetProperty(ref _CanPlayerChooseCard, value, nameof(CanPlayerChooseCard)); }
-        }
-
-
-        private Card? _SelectedCard = null;
-        public Card? SelectedCard
-        {
-            get { return _SelectedCard; }
-            set { SetProperty(ref _SelectedCard, value, nameof(SelectedCard)); }
+            get { return _CardsEnabledPlayer1; }
+            set { SetProperty(ref _CardsEnabledPlayer1, value, nameof(CardsEnabledPlayer1)); }
         }
 
         private TaskCompletionSource<Card>? PickCardTaskCompletionSource = null;
+        /// <summary>
+        /// Returns the value of the picked card
+        /// </summary>
+        /// <returns>The cards value as string</returns>
         public override async Task<string> GetCardChoiceAsync()
         {
-            SelectedCard = null;
-            CanPlayerChooseCard = true;
+            CardsEnabledPlayer1 = true;
             PickCardTaskCompletionSource = new TaskCompletionSource<Card>();
+            //wait until the player selected a card
             var pickedCard = await PickCardTaskCompletionSource.Task;
-            CanPlayerChooseCard = false;
-            //clear players offered card if they are still displayed
-            PlayersOfferedCard.Clear();
+            CardsEnabledPlayer1 = false;
             return pickedCard.Value.ToString();
         }
+        private PlayerCardContainer GetPlayerCardContainer(t.lib.Game.Player p)
+            => Players.First(a => a.Player.PlayerId == p.PlayerId);
+
         public override Task ShowPlayerOffered(t.lib.Game.Player player, int offered, int forCard)
         {
             //remove the offered card from our player cards list so can't choose the same card again
-            if (CurrentPlayer == null) throw new InvalidOperationException($"{nameof(gameSocketClient)}.{nameof(gameSocketClient.Player)} is expected to have a value!");
-            if (CurrentPlayer.PlayerId == player.PlayerId)
+            if (Player1Container?.Player == null) throw new InvalidOperationException($"{nameof(gameSocketClient)}.{nameof(gameSocketClient.Player)} is expected to have a value!");
+
+            var playeContainer = GetPlayerCardContainer(player);
+            //set the selected card of the players
+            playeContainer.SelectedCardPlayer = playeContainer.PlayerCards.First(a => a.Value == offered);
+
+            //remove the offered card from the available card set
+            var card = playeContainer.PlayerCards.First(a => a.Value == offered);
+
+            if (SynchronizationContext.Current != synchronizationContext)
             {
-                var card = PlayerCards.First(a => a.Value == offered);
-                PlayerCards.Remove(card);
+                synchronizationContext?.Post((c) => playeContainer.PlayerCards.Remove(card), null);
             }
-            PlayersOfferedCard.Add(new PlayerOfferedCard(player, new Card(offered)));
+            else
+            {
+                playeContainer.PlayerCards.Remove(card);
+            }
+
             //display what the other players played
             return Task.CompletedTask;
         }
 
         public override Task ShowPlayerStats(IEnumerable<t.lib.Game.Player> playerStats)
         {
-            //playerstats contains player lsit with points
-            Players = new ObservableCollection<Models.Player>(playerStats.Select(a => Mapper.ToPlayer(a)));
-            Players.First(a => a.PlayerId == CurrentPlayer?.PlayerId).IsCurrentPlayer = true;
+            void UpdatePlayerStats()
+            {
+                StartAnimationNextRound = true;
+                //playerstats contains player list with points
+                foreach (var player in playerStats)
+                {
+                    var container = GetPlayerCardContainer(player);
+                    container.Player.Points = player.Points;
+                }
+                NextRound = $"Next round {Game.Round}";
+                StartAnimationNextRound = false;
+            }
+
+            if (SynchronizationContext.Current != synchronizationContext)
+            {
+                synchronizationContext?.Post((c) => UpdatePlayerStats(), null);
+            }
+            else
+            {
+                UpdatePlayerStats();
+            }
+
             return Task.CompletedTask;
+
         }
 
-        public override Task ShowPlayerWon(IEnumerable<t.lib.Game.Player> playerStats)
+        public override async Task ShowPlayerWon(IEnumerable<t.lib.Game.Player> playerStats)
         {
-            return Task.CompletedTask;
+            WinnerText = "Martin won!";
         }
         public override Task OnPlayerKickedAsync(PlayerLeftEventArgs playerLeftEventArgs)
         {

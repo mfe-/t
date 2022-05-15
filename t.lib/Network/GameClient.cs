@@ -51,8 +51,8 @@ namespace t.lib.Network
 
         protected void ThrowException(string ServerIpAdress, int port, string playerName)
         {
-            if (String.IsNullOrEmpty(ServerIpAdress)) throw new ArgumentException(nameof(ServerIpAdress));
-            if (String.IsNullOrEmpty(playerName)) throw new ArgumentException(nameof(playerName));
+            if (string.IsNullOrEmpty(ServerIpAdress)) throw new ArgumentException(nameof(ServerIpAdress));
+            if (string.IsNullOrEmpty(playerName)) throw new ArgumentException(nameof(playerName));
             if (port == 0) throw new ArgumentException("port 0 not allowed");
         }
         public abstract Task OnNextRoundAsync(NextRoundEventArgs e);

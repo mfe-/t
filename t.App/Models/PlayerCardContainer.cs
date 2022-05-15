@@ -1,29 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using t.lib.Game;
 
 namespace t.App.Models;
 
 public class PlayerCardContainer : INotifyPropertyChanged
 {
-    public ObservableCollection<Card> PlayerCards { get; set; } = new()
+    public PlayerCardContainer(Player player)
     {
-        new Card(1),
-        new Card(2),
-        new Card(3),
-        new Card(4),
-        new Card(5),
-        new Card(6),
-        new Card(7),
-        new Card(8),
-        new Card(9),
-        new Card(10)
-    };
+        _Player = player;
+    }
+
+    private ObservableCollection<Card> _PlayerCards = new();
+    public ObservableCollection<Card> PlayerCards
+    {
+        get { return _PlayerCards; }
+        set { SetProperty(ref _PlayerCards, value, nameof(PlayerCards)); }
+    }
+
     private Card? _SelectedCardPlayer;
     public Card? SelectedCardPlayer
     {
@@ -32,8 +26,8 @@ public class PlayerCardContainer : INotifyPropertyChanged
     }
 
 
-    private Player? _Player;
-    public Player? Player
+    private Player _Player;
+    public Player Player
     {
         get { return _Player; }
         set { SetProperty(ref _Player, value, nameof(Player)); }

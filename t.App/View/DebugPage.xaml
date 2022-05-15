@@ -74,7 +74,7 @@
             </Label>
 
             <Grid.Behaviors>
-                <behaviour:AnimationBehaviorStoryBoard StartAnimation="{Binding Path=StartAnimation}">
+                <behaviour:AnimationBehaviorStoryBoard StartAnimation="{Binding Path=StartAnimationNextRound}">
                     <behaviour:AnimationBehaviorStoryBoard.StoryBoard>
                         <animations:StoryBoard>
                             <animations:NextRoundLabelAnimation Target="{x:Reference nextRoundWinnerLabel}" />
@@ -120,18 +120,16 @@
             </Grid>
             <!-- High Score list -->
             <Grid Grid.Row="0" Grid.Column="2" BackgroundColor="Pink">
-                <ListView ItemsSource="{Binding PlayerContainers}" SelectionMode="None" HasUnevenRows="True" HorizontalOptions="End">
-                    <ListView.ItemTemplate>
+                <CollectionView ItemsSource="{Binding Players}" SelectionMode="None" HorizontalOptions="End">
+                    <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <ViewCell>
-                                <Grid ColumnDefinitions="Auto,Auto" HorizontalOptions="End">
-                                    <Label Margin="1" Grid.Column="0" Text="{Binding Player.Name}"  />
-                                    <Label Margin="1" Grid.Column="1" Text="{Binding Player.Points,StringFormat='{0} Points'}" />
-                                </Grid>
-                            </ViewCell>
+                            <Grid ColumnDefinitions="Auto,Auto" HorizontalOptions="End">
+                                <Label Margin="1" Grid.Column="0" Text="{Binding Player.Name}"  />
+                                <Label Margin="1" Grid.Column="1" Text="{Binding Player.Points,StringFormat=' {0} Points'}" />
+                            </Grid>
                         </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
             </Grid>
 
             <Grid Grid.Row="1" Grid.Column="0" BackgroundColor="Crimson">
@@ -228,7 +226,7 @@
                                     ItemsSource="{Binding Path=Player1Container.PlayerCards}" 
                                     SelectedItem="{Binding Path=Player1Container.SelectedCardPlayer}"
                                     HorizontalOptions="Center" VerticalOptions="Center"
-                                    SelectionChangedCommand="{Binding Path=SelectCommand}"
+                                    SelectionChangedCommand="{Binding Path=PickCardCommand}"
                                     IsEnabled="{Binding Path=CardsEnabledPlayer1}">
                     <controls:CardItemsView.ItemTemplate>
                         <DataTemplate>

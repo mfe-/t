@@ -17,21 +17,21 @@ namespace t.App.View
         public DebugPageViewModel(ILogger<DebugPageViewModel> logger) : base(logger)
         {
             CurrentCard = new Card(3);
-            SelectCommand = new Command<object>(OnSelect);
+            PickCardCommand = new Command<object>(OnPickCardCommand);
             NextRoundCommand = new Command(OnNextRound);
-            Player1Container = new() { Player = new Player("martin", Guid.Empty) };
-            Player2Container = new() { Player = new Player("stefan", Guid.Empty) };
+            Player1Container = new(new Player("martin", Guid.Empty));
+            Player2Container = new(new Player("stefan", Guid.Empty));
 
-            PlayerContainers = new();
-            PlayerContainers.Add(Player1Container);
-            PlayerContainers.Add(Player2Container);
+            Players = new();
+            Players.Add(Player1Container);
+            Players.Add(Player2Container);
         }
 
         private ObservableCollection<PlayerCardContainer> _PlayerContainers;
-        public ObservableCollection<PlayerCardContainer> PlayerContainers
+        public ObservableCollection<PlayerCardContainer> Players
         {
             get { return _PlayerContainers; }
-            set { SetProperty(ref _PlayerContainers, value, nameof(PlayerContainers)); }
+            set { SetProperty(ref _PlayerContainers, value, nameof(Players)); }
         }
 
         private PlayerCardContainer? _Player1Container;
@@ -81,9 +81,9 @@ namespace t.App.View
             set { SetProperty(ref _CardsEnabledPlayer1, value, nameof(CardsEnabledPlayer1)); }
         }
 
-        public ICommand SelectCommand { get; }
+        public ICommand PickCardCommand { get; }
 
-        private void OnSelect(object param)
+        private void OnPickCardCommand(object param)
         {
             if (Player1Container?.SelectedCardPlayer != null)
             {
@@ -93,11 +93,11 @@ namespace t.App.View
         }
 
 
-        private bool? _StartAnimation;
-        public bool? StartAnimation
+        private bool? _StartAnimationNextRound;
+        public bool? StartAnimationNextRound
         {
-            get { return _StartAnimation; }
-            set { SetProperty(ref _StartAnimation, value, nameof(StartAnimation)); }
+            get { return _StartAnimationNextRound; }
+            set { SetProperty(ref _StartAnimationNextRound, value, nameof(StartAnimationNextRound)); }
         }
 
         private string? _NextRound;
@@ -119,27 +119,27 @@ namespace t.App.View
         private async void OnNextRound()
         {
 
-            foreach (var container in PlayerContainers)
+            foreach (var container in Players)
             {
                 container.IsBackCardVisible = false;
             }
             await Task.Delay(TimeSpan.FromSeconds(7));
-            foreach (var container in PlayerContainers)
+            foreach (var container in Players)
             {
                 container.IsBackCardVisible = true;
             }
 
-            StartAnimation = true;
+            StartAnimationNextRound = true;
             i++;
             WinnerText = "Martin won!";
             NextRound = $"Next round {i}";
             CardsEnabledPlayer1 = true;
 
-            foreach (var container in PlayerContainers)
+            foreach (var container in Players)
             {
                 container.SelectedCardPlayer = null;
             }
-            StartAnimation = false;
+            StartAnimationNextRound = false;
         }
     }
 }

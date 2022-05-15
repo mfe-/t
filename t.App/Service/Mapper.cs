@@ -6,5 +6,9 @@
         {
             return new Models.Player(player.Name, player.PlayerId) { Points = player.Points };
         }
+        public static lib.Game.Player ToPlayer(Models.Player player)
+        {
+            return new lib.Game.Player(player.Name, player.PlayerId) { Points = player.Points };
+        }
     }
 }

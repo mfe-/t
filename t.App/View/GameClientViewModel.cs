@@ -100,26 +100,32 @@ namespace t.App.View
         {
             void AddJoinedPlayer(t.lib.Game.Player player)
             {
+                var currentPlayer = Game.Players.FirstOrDefault(a => a.PlayerId == gameSocketClient?.Player?.PlayerId);
+
                 if (!Players.Any(a => Mapper.ToPlayer(player).PlayerId == a.Player.PlayerId))
                 {
                     var p = Mapper.ToPlayer(player);
                     var playerCardContainer = new PlayerCardContainer(p);
-                    if (Players.Count == 0)
+                    if (currentPlayer != null && currentPlayer.PlayerId == p.PlayerId)
                     {
                         p.IsCurrentPlayer = true;
                         Player1Container = playerCardContainer;
                     }
-                    else if (Players.Count == 1)
+                    else if (Player2Container == null)
                     {
                         Player2Container = playerCardContainer;
                     }
-                    else if (Players.Count == 2)
+                    else if (Player3Container == null)
                     {
                         Player3Container = playerCardContainer;
                     }
-                    else if (Players.Count == 3)
+                    else if (Player4Container == null)
                     {
                         Player4Container = playerCardContainer;
+                    }
+                    else
+                    {
+                        throw new NotImplementedException("More than four players are currently not implemented!");
                     }
                     Players.Add(playerCardContainer);
                 }
@@ -178,7 +184,7 @@ namespace t.App.View
         public override async Task OnNextRoundAsync(NextRoundEventArgs e)
         {
             Title = $"Round {e.Round}";
-            if(Players.Any(a=>a.PlayerCards.Count==0))
+            if (Players.Any(a => a.PlayerCards.Count == 0))
             {
                 //make sure player got cards to play
                 foreach (var playerCardContainer in Players)

@@ -86,6 +86,13 @@
                             </animations:StoryBoard>
                         </behaviour:AnimationBehaviorStoryBoard.StoryBoard>
                     </behaviour:AnimationBehaviorStoryBoard>
+                    <behaviour:AnimationBehaviorStoryBoard StartAnimation="{Binding Path=StartAnimationWinnerText}">
+                        <behaviour:AnimationBehaviorStoryBoard.StoryBoard>
+                            <animations:StoryBoard>
+                                <animations:NextRoundLabelAnimation Target="{x:Reference nextRoundWinnerLabel}" />
+                            </animations:StoryBoard>
+                        </behaviour:AnimationBehaviorStoryBoard.StoryBoard>
+                    </behaviour:AnimationBehaviorStoryBoard>
                 </Grid.Behaviors>
 
                 <!--<Grid.Behaviors>

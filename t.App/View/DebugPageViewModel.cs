@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using t.App.Models;
+using t.App.Service;
 using t.lib.Game;
 using Player = t.App.Models.Player;
 
@@ -14,17 +15,28 @@ namespace t.App.View
 {
     public class DebugPageViewModel : BaseViewModel
     {
-        public DebugPageViewModel(ILogger<DebugPageViewModel> logger) : base(logger)
+        private readonly SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
+        private readonly NavigationService navigationService;
+
+        public DebugPageViewModel(ILogger<DebugPageViewModel> logger, NavigationService navigationService) : base(logger)
         {
             CurrentCard = new Card(3);
             PickCardCommand = new Command<object>(OnPickCardCommand);
             NextRoundCommand = new Command(OnNextRound);
+            StartPlayerWonAnimationCommand = new Command(() => ShowPlayerWon(new List<t.lib.Game.Player>()
+            {
+                new lib.Game.Player("asdf",Guid.Empty) {Points=5 },
+                new lib.Game.Player("ma",Guid.Empty) {Points=3 },
+
+            }));
+
             Player1Container = new(new Player("martin", Guid.Empty));
             Player2Container = new(new Player("stefan", Guid.Empty));
 
             Players = new();
             Players.Add(Player1Container);
             Players.Add(Player2Container);
+            this.navigationService = navigationService;
         }
 
         private ObservableCollection<PlayerCardContainer> _PlayerContainers;
@@ -140,6 +152,49 @@ namespace t.App.View
                 container.SelectedCardPlayer = null;
             }
             StartAnimationNextRound = false;
+        }
+
+        private bool _StartAnimationWinnerText;
+        public bool StartAnimationWinnerText
+        {
+            get { return _StartAnimationWinnerText; }
+            set { SetProperty(ref _StartAnimationWinnerText, value, nameof(StartAnimationWinnerText)); }
+        }
+
+        public ICommand StartPlayerWonAnimationCommand { get; }
+        /// <summary>
+        /// Start 
+        /// </summary>
+        /// <param name="playerStats"></param>
+        /// <returns></returns>
+        public async Task ShowPlayerWon(IEnumerable<t.lib.Game.Player> playerStats)
+        {
+            async Task StartWinnerAnimationAsync()
+            {
+                if (playerStats.First().PlayerId == Player1Container?.Player?.PlayerId)
+                {
+                    WinnerText = "You Won";
+                }
+                else
+                {
+                    WinnerText = "You Lost";
+                }
+                StartAnimationWinnerText = true;
+                await Task.Delay(TimeSpan.FromSeconds(2));
+
+                await navigationService.NavigateToAsync(typeof(MainPageViewModel));
+            }
+            
+
+            if (SynchronizationContext.Current != synchronizationContext)
+            {
+                synchronizationContext?.Post(async (c) => await StartWinnerAnimationAsync(), null);
+            }
+            else
+            {
+                await StartWinnerAnimationAsync();
+            }
+            StartAnimationWinnerText = false;
         }
     }
 }

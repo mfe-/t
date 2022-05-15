@@ -77,8 +77,14 @@
                 <behaviour:AnimationBehaviorStoryBoard StartAnimation="{Binding Path=StartAnimationNextRound}">
                     <behaviour:AnimationBehaviorStoryBoard.StoryBoard>
                         <animations:StoryBoard>
-                            <animations:NextRoundLabelAnimation Target="{x:Reference nextRoundWinnerLabel}" />
                             <animations:NextRoundLabelAnimation Target="{x:Reference nextRoundLabel}" />
+                        </animations:StoryBoard>
+                    </behaviour:AnimationBehaviorStoryBoard.StoryBoard>
+                </behaviour:AnimationBehaviorStoryBoard>
+                <behaviour:AnimationBehaviorStoryBoard StartAnimation="{Binding Path=StartAnimationWinnerText}">
+                    <behaviour:AnimationBehaviorStoryBoard.StoryBoard>
+                        <animations:StoryBoard>
+                            <animations:NextRoundLabelAnimation Target="{x:Reference nextRoundWinnerLabel}" />
                         </animations:StoryBoard>
                     </behaviour:AnimationBehaviorStoryBoard.StoryBoard>
                 </behaviour:AnimationBehaviorStoryBoard>
@@ -95,8 +101,9 @@
 
 
         <Grid ZIndex="0" RowDefinitions="*,*,*" ColumnDefinitions="*,2*,*">
-            <Grid Grid.Row="0" Grid.Column="0">
-                <Button Text="Next Round" Command="{Binding Path=NextRoundCommand}" />
+            <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto,Auto">
+                <Button Text="Next Round" Grid.Row="0" Command="{Binding Path=NextRoundCommand}" />
+                <Button Text="PlayWin Ani" Grid.Row="0" Command="{Binding StartPlayerWonAnimationCommand}" />
             </Grid>
             <Grid Grid.Row="0" Grid.Column="1" BackgroundColor="AliceBlue">
                 <controls:CardItemsView x:Name="player2cardlist"

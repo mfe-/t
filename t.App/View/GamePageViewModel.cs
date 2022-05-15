@@ -38,7 +38,7 @@ namespace t.App.View
             if (sender != this) return;
             if (GameClientViewModel == null && gameService.Current != null)
             {
-                GameClientViewModel = new GameClientViewModel(logger, new lib.AppConfig());
+                GameClientViewModel = new GameClientViewModel(logger, navigationService, new lib.AppConfig());
                 GameClientViewModel.Title = $"{gameService.Current.Gamename} Waiting players";
                 await gameService.JoinStartedGameServerAsync(GameClientViewModel);
 

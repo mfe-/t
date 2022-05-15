@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Windows.Input;
 using t.App.Models;
 using t.App.Service;
@@ -17,10 +18,13 @@ namespace t.App.View
     {
         private const int ShowAllOfferedPlayerCardsSeconds = 2;
         private readonly SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
-        public GameClientViewModel(ILogger logger, AppConfig appConfig)
+        private readonly NavigationService navigationService;
+
+        public GameClientViewModel(ILogger logger, NavigationService navigationService, AppConfig appConfig)
             : base(logger, appConfig)
         {
             PickCardCommand = new Command<Card>(OnPickCard);
+            this.navigationService = navigationService;
         }
         private string _Title = "";
         public string Title
@@ -175,6 +179,12 @@ namespace t.App.View
             set { SetProperty(ref _NextRound, value, nameof(NextRound)); }
         }
 
+        private bool _StartAnimationWinnerText;
+        public bool StartAnimationWinnerText
+        {
+            get { return _StartAnimationWinnerText; }
+            set { SetProperty(ref _StartAnimationWinnerText, value, nameof(StartAnimationWinnerText)); }
+        }
         private string? _WinnerText;
         public string? WinnerText
         {
@@ -184,7 +194,7 @@ namespace t.App.View
         public override async Task OnNextRoundAsync(NextRoundEventArgs e)
         {
             Title = $"Round {e.Round}";
-            if (Players.Any(a => a.PlayerCards.Count == 0))
+            if (Game.Round == 1)
             {
                 //make sure player got cards to play
                 foreach (var playerCardContainer in Players)
@@ -195,15 +205,7 @@ namespace t.App.View
             }
             if (Game.Round > 1)
             {
-                foreach (var container in Players)
-                {
-                    container.IsBackCardVisible = false;
-                }
-                await Task.Delay(TimeSpan.FromSeconds(ShowAllOfferedPlayerCardsSeconds));
-                foreach (var container in Players)
-                {
-                    container.IsBackCardVisible = true;
-                }
+                await ShowCardsBySettingIsBackCardVisible();
             }
 
             CurrentCard = e.Card;
@@ -212,6 +214,19 @@ namespace t.App.View
             foreach (var container in Players)
             {
                 container.SelectedCardPlayer = null;
+            }
+        }
+
+        private async Task ShowCardsBySettingIsBackCardVisible()
+        {
+            foreach (var container in Players)
+            {
+                container.IsBackCardVisible = false;
+            }
+            await Task.Delay(TimeSpan.FromSeconds(ShowAllOfferedPlayerCardsSeconds));
+            foreach (var container in Players)
+            {
+                container.IsBackCardVisible = true;
             }
         }
 
@@ -276,13 +291,25 @@ namespace t.App.View
             //remove the offered card from the available card set
             var card = playeContainer.PlayerCards.First(a => a.Value == offered);
 
+            void RemoveCard()
+            {
+                try
+                {
+                    playeContainer.PlayerCards.Remove(card);
+                }
+                catch(Exception e)
+                {
+                    logger.LogError(e, nameof(RemoveCard));
+                }
+            }
+
             if (SynchronizationContext.Current != synchronizationContext)
             {
-                synchronizationContext?.Post((c) => playeContainer.PlayerCards.Remove(card), null);
+                synchronizationContext?.Post((c) => RemoveCard(), null);
             }
             else
             {
-                playeContainer.PlayerCards.Remove(card);
+                RemoveCard();
             }
 
             //display what the other players played
@@ -316,10 +343,38 @@ namespace t.App.View
             return Task.CompletedTask;
 
         }
-
+        /// <summary>
+        /// Start 
+        /// </summary>
+        /// <param name="playerStats"></param>
+        /// <returns></returns>
         public override async Task ShowPlayerWon(IEnumerable<t.lib.Game.Player> playerStats)
         {
-            WinnerText = "Martin won!";
+            async Task StartWinnerAnimationAsync()
+            {
+                await ShowCardsBySettingIsBackCardVisible();
+
+                if (playerStats.First().PlayerId == Player1Container?.Player?.PlayerId)
+                {
+                    WinnerText = "You Won";
+                }
+                else
+                {
+                    WinnerText = "You Lost";
+                }
+                StartAnimationWinnerText = true;
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                await navigationService.NavigateToAsync(typeof(MainPageViewModel));
+            }
+            if (SynchronizationContext.Current != synchronizationContext)
+            {
+                synchronizationContext?.Post(async (c) => await StartWinnerAnimationAsync(), null);
+            }
+            else
+            {
+                await StartWinnerAnimationAsync();
+            }
+            StartAnimationWinnerText = false;
         }
         public override Task OnPlayerKickedAsync(PlayerLeftEventArgs playerLeftEventArgs)
         {

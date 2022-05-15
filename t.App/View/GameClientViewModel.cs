@@ -32,6 +32,14 @@ namespace t.App.View
             get { return _Title; }
             set { SetProperty(ref _Title, value, nameof(Title)); }
         }
+        /// <summary>
+        /// Join a network game
+        /// </summary>
+        /// <param name="ServerIpAdress"></param>
+        /// <param name="port"></param>
+        /// <param name="playerName"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public override async Task OnJoinLanGameAsync(string ServerIpAdress, int port, string playerName)
         {
             ThrowException(ServerIpAdress, port, playerName);
@@ -196,7 +204,7 @@ namespace t.App.View
             Title = $"Round {e.Round}";
             if (Game.Round == 1)
             {
-                //make sure player got cards to play
+                //make sure the player got some cards to play
                 foreach (var playerCardContainer in Players)
                 {
                     var player = Game.Players.First(a => playerCardContainer.Player.PlayerId == a.PlayerId);
@@ -219,6 +227,11 @@ namespace t.App.View
 
         private async Task ShowCardsBySettingIsBackCardVisible()
         {
+            foreach (var container in Players)
+            {
+                container.IsBackCardVisible = true;
+            }
+            await Task.Delay(TimeSpan.FromSeconds(1));
             foreach (var container in Players)
             {
                 container.IsBackCardVisible = false;
@@ -279,6 +292,14 @@ namespace t.App.View
         private PlayerCardContainer GetPlayerCardContainer(t.lib.Game.Player p)
             => Players.First(a => a.Player.PlayerId == p.PlayerId);
 
+        /// <summary>
+        /// Applies the selected offered card of the player
+        /// </summary>
+        /// <param name="player">The player</param>
+        /// <param name="offered"></param>
+        /// <param name="forCard"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public override Task ShowPlayerOffered(t.lib.Game.Player player, int offered, int forCard)
         {
             //remove the offered card from our player cards list so can't choose the same card again
@@ -297,7 +318,7 @@ namespace t.App.View
                 {
                     playeContainer.PlayerCards.Remove(card);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     logger.LogError(e, nameof(RemoveCard));
                 }
@@ -315,7 +336,11 @@ namespace t.App.View
             //display what the other players played
             return Task.CompletedTask;
         }
-
+        /// <summary>
+        /// Records the cureent player points and announces the next game round
+        /// </summary>
+        /// <param name="playerStats"></param>
+        /// <returns></returns>
         public override Task ShowPlayerStats(IEnumerable<t.lib.Game.Player> playerStats)
         {
             void UpdatePlayerStats()
@@ -344,9 +369,9 @@ namespace t.App.View
 
         }
         /// <summary>
-        /// Start 
+        /// Displays whether the player won or lost 
         /// </summary>
-        /// <param name="playerStats"></param>
+        /// <param name="playerStats">score result of the game</param>
         /// <returns></returns>
         public override async Task ShowPlayerWon(IEnumerable<t.lib.Game.Player> playerStats)
         {
@@ -364,6 +389,7 @@ namespace t.App.View
                 }
                 StartAnimationWinnerText = true;
                 await Task.Delay(TimeSpan.FromSeconds(2));
+                StartAnimationWinnerText = false;
                 await navigationService.NavigateToAsync(typeof(MainPageViewModel));
             }
             if (SynchronizationContext.Current != synchronizationContext)
@@ -374,7 +400,6 @@ namespace t.App.View
             {
                 await StartWinnerAnimationAsync();
             }
-            StartAnimationWinnerText = false;
         }
         public override Task OnPlayerKickedAsync(PlayerLeftEventArgs playerLeftEventArgs)
         {

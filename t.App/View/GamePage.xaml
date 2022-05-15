@@ -166,7 +166,16 @@
                                    Margin="5,0,5,0"
                                    WidthRequest="100" 
                                    HeightRequest="170"
-                                   Grid.Column="0"/>
+                                   Grid.Column="0">
+                        <controls:CardView.Triggers>
+                            <DataTrigger Binding="{Binding Path=CurrentCard,Converter={StaticResource IsNullConverter}}" Value="True" TargetType="{x:Type controls:CardView}">
+                                <Setter Property="IsVisible" Value="False" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=CurrentCard,Converter={StaticResource IsNullConverter}}" Value="False" TargetType="{x:Type controls:CardView}">
+                                <Setter Property="IsVisible" Value="True" />
+                            </DataTrigger>
+                        </controls:CardView.Triggers>
+                    </controls:CardView>
 
                     <controls:CardView Card="{Binding Path=Player1Container.SelectedCardPlayer}" 
                                    Margin="0,0,5,0"

@@ -239,6 +239,7 @@
                         <DataTemplate>
                             <ViewCell>
                                 <controls:CardView Card="{Binding}"
+                                                   ZIndex="10"
                                                Style="{StaticResource cardViewInList}"
                                                TranslationYOffset="9">
 

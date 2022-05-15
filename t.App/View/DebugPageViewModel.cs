@@ -23,27 +23,44 @@ namespace t.App.View
             CurrentCard = new Card(3);
             PickCardCommand = new Command<object>(OnPickCardCommand);
             NextRoundCommand = new Command(OnNextRound);
-            StartPlayerWonAnimationCommand = new Command(() => ShowPlayerWon(new List<t.lib.Game.Player>()
+            StartPlayerWonAnimationCommand = new Command(async () => await ShowPlayerWon(new List<t.lib.Game.Player>()
             {
                 new lib.Game.Player("asdf",Guid.Empty) {Points=5 },
                 new lib.Game.Player("ma",Guid.Empty) {Points=3 },
-
             }));
 
             Player1Container = new(new Player("martin", Guid.Empty));
             Player2Container = new(new Player("stefan", Guid.Empty));
 
-            Players = new();
+            _Players = new();
             Players.Add(Player1Container);
             Players.Add(Player2Container);
+
+            foreach (var container in Players)
+            {
+                container.PlayerCards = new ObservableCollection<Card>()
+                {
+                    new Card(1),
+                    new Card(2),
+                    new Card(3),
+                    new Card(4),
+                    new Card(5),
+                    new Card(6),
+                    new Card(7),
+                    new Card(8),
+                    new Card(9),
+                    new Card(10)
+                };
+            }
+
             this.navigationService = navigationService;
         }
 
-        private ObservableCollection<PlayerCardContainer> _PlayerContainers;
+        private ObservableCollection<PlayerCardContainer> _Players;
         public ObservableCollection<PlayerCardContainer> Players
         {
-            get { return _PlayerContainers; }
-            set { SetProperty(ref _PlayerContainers, value, nameof(Players)); }
+            get { return _Players; }
+            set { SetProperty(ref _Players, value, nameof(Players)); }
         }
 
         private PlayerCardContainer? _Player1Container;

@@ -4,11 +4,11 @@ namespace t.App.View;
 
 public partial class DebugPage : ContentPage
 {
-	public DebugPage()
-	{
-		InitializeComponent();
+    public DebugPage()
+    {
+        InitializeComponent();
         Loaded += DebugPage_Loaded;
-	}
+    }
 
     private void DebugPage_Loaded(object? sender, EventArgs e)
     {
@@ -16,6 +16,13 @@ public partial class DebugPage : ContentPage
 
     private void Tap_Tapped(object? sender, EventArgs e)
     {
-        
+
     }
+
+    private void Button_Clicked(object sender, EventArgs e)
+    {
+
+    }
+
+    
 }

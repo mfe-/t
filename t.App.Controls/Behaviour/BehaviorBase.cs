@@ -58,7 +58,7 @@ public class BehaviorBase<T> : Behavior<T> where T : BindableObject
     protected override void OnBindingContextChanged()
     {
         base.OnBindingContextChanged();
-        BindingContext = AssociatedObject.BindingContext;
+        BindingContext = AssociatedObject?.BindingContext;
     }
 }
 

@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace t.App.Controls.Animations;
 
-namespace t.App.Controls.Behaviour;
-
-public class NextRoundLabelAnimation : AnimationBehavior
+public class NextRoundLabelAnimation : AnimationBase
 {
-    protected override async Task StartAnimationAsync(View control, object? param)
+    protected override async Task BeginAnimation()
     {
-        if (control is Label label)
+        if (Target is Label label)
         {
             const int timems = 400;
             label.IsVisible = true;

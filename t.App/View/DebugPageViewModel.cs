@@ -22,17 +22,17 @@ namespace t.App.View
             Player1Container = new() { Player = new Player("martin", Guid.Empty) };
             Player2Container = new() { Player = new Player("stefan", Guid.Empty) };
 
-            //PlayerContainers = new();
-            //PlayerContainers.Add(Player1Container);
-            //PlayerContainers.Add(Player2Container);
+            PlayerContainers = new();
+            PlayerContainers.Add(Player1Container);
+            PlayerContainers.Add(Player2Container);
         }
 
-        //private ObservableCollection<PlayerCardContainer> _PlayerContainers;
-        //public ObservableCollection<PlayerCardContainer> PlayerContainers
-        //{
-        //    get { return _PlayerContainers; }
-        //    set { SetProperty(ref _PlayerContainers, value, nameof(PlayerContainers)); }
-        //}
+        private ObservableCollection<PlayerCardContainer> _PlayerContainers;
+        public ObservableCollection<PlayerCardContainer> PlayerContainers
+        {
+            get { return _PlayerContainers; }
+            set { SetProperty(ref _PlayerContainers, value, nameof(PlayerContainers)); }
+        }
 
         private PlayerCardContainer? _Player1Container;
         public PlayerCardContainer? Player1Container
@@ -93,6 +93,13 @@ namespace t.App.View
         }
 
 
+        private bool? _StartAnimation;
+        public bool? StartAnimation
+        {
+            get { return _StartAnimation; }
+            set { SetProperty(ref _StartAnimation, value, nameof(StartAnimation)); }
+        }
+
         private string? _NextRound;
         public string? NextRound
         {
@@ -100,13 +107,39 @@ namespace t.App.View
             set { SetProperty(ref _NextRound, value, nameof(NextRound)); }
         }
 
+        private string? _WinnerText;
+        public string? WinnerText
+        {
+            get { return _WinnerText; }
+            set { SetProperty(ref _WinnerText, value, nameof(WinnerText)); }
+        }
+
         public ICommand NextRoundCommand { get; }
         int i = 1;
-        private void OnNextRound()
+        private async void OnNextRound()
         {
+
+            foreach (var container in PlayerContainers)
+            {
+                container.IsBackCardVisible = false;
+            }
+            await Task.Delay(TimeSpan.FromSeconds(7));
+            foreach (var container in PlayerContainers)
+            {
+                container.IsBackCardVisible = true;
+            }
+
+            StartAnimation = true;
             i++;
+            WinnerText = "Martin won!";
             NextRound = $"Next round {i}";
             CardsEnabledPlayer1 = true;
+
+            foreach (var container in PlayerContainers)
+            {
+                container.SelectedCardPlayer = null;
+            }
+            StartAnimation = false;
         }
     }
 }

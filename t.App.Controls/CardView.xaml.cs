@@ -9,7 +9,17 @@ public partial class CardView : ContentView
 
     public CardView()
     {
+        PropertyChanged += CardView_PropertyChanged;
     }
+
+    private void CardView_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if(e.PropertyName == nameof(Bounds))
+        {
+            ResolveControlTemplate();
+        }
+    }
+
     public static readonly BindableProperty CardProperty = BindableProperty.Create(nameof(Card), typeof(Card), typeof(CardView), default(Card));
 
     public Card Card
@@ -102,6 +112,7 @@ public partial class CardView : ContentView
 
         //VisualStateManager.GoToState .GoToElementState(rect, "MouseEnter", true);
     }
+    
 
     protected override void OnBindingContextChanged()
     {

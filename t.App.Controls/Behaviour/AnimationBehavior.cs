@@ -7,7 +7,9 @@ namespace t.App.Controls.Behaviour;
 
 public class AnimationBehavior : BehaviorBase<BindableObject>
 {
-
+    /// <summary>
+    /// Set the property to start the animation
+    /// </summary>
     public static readonly BindableProperty StartAnimationProperty = BindableProperty.Create(nameof(StartAnimation), typeof(object), typeof(AnimationBehavior), null,
         propertyChanged: StartAnimationPropertyChanged);
 

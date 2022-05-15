@@ -2,7 +2,7 @@
 using System.Globalization;
 using t.lib.Game;
 
-namespace t.App.Controls;
+namespace t.App.Controls.Converter;
 
 /// <summary>
 /// Convert a single card or a list of cards to an int (neccessary for <see cref="CardView"/>) or the other way round
@@ -30,7 +30,7 @@ public class CardConverter : IValueConverter
         {
             return new ObservableCollection<Card>(cards.Select(a => new Card(a)));
         }
-        if(value is int i && targetType == typeof(Card))
+        if (value is int i && targetType == typeof(Card))
         {
             return new Card(i);
         }

@@ -40,6 +40,13 @@ public class PlayerCardContainer : INotifyPropertyChanged
     }
 
 
+    private bool _IsBackCardVisible = true;
+    public bool IsBackCardVisible
+    {
+        get { return _IsBackCardVisible; }
+        set { SetProperty(ref _IsBackCardVisible, value, nameof(IsBackCardVisible)); }
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     protected virtual void OnPropertyChanged(string propertyName)

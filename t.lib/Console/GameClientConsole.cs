@@ -97,7 +97,7 @@ namespace t.lib.Console
                         string useappconfig = (param.FirstOrDefault(a => a.Contains("useappconfig")) ?? "").Replace("-useappconfig=", "");
                         string ip = (param.FirstOrDefault(a => a.Contains("ip")) ?? "").Replace("-ip=", "");
 
-                        var ServerIpAdress = GameSocketServer.GetLanIpAdress().ToString();
+                        var ServerIpAdress = GameSocketServer.GetLanIpAdress().First().Address.ToString();
                         if (!string.IsNullOrEmpty(ip))
                         {
                             ServerIpAdress = ip;

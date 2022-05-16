@@ -24,6 +24,17 @@ namespace t.lib
         public Task<int> SendToAsync(ArraySegment<byte> vs, SocketFlags socketFlags, EndPoint endPoint)
             => _socket.SendToAsync(vs, socketFlags, endPoint);
 
+        public bool EnableBroadcast
+        {
+            get
+            {
+                return _socket.EnableBroadcast;
+            }
+            set
+            {
+                _socket.EnableBroadcast = value;
+            }
+        }
 
         /// <inheritdoc />
         public EndPoint? RemoteEndPoint => _socket.RemoteEndPoint;

@@ -321,8 +321,6 @@ namespace t.lib.Network
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
-
-                    //IPEndPoint object will allow us to read datagrams sent from any source.
                     var receivedResults = await udpClient.ReceiveAsync(cancellationToken);
 
                     if (TryGetBroadcastMessage(receivedResults.Buffer, out var ipadress, out var port, out var gameName,

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using t.lib.Game.EventArgs;
 using t.lib.Game;
 using t.lib.Server;
+using System.Net.NetworkInformation;
 
 [assembly: InternalsVisibleTo("t.TestProject1")]
 namespace t.lib.Network
@@ -40,7 +41,7 @@ namespace t.lib.Network
             _guid = Guid.NewGuid();
             if (String.IsNullOrEmpty(serverIpAdress))
             {
-                _ServerIpAddress = GetLanIpAdress();
+                _ServerIpAddress = GetLanIpAdress().First().Address;
                 _logger.LogTrace($"{nameof(ServerIpAdress)} not set!");
             }
             else
@@ -110,32 +111,67 @@ namespace t.lib.Network
             await listenerTask;
         }
 
-        public static IPAddress GetLanIpAdress()
+        public static ICollection<UnicastIPAddressInformation> GetLanIpAdress()
         {
-            IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-            return ipHostInfo.AddressList.First(a => a.AddressFamily == AddressFamily.InterNetwork);
+            var ipHostInfo = Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(a => a.AddressFamily == AddressFamily.InterNetwork);
+            var unicastIPAddressInformation = new List<UnicastIPAddressInformation>();
+            foreach (var inter in NetworkInterface.GetAllNetworkInterfaces() ?? Enumerable.Empty<NetworkInterface>())
+            {
+                var ipprop = inter.GetIPProperties();
+                foreach (var unicastadress in ipprop.UnicastAddresses)
+                {
+                    if (unicastadress.Address.AddressFamily == AddressFamily.InterNetwork
+                        && ipHostInfo.Any(a => IPAddress.Equals(a, unicastadress.Address)))
+                    {
+                        unicastIPAddressInformation.Add(unicastadress);
+                    }
+                }
+            }
+
+            return unicastIPAddressInformation;
+        }
+        public static IPAddress GetBroadcastAddress(UnicastIPAddressInformation unicastAddress)
+        {
+            return GetBroadcastAddress(unicastAddress.Address, unicastAddress.IPv4Mask);
         }
 
+        public static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)
+        {
+            uint ipAddress = BitConverter.ToUInt32(address.GetAddressBytes(), 0);
+            uint ipMaskV4 = BitConverter.ToUInt32(mask.GetAddressBytes(), 0);
+            uint broadCastIpAddress = ipAddress | ~ipMaskV4;
 
+            return new IPAddress(BitConverter.GetBytes(broadCastIpAddress));
+        }
         public async Task StartBroadcastingServerAsync(string gameName, int requiredAmountOfPlayers, int gameRounds, CancellationToken cancellationToken)
         {
-            var broadcastTask = await Task.Factory.StartNew(async () =>
+            var lanIps = GetLanIpAdress();
+            //foreach lan ip we do a broadcast
+            Task[] broadCastingTask = new Task[lanIps.Count];
+            int i = 0;
+            foreach (var ip in lanIps)
             {
-                using UdpClient client = new UdpClient();
-                IPEndPoint ip = new IPEndPoint(IPAddress.Broadcast, UdpPort);
-                while (!cancellationToken.IsCancellationRequested)
+                var broadcastIp = GetBroadcastAddress(ip);
+                _logger.LogInformation("Startin udp broadcast with {broadcastIp}", broadcastIp);
+                var broadcastTask = await Task.Factory.StartNew(async () =>
                 {
-                    var msgbytes = GenerateBroadcastMessage(_ServerIpAddress, ServerPort, gameName, requiredAmountOfPlayers, _playerConnections.Count, gameRounds);
-                    _logger.LogTrace("UDP Broadcast {bytes} bytes {ServerIpAdress}:{socketServerPort} Gamename:{Gamename} Players {currentPlayers}/{ofRequiredPlayers} GameRounds:{GameRounds}", msgbytes.Length,
-                        _ServerIpAddress, ServerPort, gameName, _playerConnections.Count, requiredAmountOfPlayers, gameRounds);
-                    await client.SendAsync(msgbytes, ip, cancellationToken);
+                    using UdpClient client = new UdpClient() { EnableBroadcast = true };
+                    IPEndPoint ip = new IPEndPoint(broadcastIp, UdpPort);
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        var msgbytes = GenerateBroadcastMessage(_ServerIpAddress, ServerPort, gameName, requiredAmountOfPlayers, _playerConnections.Count, gameRounds);
+                        _logger.LogTrace("UDP Broadcast {bytes} bytes {ServerIpAdress}:{socketServerPort} Gamename:{Gamename} Players {currentPlayers}/{ofRequiredPlayers} GameRounds:{GameRounds}", msgbytes.Length,
+                            _ServerIpAddress, ServerPort, gameName, _playerConnections.Count, requiredAmountOfPlayers, gameRounds);
+                        _ = await client.SendAsync(msgbytes, ip, cancellationToken);
 
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                }
-                _logger.LogInformation($"Stopped {nameof(StartBroadcastingServerAsync)}");
-            });
-
-            await broadcastTask;
+                        await Task.Delay(TimeSpan.FromSeconds(1));
+                    }
+                    _logger.LogInformation($"Stopped {nameof(StartBroadcastingServerAsync)}");
+                }, cancellationToken);
+                broadCastingTask[i] = broadcastTask;
+                i++;
+            }
+            await Task.WhenAll(broadCastingTask);
 
         }
         public const int maxBroadcastCharacters = 60;

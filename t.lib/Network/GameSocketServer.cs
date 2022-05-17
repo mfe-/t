@@ -117,6 +117,8 @@ namespace t.lib.Network
             var unicastIPAddressInformation = new List<UnicastIPAddressInformation>();
             foreach (var inter in NetworkInterface.GetAllNetworkInterfaces() ?? Enumerable.Empty<NetworkInterface>())
             {
+                if (!(inter.NetworkInterfaceType == NetworkInterfaceType.Ethernet || inter.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+                    || (inter.Description.Contains("virtual", StringComparison.CurrentCultureIgnoreCase))) continue;
                 var ipprop = inter.GetIPProperties();
                 foreach (var unicastadress in ipprop.UnicastAddresses)
                 {

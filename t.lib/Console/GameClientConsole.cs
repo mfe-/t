@@ -15,11 +15,14 @@ namespace t.lib.Console
 {
     public class GameClientConsole : GameClient
     {
+        private readonly Func<Task<string>> _onCommandFunc;
+
         public IServiceProvider ServiceProvider { get; }
 
-        public GameClientConsole(IServiceProvider serviceProvider, ILogger logger, AppConfig appConfig) : base(logger, appConfig)
+        public GameClientConsole(IServiceProvider serviceProvider, ILogger logger, Func<Task<string>> onCommandFunc, AppConfig appConfig) : base(logger, appConfig)
         {
             ServiceProvider = serviceProvider;
+            _onCommandFunc = onCommandFunc;
         }
         /// <summary>
         /// Parse StartArguments if provided
@@ -284,10 +287,8 @@ namespace t.lib.Console
                 }
             }
         }
-        public override Task<string> GetCardChoiceAsync()
-        {
-            throw new NotImplementedException();
-        }
+        public override Task<string> GetCardChoiceAsync() 
+            => _onCommandFunc();
 
         public override Task OnPlayerKickedAsync(PlayerLeftEventArgs playerLeftEventArgs)
             => Task.CompletedTask;

@@ -1,42 +1,51 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converter="clr-namespace:t.App.Controls.Converter;assembly=t.App.Controls"
              x:Class="t.App.View.JoinGamePage"
              Title="{Binding Path=Title}"
              BackgroundColor="{DynamicResource SecondaryColor}">
+    <ContentPage.Resources>
+        <converter:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </ContentPage.Resources>
     <ContentPage.Content>
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="5*" />
-                <ColumnDefinition Width="5*" />
-                <ColumnDefinition Width="5*" />
-            </Grid.ColumnDefinitions>
-            <Grid Grid.Column="1" Margin="15">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="5*" />
-                    <ColumnDefinition Width="5*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+        <StackLayout Orientation="Vertical" VerticalOptions="StartAndExpand">
 
-                <Label Text="Server Ip" Grid.Column="0" Grid.Row="0" />
-                <Entry Text="{Binding Path=ServerIp}" Grid.Column="1" Grid.Row="0" />
+            <Label Text="Player name" />
+            <Entry Text="{Binding Path=PlayerName}" HorizontalOptions="Start" MaxLength="30" />
+            <StackLayout Orientation="Vertical" IsVisible="{Binding AddManuallPublicGame}">
+                <Label Text="Server Ip" />
+                <Entry Text="{Binding Path=ServerIp}" HorizontalOptions="Start" MaxLength="15" />
 
-                <Label Text="Server Port" Grid.Column="0" Grid.Row="1" />
-                <Entry Text="{Binding Path=ServerPort}" Grid.Column="1" Grid.Row="1" />
+                <Label Text="Server Port" />
+                <Entry Text="{Binding Path=ServerPort}" HorizontalOptions="Start" MaxLength="4" />
 
-                <Label Text="Player name" Grid.Column="0" Grid.Row="2" />
-                <Entry Text="{Binding Path=PlayerName}" Grid.Column="1" Grid.Row="2" />
 
-                <Button Text="Join Game" 
+                <Label Text="Found Games" />
+                <Button Command="{Binding AddPublicGameToListCommand}" Text="Add Public Game" />
+            </StackLayout>
+
+            <ListView ItemsSource="{Binding Path=PublicGames}" SelectedItem="{Binding SelectedGame}"
+                          VerticalOptions="Start" MaximumHeightRequest="100" HeightRequest="100">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout Orientation="Horizontal">
+                                <Label Text="{Binding GameName}" />
+                                <Label Text="{Binding CurrentAmountOfPlayers}" />
+                                <Label Text=" / " />
+                                <Label Text="{Binding RequiredAmountOfPlayers}" />
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Button Text="Add Game" IsVisible="{Binding Path=AddManuallPublicGame,Converter={StaticResource InvertedBoolConverter}}"
+                    Command="{Binding AddPublicGameCommand}" />
+            <Button Text="Join Game" VerticalOptions="End"
                         Command="{Binding Path=JoinGameCommand}"
                         Grid.Column="1" Grid.Row="4"></Button>
-            </Grid>
-        </Grid>
+        </StackLayout>
     </ContentPage.Content>
 </ContentPage>

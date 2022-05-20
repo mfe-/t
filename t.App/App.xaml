@@ -14,6 +14,9 @@
             <Style TargetType="Label">
                 <Setter Property="FontFamily" Value="HalogenBold" />
             </Style>
+            <Style TargetType="Entry">
+                <Setter Property="FontFamily" Value="HalogenBold" />
+            </Style>
 
             <Color x:Key="PrimaryColor">#512bdf</Color>
             <Color x:Key="SecondaryColor">White</Color>

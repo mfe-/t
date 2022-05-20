@@ -9,10 +9,11 @@
         <converter:InvertedBoolConverter x:Key="InvertedBoolConverter" />
     </ContentPage.Resources>
     <ContentPage.Content>
-        <StackLayout Orientation="Vertical" VerticalOptions="StartAndExpand">
-
-            <Label Text="Player name" />
-            <Entry Text="{Binding Path=PlayerName}" HorizontalOptions="Start" MaxLength="30" />
+        <StackLayout Orientation="Vertical" VerticalOptions="StartAndExpand" Margin="3">
+            <StackLayout Orientation="Horizontal">
+                <Label Text="Player name" VerticalOptions="Center"  />
+                <Entry Text="{Binding Path=PlayerName}" HorizontalOptions="StartAndExpand" MaxLength="30"  />
+            </StackLayout>
             <StackLayout Orientation="Vertical" IsVisible="{Binding AddManuallPublicGame}">
                 <Label Text="Server Ip" />
                 <Entry Text="{Binding Path=ServerIp}" HorizontalOptions="Start" MaxLength="15" />
@@ -24,7 +25,6 @@
                 <Label Text="Found Games" />
                 <Button Command="{Binding AddPublicGameToListCommand}" Text="Add Public Game" />
             </StackLayout>
-
             <ListView ItemsSource="{Binding Path=PublicGames}" SelectedItem="{Binding SelectedGame}"
                           VerticalOptions="Start" MaximumHeightRequest="100" HeightRequest="100">
                 <ListView.ItemTemplate>
@@ -41,6 +41,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
+            <ActivityIndicator IsRunning="true" HorizontalOptions="End" VerticalOptions="End" />
             <Button Text="Add Game" IsVisible="{Binding Path=AddManuallPublicGame,Converter={StaticResource InvertedBoolConverter}}"
                     Command="{Binding AddPublicGameCommand}" />
             <Button Text="Join Game" VerticalOptions="End"

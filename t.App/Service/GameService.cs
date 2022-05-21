@@ -22,7 +22,7 @@ public class GameService
 
     public Task StartGameServerAsync(string gamename, string playername, int gameRounds, int requiredAmountOfPlayers)
     {
-        var ServerIpAdress = GameSocketServer.GetLanIpAdress().ToString();
+        var ServerIpAdress = GameSocketServer.GetLanIpAdress().First().Address.ToString();
         var config = new AppConfig()
         {
             BroadcastPort = appConfig.BroadcastPort,

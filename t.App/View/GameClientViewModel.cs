@@ -44,7 +44,7 @@ namespace t.App.View
         {
             ThrowException(ServerIpAdress, port, playerName);
 
-            IPAddress iPAddress = IPAddress.Parse(ServerIpAdress);
+            var iPAddress = IPAddress.Parse(ServerIpAdress);
 
             gameSocketClient = new(iPAddress, port, logger);
             //join game
@@ -65,7 +65,7 @@ namespace t.App.View
                 //todo show dialog or something with lost connection and return to overview
                 logger.LogCritical(e, e.ToString());
             }
-            gameSocketClient.ExitGame();
+            gameSocketClient?.ExitGame();
         }
         private ObservableCollection<PlayerCardContainer> _Players = new();
         public ObservableCollection<PlayerCardContainer> Players

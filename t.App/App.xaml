@@ -18,14 +18,19 @@
                 <Setter Property="FontFamily" Value="HalogenBold" />
             </Style>
 
-            <Color x:Key="PrimaryColor">#512bdf</Color>
-            <Color x:Key="SecondaryColor">White</Color>
+            <Color x:Key="BackgroundColor">#F3EFE5</Color>
+
+            <Color x:Key="PrimaryColor">#CE9ED2</Color>
+            <Color x:Key="SecondaryColor">#B9E3A5</Color>
+            <Color x:Key="ButtonBackgroundColor">#FFFFFA</Color>
 
             <Style TargetType="Button">
-                <Setter Property="TextColor" Value="{DynamicResource SecondaryColor}" />
-                <Setter Property="FontFamily" Value="OpenSansRegular" />
-                <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
+                <Setter Property="TextColor" Value="{DynamicResource PrimaryColor}" />
+                <Setter Property="FontFamily" Value="NunitoSansBold" />
+                <Setter Property="BackgroundColor" Value="{DynamicResource BackgroundColor}" />
                 <Setter Property="Padding" Value="14,10" />
+                <Setter Property="CornerRadius" Value="30" />
+                <Setter Property="BorderWidth" Value="0" />
             </Style>
 
         </ResourceDictionary>

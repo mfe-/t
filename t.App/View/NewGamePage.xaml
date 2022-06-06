@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:t.App.View"
              x:Class="t.App.View.NewGamePage"
              Title="{Binding Path=Title}"
-             BackgroundColor="{DynamicResource SecondaryColor}">
+             BackgroundColor="{DynamicResource BackgroundColor}">
     <ContentPage.Content>
         <Grid>
             <Grid.ColumnDefinitions>

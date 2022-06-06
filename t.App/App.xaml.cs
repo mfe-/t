@@ -31,6 +31,26 @@ namespace t.App
 #endif
             });
 
+            Microsoft.Maui.Handlers.ButtonHandler.ElementMapper.AppendToMapping("ButtonMouseOver", (handler, view) =>
+            {
+#if WINDOWS
+                if (view is Button button && handler.PlatformView is MauiButton mauiButton)
+                {
+                    mauiButton.PointerEntered += (sender, e) =>
+                    {
+                        button.BorderWidth = 1;
+                        button.BackgroundColor = Color.FromHex("#FFFFFA");
+                    };
+                    mauiButton.PointerExited += (sender, e) =>
+                    {
+                        button.BorderWidth = 0;
+                        button.BackgroundColor = Color.FromHex("#F3EFE5");
+                    };
+                }
+#endif
+
+            });
+
         }
         //protected override Window CreateWindow(IActivationState activationState)
         //{

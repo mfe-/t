@@ -15,7 +15,9 @@ public static class MauiProgram
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                //fonts.AddFont("Halogen-Bold.ttf", "HalogenBold");
+                fonts.AddFont("NunitoSans-Bold.ttf", "NunitoSansBold");
+                fonts.AddFont("NunitoSans-Regular.ttf", "NunitoSansRegular");
+
                 fonts.AddEmbeddedResourceFont(typeof(Controls.CardView).Assembly, "Halogen-Bold.ttf", "HalogenBold");
             });
 

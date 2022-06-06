@@ -11,7 +11,7 @@
              NavigationPage.HasNavigationBar="True"
              NavigationPage.HasBackButton="True"
              Title="{Binding Path=GameClientViewModel.Title}"
-             BackgroundColor="{DynamicResource SecondaryColor}">
+             BackgroundColor="{DynamicResource BackgroundColor}">
     <ContentPage.Resources>
         <x:Double x:Key="WidthCard">90</x:Double>
         <x:Double x:Key="HeightCard">150</x:Double>

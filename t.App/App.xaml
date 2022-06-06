@@ -12,10 +12,10 @@
             </ResourceDictionary.MergedDictionaries>
 
             <Style TargetType="Label">
-                <Setter Property="FontFamily" Value="HalogenBold" />
+                <Setter Property="FontFamily" Value="NunitoSansRegular" />
             </Style>
             <Style TargetType="Entry">
-                <Setter Property="FontFamily" Value="HalogenBold" />
+                <Setter Property="FontFamily" Value="NunitoSansRegular" />
             </Style>
 
             <Color x:Key="BackgroundColor">#F3EFE5</Color>

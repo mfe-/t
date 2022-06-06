@@ -107,9 +107,9 @@
 
             <Grid ZIndex="0" RowDefinitions="*,*,*" ColumnDefinitions="*,2*,*">
                 <Grid Grid.Row="0" Grid.Column="0">
-                    <Button Text="Next Round" Command="{Binding Path=NextRoundCommand}" />
+                    <!--<Button Text="Next Round" Command="{Binding Path=NextRoundCommand}" />-->
                 </Grid>
-                <Grid Grid.Row="0" Grid.Column="1" BackgroundColor="AliceBlue">
+                <Grid Grid.Row="0" Grid.Column="1">
                     <controls:CardItemsView x:Name="player2cardlist"
                                     ItemsSource="{Binding Path=Player2Container.PlayerCards}" 
                                     SelectedItem="{Binding Path=Player2Container.SelectedCardPlayer}"
@@ -130,7 +130,7 @@
                     </controls:CardItemsView>
                 </Grid>
                 <!-- High Score list -->
-                <Grid Grid.Row="0" Grid.Column="2" BackgroundColor="Pink">
+                <Grid Grid.Row="0" Grid.Column="2" >
                     <CollectionView ItemsSource="{Binding Players}" SelectionMode="None" HorizontalOptions="End">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
@@ -143,7 +143,7 @@
                     </CollectionView>
                 </Grid>
 
-                <Grid Grid.Row="1" Grid.Column="0" BackgroundColor="Crimson">
+                <Grid Grid.Row="1" Grid.Column="0" >
                     <controls:CardItemsView x:Name="player3cardlist"
                                         
                                         ItemsSource="{Binding Path=Player3Container.PlayerCards}" 
@@ -159,7 +159,7 @@
                         </controls:CardItemsView.ItemTemplate>
                     </controls:CardItemsView>
                 </Grid>
-                <Grid Grid.Row="1" Grid.Column="1" BackgroundColor="BlanchedAlmond" 
+                <Grid Grid.Row="1" Grid.Column="1"
                   ColumnDefinitions="*,*,*,*,*" RowDefinitions="Auto,Auto">
 
                     <controls:CardView Card="{Binding Path=CurrentCard}" 
@@ -238,10 +238,10 @@
                 </controls:CardView>-->
 
                 </Grid>
-                <Grid Grid.Row="1" Grid.Column="2" BackgroundColor="Coral">
+                <Grid Grid.Row="1" Grid.Column="2" >
 
                 </Grid>
-                <Grid Grid.Row="2" Grid.ColumnSpan="3" BackgroundColor="Bisque">
+                <Grid Grid.Row="2" Grid.ColumnSpan="3">
                     <controls:CardItemsView x:Name="cardList"
                                     ItemsSource="{Binding Path=Player1Container.PlayerCards}" 
                                     SelectedItem="{Binding Path=Player1Container.SelectedCardPlayer}"

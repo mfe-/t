@@ -184,44 +184,45 @@
                     <Label Style="{StaticResource LabelMiddle}"
                            x:Name="labelmiddle"
                            Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
-                           FontSize="5"
                            TextColor="{Binding Path=BackgroundColor, Source={x:Reference PART_Grid}}"
                            HorizontalOptions="Center">
                         <!--<VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup>
-                                <VisualState x:Name="Small">
-                                    <VisualState.StateTriggers>
-                                        <AdaptiveTrigger MinWindowHeight="0" />
-                                    </VisualState.StateTriggers>
-                                    <VisualState.Setters>
-                                        <Setter Property="Label.FontSize" Value="40" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Middle">
-                                    <VisualState.StateTriggers>
-                                        <AdaptiveTrigger MinWindowHeight="400"  />
-                                    </VisualState.StateTriggers>
-                                    <VisualState.Setters>
-                                        <Setter Property="Label.FontSize" Value="60" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Big">
-                                    <VisualState.StateTriggers>
-                                        <AdaptiveTrigger MinWindowHeight="500"  />
-                                    </VisualState.StateTriggers>
-                                    <VisualState.Setters>
-                                        <Setter Property="Label.FontSize" Value="80" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="Bigger">
-                                    <VisualState.StateTriggers>
-                                        <AdaptiveTrigger MinWindowHeight="600"  />
-                                    </VisualState.StateTriggers>
-                                    <VisualState.Setters>
-                                        <Setter Property="Label.FontSize" Value="100" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
+                            <VisualStateGroupList>
+                                <VisualStateGroup>
+                                    <VisualState x:Name="Small">
+                                        <VisualState.StateTriggers>
+                                            <AdaptiveTrigger MinWindowHeight="0" MinWindowWidth="0" />
+                                        </VisualState.StateTriggers>
+                                        <VisualState.Setters>
+                                            <Setter Property="Label.FontSize" Value="40" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Middle">
+                                        <VisualState.StateTriggers>
+                                            <AdaptiveTrigger MinWindowHeight="400"  />
+                                        </VisualState.StateTriggers>
+                                        <VisualState.Setters>
+                                            <Setter Property="Label.FontSize" Value="60" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Big">
+                                        <VisualState.StateTriggers>
+                                            <AdaptiveTrigger MinWindowHeight="500"  />
+                                        </VisualState.StateTriggers>
+                                        <VisualState.Setters>
+                                            <Setter Property="Label.FontSize" Value="80" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Bigger">
+                                        <VisualState.StateTriggers>
+                                            <AdaptiveTrigger MinWindowHeight="600"  />
+                                        </VisualState.StateTriggers>
+                                        <VisualState.Setters>
+                                            <Setter Property="Label.FontSize" Value="100" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateGroupList>
                         </VisualStateManager.VisualStateGroups>-->
                     </Label>
                 </Frame>

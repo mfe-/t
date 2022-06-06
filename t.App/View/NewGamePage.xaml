@@ -31,13 +31,13 @@
                        Keyboard="Text"
                        Grid.Column="1" Grid.Row="0" />
 
-                <Label Text="Your player name" Grid.Column="0" Grid.Row="1" />
+                <Label Text="Player name" Grid.Column="0" Grid.Row="1" />
                 <Entry Text="{Binding Path=PlayerName}" 
                        MaxLength="10"
                        Keyboard="Text"
                        Grid.Column="1" Grid.Row="1" />
 
-                <Label Text="Game Rounds to play" Grid.Column="0" Grid.Row="2" />
+                <Label Text="Game Rounds" Grid.Column="0" Grid.Row="2" />
                 <Entry Text="{Binding Path=GameRounds}" 
                        Keyboard="Numeric"
                        MaxLength="2"

@@ -14,9 +14,14 @@ internal class JoinGamePageViewModel : BaseViewModel
     private readonly NavigationService navigationService;
     private readonly AppConfig appConfig;
     private readonly GameService gameService;
+    private readonly DialogService dialogService;
     private readonly CancellationTokenSource cancellationTokenSource;
     private readonly SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
-    public JoinGamePageViewModel(ILogger<JoinGamePageViewModel> logger, NavigationService navigationService, AppConfig appConfig, GameService gameService) : base(logger)
+    public JoinGamePageViewModel(ILogger<JoinGamePageViewModel> logger,
+        NavigationService navigationService,
+        AppConfig appConfig,
+        GameService gameService,
+        DialogService dialogService) : base(logger)
     {
         JoinGameCommand = new Command(async () => await OnJoinGameAsync());
         AddPublicGameToListCommand = new Command(OnAddPublicGameToList);
@@ -25,6 +30,7 @@ internal class JoinGamePageViewModel : BaseViewModel
         this.navigationService = navigationService;
         this.appConfig = appConfig;
         this.gameService = gameService;
+        this.dialogService = dialogService;
         this.gameService.Current = null;
         _PublicGames = new();
         cancellationTokenSource = new CancellationTokenSource();
@@ -124,10 +130,14 @@ internal class JoinGamePageViewModel : BaseViewModel
     public ICommand JoinGameCommand { get; }
     private async Task OnJoinGameAsync()
     {
-        if (SelectedGame != null)
+        if (SelectedGame == null)
         {
-            gameService.Current = new Models.GameConfig(SelectedGame.GameName, PlayerName, SelectedGame.GameRounds, SelectedGame.RequiredAmountOfPlayers, SelectedGame.ServerIpAddress.ToString(), SelectedGame.ServerPort, 0, new CancellationTokenSource());
-            await navigationService.NavigateToAsync(typeof(GamePageViewModel), gameService.Current);
+            await dialogService.DisplayAsync("Select Game", "Please select the game to join", "ok");
+            return;
         }
+
+        gameService.Current = new Models.GameConfig(SelectedGame.GameName, PlayerName, SelectedGame.GameRounds, SelectedGame.RequiredAmountOfPlayers, SelectedGame.ServerIpAddress.ToString(), SelectedGame.ServerPort, 0, new CancellationTokenSource());
+        await navigationService.NavigateToAsync(typeof(GamePageViewModel), gameService.Current);
+
     }
 }

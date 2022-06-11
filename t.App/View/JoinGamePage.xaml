@@ -42,11 +42,12 @@
             </ListView>
 
             <ActivityIndicator IsRunning="true" HorizontalOptions="End" VerticalOptions="End" />
-            <Button Text="Add Game" IsVisible="{Binding Path=AddManuallPublicGame,Converter={StaticResource InvertedBoolConverter}}"
-                    Command="{Binding AddPublicGameCommand}" />
             <Button Text="Join Game" VerticalOptions="End"
                         Command="{Binding Path=JoinGameCommand}"
-                        Grid.Column="1" Grid.Row="4"></Button>
+                        Grid.Column="1" Grid.Row="3"></Button>
+            <Button Text="Add Game" IsVisible="{Binding Path=AddManuallPublicGame,Converter={StaticResource InvertedBoolConverter}}"
+                    Command="{Binding AddPublicGameCommand}"
+                    Grid.Column="1" Grid.Row="4" />
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

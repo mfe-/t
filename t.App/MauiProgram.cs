@@ -62,6 +62,7 @@ public static class MauiProgram
             provider.GetRequiredService<NavigationPage>()));
 
         builder.Services.AddSingleton<GameService>();
+        builder.Services.AddTransient<DialogService>();
 
         return builder.Build();
     }

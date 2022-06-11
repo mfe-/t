@@ -205,4 +205,16 @@ public class CardItemsView : StackLayout
         }
     }
 
+
+    public static readonly BindableProperty ItemsLayoutProperty = BindableProperty.Create(nameof(ItemsLayout), typeof(StackOrientation), typeof(CardItemsView), StackOrientation.Horizontal);
+
+    public StackOrientation ItemsLayout
+    {
+        get { return (StackOrientation)GetValue(ItemsLayoutProperty); }
+        set { SetValue(ItemsLayoutProperty, value); }
+    }
+
+
+
+
 }

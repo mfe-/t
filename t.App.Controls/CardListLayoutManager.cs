@@ -15,7 +15,8 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
     {
         this.stackLayout = stackLayout;
     }
-    public double Spacing { get; private set; }
+    public double SpacingWidth { get; private set; }
+    public double SpacingHeight { get; private set; }
     public override Size Measure(double widthConstraint, double heightConstraint)
     {
         var padding = stackLayout.Padding;
@@ -24,15 +25,13 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
         heightConstraint -= padding.VerticalThickness;
 
         double totalWidth = 0;
-        double maxWidth = 0;
+        double maxControlWidth = 0;
+        double maxControlHeight = 0;
         double totalHeight = 0;
 
         var totalAmountItems = stackLayout.Count;
         CardView? cardView = null;
-        //if(stackLayout is CardItemsView views)
-        //{
-        //    if (views.Count == 2) Debugger.Break();
-        //}
+
         foreach (var child in stackLayout)
         {
             if (cardView == null && child is CardView card)
@@ -46,9 +45,17 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
                 {
                     //call measure on the control itself to get the size of it
                     var current = child.Measure(widthConstraint, heightConstraint);
-                    maxWidth = Math.Max(current.Width, maxWidth);
+                    maxControlWidth = Math.Max(current.Width, maxControlWidth);
+                    maxControlHeight = Math.Max(current.Height, maxControlHeight);
                     totalWidth += current.Width;
-                    totalHeight = Math.Max(current.Height, totalHeight);
+                    if (!AreCardsVertical)
+                    {
+                        totalHeight = Math.Max(current.Height, totalHeight);
+                    }
+                    else
+                    {
+                        totalHeight += current.Height;
+                    }
                 }
             }
             else
@@ -61,17 +68,37 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
         //the overlapping is stored in Spacing
         if (widthConstraint < totalWidth)
         {
-            var a = totalAmountItems * maxWidth;
-            var remaining = a - widthConstraint;
-            Spacing = (remaining / totalAmountItems);
+            var totalWidthofControls = totalAmountItems * maxControlWidth;
+            var remaining = totalWidthofControls - widthConstraint;
+            SpacingWidth = (remaining / totalAmountItems);
         }
         else
         {
-            Spacing = 0;
+            SpacingWidth = 0;
+        }
+        //the height spacing is for us only relevant when the control is roated
+        if (AreCardsVertical && heightConstraint < totalHeight)
+        {
+            var totalHeightofControls = totalAmountItems * maxControlWidth;
+            var remaining = totalHeightofControls - heightConstraint;
+            SpacingHeight = (remaining / totalAmountItems);
+            totalHeight = heightConstraint;
+        }
+        else
+        {
+            SpacingHeight = 0;
         }
 
-        return new Size(totalWidth + padding.HorizontalThickness,
-            totalHeight + padding.VerticalThickness + cardView?.TranslationYOffset ?? 0);
+        if (!AreCardsVertical)
+        {
+            return new Size(totalWidth + padding.HorizontalThickness,
+                totalHeight + padding.VerticalThickness + cardView?.TranslationYOffset ?? 0);
+        }
+        else
+        {
+            return new Size(maxControlHeight + padding.HorizontalThickness,
+                totalHeight + padding.VerticalThickness + cardView?.TranslationYOffset ?? 0);
+        }
     }
     public override Size ArrangeChildren(Rect bounds)
     {
@@ -91,13 +118,25 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
             }
             if (child is View view)
             {
-                if(view.IsVisible)
+                if (view.IsVisible)
                 {
-                    var width = child.DesiredSize.Width;
-                    var height = child.DesiredSize.Height;
-                    child.Arrange(new Rect(x, y, width, height));
-                    totalWidth = Math.Max(totalHeight, y + height);
-                    x += (width - Spacing);
+                    if (!AreCardsVertical)
+                    {
+                        var width = child.DesiredSize.Width;
+                        var height = child.DesiredSize.Height;
+                        child.Arrange(new Rect(x, y, width, height));
+                        totalWidth = Math.Max(totalWidth, x + width);
+                        x += (width - SpacingWidth);
+                    }
+                    else
+                    {
+                        var width = child.DesiredSize.Height;
+                        var height = child.DesiredSize.Width;
+                        child.Arrange(new Rect(x, y, width, height));
+                        y += (height - SpacingHeight);
+                        totalHeight = Math.Max(totalHeight, y + height);
+                        totalWidth = width;
+                    }
                 }
             }
             else
@@ -105,8 +144,18 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
                 throw new NotImplementedException($"{nameof(IView)} not implemented.");
             }
         }
-
         return new Size(totalWidth + padding.HorizontalThickness,
             totalHeight + padding.VerticalThickness + cardView?.TranslationYOffset ?? 0);
+    }
+    public bool AreCardsVertical
+    {
+        get
+        {
+            if (stackLayout is CardItemsView cardItemsView)
+            {
+                return cardItemsView.ItemsLayout == StackOrientation.Vertical;
+            }
+            return false;
+        }
     }
 }

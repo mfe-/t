@@ -167,12 +167,6 @@ namespace t.App.View
             set { SetProperty(ref _CurrentCard, value, nameof(CurrentCard)); }
         }
 
-        private ObservableCollection<Card> _PlayerCards = new();
-        public ObservableCollection<Card> PlayerCards
-        {
-            get { return _PlayerCards; }
-            set { SetProperty(ref _PlayerCards, value, nameof(PlayerCards)); }
-        }
         private bool? _StartAnimationNextRound;
         public bool? StartAnimationNextRound
         {

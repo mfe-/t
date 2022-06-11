@@ -31,10 +31,14 @@ namespace t.App.View
 
             Player1Container = new(new Player("martin", Guid.Empty));
             Player2Container = new(new Player("stefan", Guid.Empty));
+            Player3Container = new(new Player("katharina", Guid.Empty));
+            Player4Container = new(new Player("simon", Guid.Empty));
 
             _Players = new();
             Players.Add(Player1Container);
             Players.Add(Player2Container);
+            Players.Add(Player3Container);
+            Players.Add(Player4Container);
 
             foreach (var container in Players)
             {
@@ -52,6 +56,8 @@ namespace t.App.View
                     new Card(10)
                 };
             }
+
+            Player1Container.SelectedCardPlayer = Player1Container.PlayerCards[0];
 
             this.navigationService = navigationService;
         }

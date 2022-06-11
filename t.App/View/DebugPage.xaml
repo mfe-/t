@@ -140,21 +140,32 @@
                 </CollectionView>
             </Grid>
 
-            <Grid Grid.Row="1" Grid.Column="0" BackgroundColor="Crimson">
+            <Grid Grid.Row="1" Grid.RowSpan="0"  Grid.Column="0" BackgroundColor="Crimson">
+
                 <controls:CardItemsView x:Name="player3cardlist"
-                                        
-                                        ItemsSource="{Binding Path=Player3Container.PlayerCards}" 
-                                        SelectedItem="{Binding Path=Player3Container.SelectedCardPlayer}"
-                                        HorizontalOptions="Center" VerticalOptions="Center"
-                                        IsEnabled="False">
+                            ItemsSource="{Binding Path=Player3Container.PlayerCards}" 
+                            SelectedItem="{Binding Path=Player3Container.SelectedCardPlayer}"
+                            HorizontalOptions="Center" VerticalOptions="Center"
+                            SelectionChangedCommand="{Binding Path=PickCardCommand}"
+                            IsEnabled="False"
+                            ItemsLayout="Vertical">
                     <controls:CardItemsView.ItemTemplate>
                         <DataTemplate>
                             <ViewCell>
-                                <Label Text="asdf0 " />
+                                <controls:CardView Card="{Binding}"
+                                                   Style="{StaticResource cardView}"
+                                                   ControlTemplate="{StaticResource CardViewBackControlTemplate}"
+                                                   Rotation="90"
+                       >
+                                </controls:CardView>
+
+
                             </ViewCell>
                         </DataTemplate>
                     </controls:CardItemsView.ItemTemplate>
                 </controls:CardItemsView>
+
+
             </Grid>
             <Grid Grid.Row="1" Grid.Column="1" BackgroundColor="BlanchedAlmond" 
                   ColumnDefinitions="*,*,*,*,*" RowDefinitions="Auto,Auto">
@@ -227,7 +238,28 @@
 
             </Grid>
             <Grid Grid.Row="1" Grid.Column="2" BackgroundColor="Coral">
+                <controls:CardItemsView x:Name="player4cardlist"
+                            ItemsSource="{Binding Path=Player4Container.PlayerCards}" 
+                            SelectedItem="{Binding Path=Player4Container.SelectedCardPlayer}"
+                            HorizontalOptions="Center" VerticalOptions="Center"
+                            IsEnabled="False"
+                            ItemsLayout="Vertical">
+                    <controls:CardItemsView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <controls:CardView Card="{Binding}"
+                                                   Style="{StaticResource cardView}"
+                                                   ControlTemplate="{StaticResource CardViewBackControlTemplate}"
+                                                   Rotation="90"
+                       >
+                                </controls:CardView>
 
+
+                            </ViewCell>
+                        </DataTemplate>
+                    </controls:CardItemsView.ItemTemplate>
+                </controls:CardItemsView>
+                
             </Grid>
             <Grid Grid.Row="2" Grid.ColumnSpan="3" BackgroundColor="Bisque">
                 <controls:CardItemsView x:Name="cardList"

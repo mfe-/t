@@ -6,15 +6,16 @@
              BackgroundColor="{DynamicResource BackgroundColor}">
 
     <ScrollView>
-        <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*"
-              Padding="{OnPlatform iOS='30,60,30,30', Default='30'}" BackgroundColor="{DynamicResource BackgroundColor}">
+        <StackLayout Orientation="Vertical"
+                     BackgroundColor="{DynamicResource BackgroundColor}">
 
             <Image
                 Grid.Row="0"
                 Source="dadpan_logo.png"
                 SemanticProperties.Description="Cute dot net bot waving hi to you!"
                 HeightRequest="40"
-                HorizontalOptions="Center" />
+                HorizontalOptions="Center"
+                Margin="0,0,0,20"/>
             
             <Button 
                 Text="New Game"
@@ -66,7 +67,7 @@
                 Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.DebugPageViewModel"/>
 
 
-        </Grid>
+        </StackLayout>
     </ScrollView>
     <!--<Grid>
 

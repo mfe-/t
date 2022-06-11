@@ -21,7 +21,7 @@
 
             <Color x:Key="PrimaryColor">#CE9ED2</Color>
             <Color x:Key="SecondaryColor">#B9E3A5</Color>
-            <Color x:Key="DanpanColor">#FFC581</Color>
+            <Color x:Key="DanpanColor">#FF7E8E</Color>
             <Color x:Key="ButtonBackgroundColor">#FFFFFA</Color>
 
             <Style TargetType="Button">

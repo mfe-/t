@@ -112,7 +112,7 @@ namespace t.App.View
         {
             void AddJoinedPlayer(t.lib.Game.Player player)
             {
-                var currentPlayer = Game.Players.FirstOrDefault(a => a.PlayerId == gameSocketClient?.Player?.PlayerId);
+                var currentPlayer = Game.Players.ToArray().FirstOrDefault(a => a.PlayerId == gameSocketClient?.Player?.PlayerId);
 
                 if (!Players.Any(a => Mapper.ToPlayer(player).PlayerId == a.Player.PlayerId))
                 {

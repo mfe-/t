@@ -18,7 +18,7 @@ namespace t.App.View
             NavigateCommand = new Command<string>(async (s) => await NavigateAsync(s));
             ExitCommand = new Command(Exit);
         }
-        public String Title { get; set; } = "t.App";
+        public String Title { get; set; } = "";
 
         public ICommand NavigateCommand { get; }
 

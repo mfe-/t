@@ -6,14 +6,19 @@
              BackgroundColor="{DynamicResource BackgroundColor}">
 
     <ScrollView>
-        <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*"
-              Padding="{OnPlatform iOS='30,60,30,30', Default='30'}">
+        <Grid RowSpacing="25" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*"
+              Padding="{OnPlatform iOS='30,60,30,30', Default='30'}" BackgroundColor="{DynamicResource BackgroundColor}">
 
-            <!--<Image Source="dotnet_bot.svg" HeightRequest="200" />-->
+            <Image
+                Grid.Row="0"
+                Source="dadpan_logo.png"
+                SemanticProperties.Description="Cute dot net bot waving hi to you!"
+                HeightRequest="40"
+                HorizontalOptions="Center" />
             
             <Button 
                 Text="New Game"
-                Grid.Row="0"
+                Grid.Row="1"
                 SemanticProperties.HeadingLevel="Level1"
                 FontSize="32"
                 HorizontalOptions="Center"
@@ -22,7 +27,7 @@
 
             <Button 
                 Text="Join Game"
-                Grid.Row="1"
+                Grid.Row="2"
                 SemanticProperties.HeadingLevel="Level1"
                 SemanticProperties.Description="Join an lan Game"
                 FontSize="32"
@@ -32,7 +37,7 @@
 
             <Button 
                 Text="Settings"
-                Grid.Row="2"
+                Grid.Row="3"
                 SemanticProperties.HeadingLevel="Level1"
                 SemanticProperties.Description="Settings"
                 FontSize="32"
@@ -46,7 +51,7 @@
             <Button 
                 Text="Exit"
                 FontSize="32"
-                Grid.Row="3"
+                Grid.Row="4"
                 SemanticProperties.Hint="Exit the app"
                 HorizontalOptions="Center"
                 TextColor="#A2D6E2"
@@ -55,7 +60,7 @@
             <Button 
                 Text="Debug page"
                 FontSize="32"
-                Grid.Row="4"
+                Grid.Row="5"
                 SemanticProperties.Hint="Debug test page"
                 HorizontalOptions="Center"
                 Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.DebugPageViewModel"/>

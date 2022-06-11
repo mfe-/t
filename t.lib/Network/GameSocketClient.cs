@@ -315,10 +315,10 @@ namespace t.lib.Network
         public static async Task<IEnumerable<PublicGame>> FindLanGamesAsync(int udpPort, CancellationToken cancellationToken)
         {
             //Client uses as receive udp client
-            using UdpClient udpClient = new UdpClient(udpPort);
-            List<PublicGame> publicGames = new List<PublicGame>();
+            var publicGames = new List<PublicGame>();
             try
             {
+                using UdpClient udpClient = new UdpClient(udpPort);
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var receivedResults = await udpClient.ReceiveAsync(cancellationToken);

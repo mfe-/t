@@ -3,8 +3,7 @@
              xmlns:controls="clr-namespace:t.App.Controls;assembly=t.App.Controls"
              xmlns:windows="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
              xmlns:local="clr-namespace:t.App"
-             x:Class="t.App.App"
-             windows:Application.ImageDirectory="Assets">
+             x:Class="t.App.App">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -22,6 +21,7 @@
 
             <Color x:Key="PrimaryColor">#CE9ED2</Color>
             <Color x:Key="SecondaryColor">#B9E3A5</Color>
+            <Color x:Key="DanpanColor">#FFC581</Color>
             <Color x:Key="ButtonBackgroundColor">#FFFFFA</Color>
 
             <Style TargetType="Button">

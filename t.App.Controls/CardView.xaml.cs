@@ -3,10 +3,8 @@ using t.lib.Game;
 
 namespace t.App.Controls;
 
-
 public partial class CardView : ContentView
 {
-
     public CardView()
     {
         PropertyChanged += CardView_PropertyChanged;
@@ -14,7 +12,7 @@ public partial class CardView : ContentView
 
     private void CardView_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if(e.PropertyName == nameof(Bounds))
+        if (e.PropertyName == nameof(Bounds))
         {
             ResolveControlTemplate();
         }
@@ -73,54 +71,92 @@ public partial class CardView : ContentView
         get { return (double)GetValue(TranslationYOffsetProperty); }
         set { SetValue(TranslationYOffsetProperty, value); }
     }
-
-
-    //https://www.dotnetforall.com/understanding-measureoverride-and-arrangeoverride/
-    //protected override Size ArrangeOverride(Rect bounds)
-    //{
-    //    var size = base.ArrangeOverride(bounds);
-
-    //    //we only need 1/3 of the width
-    //    var newSize = new Size(size.Height * (0.3d), size.Height);
-
-    //    // Get the collection of children
-    //    var mychildren = Children;
-
-    //    // Get total number of children
-    //    int count = mychildren.Count;
-
-    //    // Arrange children
-    //    if (count > 1) throw new NotSupportedException();
-
-    //    var child = mychildren.First();
-    //    if (child is VisualElement visual)
-    //    {
-    //        visual.Arrange(new Rect(0,0,newSize.Width,newSize.Height));
-    //        //if(visual is ContentView contentView)
-    //        //{
-    //        //    contentView.DesiredSize
-    //        //    contentView.Arrange(new Rect(0, 0, newSize.Width, newSize.Height));
-    //        //}
-    //    }
-
-    //    // Return final size of the panel
-    //    return newSize;
-    //}
-    protected override void OnApplyTemplate()
+    /// <summary>
+    /// Calculates how much size the control will require
+    /// </summary>
+    /// <param name="widthConstraint">the available width for the control</param>
+    /// <param name="heightConstraint">the available height for the control</param>
+    /// <returns></returns>
+    /// <remarks>https://www.dotnetforall.com/understanding-measureoverride-and-arrangeoverride/</remarks>
+    protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
     {
-        base.OnApplyTemplate();
+        var size = Size.Zero;
+        if (WidthRequest == -1 && HeightRequest == -1)
+        {
+            size = CalculateCardSize(
+                widthConstraint == 0 ? double.PositiveInfinity : widthConstraint,
+                heightConstraint == 0 ? double.PositiveInfinity : heightConstraint);
+        }
+        else
+        {
+            size = new Size(WidthRequest,HeightRequest);
+        }
+        this.DesiredSize = size;
+        base.MeasureOverride(size.Width, size.Height);
 
-        //VisualStateManager.GoToState .GoToElementState(rect, "MouseEnter", true);
+        return size;
     }
-    
+    /// <summary>
+    /// Arrange the control
+    /// </summary>
+    /// <param name="bounds"></param>
+    /// <returns></returns>
+    protected override Size ArrangeOverride(Rect bounds)
+    {
+        double width;
+        double height;
+        //since we set the DesizredSize in the MeasureOverride method,
+        //we use the lower value because its propably from our previous computing using CalculateCardSize
+        if (this.DesiredSize.Width < bounds.Width)
+        {
+            width = this.DesiredSize.Width;
+        }
+        else
+        {
+            width = bounds.Width;
+        }
+        if(this.DesiredSize.Height < bounds.Height)
+        {
+            height = DesiredSize.Height;
+        }
+        else
+        {
+            height = bounds.Height;
+        }
 
-    protected override void OnBindingContextChanged()
-    {
-        base.OnBindingContextChanged();
+        this.DesiredSize = new Size(width, height);
+
+        var rect = new Rect(bounds.X, bounds.Y, width, height);
+
+        base.ArrangeOverride(rect);
+        return new Size(width, height);
     }
-    protected override void OnSizeAllocated(double width, double height)
+    /// <summary>
+    /// calculates the size of the control
+    /// </summary>
+    /// <param name="widthAvailable"></param>
+    /// <param name="heightAvailable"></param>
+    /// <returns></returns>
+    private Size CalculateCardSize(double widthAvailable, double heightAvailable)
     {
-        base.OnSizeAllocated(width, height);
+        const double defaultWidth = 55;
+        const double defaultHeight = 85;
+        double width = 0;
+        double height = 0;
+
+        if (widthAvailable > heightAvailable)
+        {
+            var ratioh = defaultHeight / defaultWidth;
+            width = heightAvailable / ratioh;
+            height = heightAvailable;
+        }
+        else
+        {
+            var ratioh = defaultHeight / defaultWidth;
+            height = widthAvailable;
+            width = widthAvailable / ratioh;
+        }
+        return new Size(width, height);
     }
 
 }

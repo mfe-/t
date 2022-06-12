@@ -19,8 +19,8 @@
         <converter:InvertedBoolConverter x:Key="InvertedBoolConverter" />
 
         <Style x:Key="cardView" TargetType="{x:Type controls:CardView}">
-            <Setter Property="WidthRequest" Value="{StaticResource WidthCard}" />
-            <Setter Property="HeightRequest" Value="{StaticResource HeightCard}" />
+            <!--<Setter Property="WidthRequest" Value="{StaticResource WidthCard}" />
+            <Setter Property="HeightRequest" Value="{StaticResource HeightCard}" />-->
         </Style>
 
 

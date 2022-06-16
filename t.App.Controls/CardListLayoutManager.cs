@@ -65,6 +65,8 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
             var totalWidthofControls = totalAmountItems * maxControlWidth;
             var remaining = totalWidthofControls - widthConstraint;
             SpacingWidth = (remaining / totalAmountItems);
+            //even if we require more space we have to use the contraint width
+            totalWidth = widthConstraint;
         }
         else
         {
@@ -76,6 +78,7 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
             var totalHeightofControls = totalAmountItems * maxControlWidth;
             var remaining = totalHeightofControls - heightConstraint;
             SpacingHeight = (remaining / totalAmountItems);
+            //even if we require more space we have to use the contraint width
             totalHeight = heightConstraint;
         }
         else

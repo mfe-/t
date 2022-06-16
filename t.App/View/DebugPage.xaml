@@ -5,7 +5,7 @@
              xmlns:behaviour="clr-namespace:t.App.Controls.Behaviour;assembly=t.App.Controls"
              xmlns:animations="clr-namespace:t.App.Controls.Animations;assembly=t.App.Controls"
              xmlns:converter="clr-namespace:t.App.Controls.Converter;assembly=t.App.Controls"
-             BackgroundColor="{DynamicResource BackgroundColor}"
+             Style="{StaticResource PageStyle}"
              x:Class="t.App.View.DebugPage"
              Title="DebugPage"
              x:Name="debugpage">
@@ -175,7 +175,7 @@
                                    WidthRequest="100" 
                                    HeightRequest="170"
                                    Grid.Column="0"/>
-                
+
                 <controls:CardView Card="{Binding Path=Player1Container.SelectedCardPlayer}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"
@@ -259,7 +259,7 @@
                         </DataTemplate>
                     </controls:CardItemsView.ItemTemplate>
                 </controls:CardItemsView>
-                
+
             </Grid>
             <Grid Grid.Row="2" Grid.ColumnSpan="3" BackgroundColor="Bisque">
                 <controls:CardItemsView x:Name="cardList"

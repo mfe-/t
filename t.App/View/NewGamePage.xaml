@@ -3,14 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:t.App.View"
              x:Class="t.App.View.NewGamePage"
-             Title="{Binding Path=Title}"
-             BackgroundColor="{DynamicResource BackgroundColor}">
+             Style="{StaticResource PageStyle}"
+             Title="{Binding Path=Title}">
     <ContentPage.Content>
         <Grid>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="5*" />
-                <ColumnDefinition Width="5*" />
-                <ColumnDefinition Width="5*" />
+                <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="1" Margin="15">
                 <Grid.ColumnDefinitions>

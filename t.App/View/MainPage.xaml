@@ -3,7 +3,8 @@
              xmlns:controls="clr-namespace:t.App.Controls;assembly=t.App.Controls"
              x:Class="t.App.View.MainPage"
              Title="{Binding Path=Title}"
-             BackgroundColor="{DynamicResource BackgroundColor}">
+             Style="{StaticResource PageStyle}"
+             NavigationPage.HasNavigationBar="false">
 
     <ScrollView>
         <StackLayout Orientation="Vertical"
@@ -15,8 +16,8 @@
                 SemanticProperties.Description="Cute dot net bot waving hi to you!"
                 HeightRequest="40"
                 HorizontalOptions="Center"
-                Margin="0,0,0,20"/>
-            
+                Margin="0,40,0,20"/>
+
             <Button 
                 Text="New Game"
                 Grid.Row="1"
@@ -64,16 +65,10 @@
                 Grid.Row="5"
                 SemanticProperties.Hint="Debug test page"
                 HorizontalOptions="Center"
-                Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.DebugPageViewModel"/>
+                Command="{Binding Path=NavigateCommand}" 
+                CommandParameter="{OnPlatform Default=t.App.View.DebugPageViewModel, Android=t.App.View.DebugPageMobileViewModel}"/>
 
 
         </StackLayout>
     </ScrollView>
-    <!--<Grid>
-
-        <ContentView />
-        <controls:CardView Card="{Binding Path=Card}" WidthRequest="120" HeightRequest="200">
-
-        </controls:CardView>
-    </Grid>-->
 </ContentPage>

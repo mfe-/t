@@ -16,7 +16,7 @@
             <Style TargetType="Entry">
                 <Setter Property="FontFamily" Value="NunitoSansRegular" />
             </Style>
-
+            
             <Color x:Key="BackgroundColor">#F3EFE5</Color>
 
             <Color x:Key="PrimaryColor">#CE9ED2</Color>
@@ -31,6 +31,16 @@
                 <Setter Property="Padding" Value="14,10" />
                 <Setter Property="CornerRadius" Value="30" />
                 <Setter Property="BorderWidth" Value="0" />
+            </Style>
+
+            <Style TargetType="{x:Type NavigationPage}">
+                <Setter Property="BarBackgroundColor" Value="{DynamicResource BackgroundColor}"/>
+                <Setter Property="IconColor" Value="Black" />
+            </Style>
+
+            <Style x:Key="PageStyle" TargetType="{x:Type Page}">
+                <Setter Property="Padding" Value="5" />
+                <Setter Property="BackgroundColor" Value="{DynamicResource BackgroundColor}" />
             </Style>
 
         </ResourceDictionary>

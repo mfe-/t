@@ -16,7 +16,7 @@ public class NewGamePageViewModel : BaseViewModel
         this.navigationService = navigationService;
         this.gameService = gameService;
     }
-    public string Title { get; set; } = "Create a new game";
+    public string Title { get; set; } = "Create new game";
 
     public ICommand StartGameCommand { get; }
 

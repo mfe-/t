@@ -55,6 +55,9 @@ public static class MauiProgram
         builder.Services.AddTransient<DebugPage>();
         builder.Services.AddTransient<DebugPageViewModel>();
 
+        builder.Services.AddTransient<DebugPageMobile>();
+        builder.Services.AddSingleton<DebugPageMobileViewModel>();
+
         builder.Services.AddSingleton(
             provider => new NavigationService(
             provider.GetRequiredService<IServiceProvider>(),

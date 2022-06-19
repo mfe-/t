@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace t.App.Controls;
+﻿namespace t.App.Controls;
 
 public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
 {
@@ -31,7 +24,7 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
 
         var totalAmountItems = stackLayout.Count;
         CardView? cardView = null;
-
+        //calculate the total width and height which will be required for the control
         foreach (var child in stackLayout)
         {
             if (cardView == null && child is CardView card)
@@ -64,6 +57,7 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
             }
 
         }
+        //calculate spacing between cards
         //if we don't have enough space left we need to overlap the cards
         //the overlapping is stored in Spacing
         if (widthConstraint < totalWidth)
@@ -71,6 +65,8 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
             var totalWidthofControls = totalAmountItems * maxControlWidth;
             var remaining = totalWidthofControls - widthConstraint;
             SpacingWidth = (remaining / totalAmountItems);
+            //even if we require more space we have to use the contraint width
+            totalWidth = widthConstraint;
         }
         else
         {
@@ -82,6 +78,7 @@ public class CardListLayoutManager : Microsoft.Maui.Layouts.StackLayoutManager
             var totalHeightofControls = totalAmountItems * maxControlWidth;
             var remaining = totalHeightofControls - heightConstraint;
             SpacingHeight = (remaining / totalAmountItems);
+            //even if we require more space we have to use the contraint width
             totalHeight = heightConstraint;
         }
         else

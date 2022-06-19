@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:t.App.View"
@@ -9,7 +9,7 @@
              xmlns:converter="clr-namespace:t.App.Controls.Converter;assembly=t.App.Controls"
              Style="{StaticResource PageStyle}"
              Title="{Binding Path=GameClientViewModel.Title}"
-             x:Class="t.App.View.GamePage">
+             x:Class="t.App.View.GameMobilePage">
     <ContentPage.Resources>
         <x:Double x:Key="WidthCard">90</x:Double>
         <x:Double x:Key="HeightCard">150</x:Double>
@@ -134,7 +134,7 @@
                             <DataTemplate>
                                 <Grid ColumnDefinitions="Auto,Auto" HorizontalOptions="End">
                                     <Label Margin="1" Grid.Column="0" Text="{Binding Player.Name}"  />
-                                    <Label Margin="1" Grid.Column="1" Text="{Binding Player.Points,StringFormat=' Points {0}'}" />
+                                    <Label Margin="1" Grid.Column="1" Text="{Binding Player.Points,StringFormat=' {0}'}" />
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -142,7 +142,7 @@
                 </Grid>
 
                 <Grid Grid.Row="1" Grid.Column="0" >
-                    <controls:CardItemsView x:Name="player3cardlist"
+                    <!--<controls:CardItemsView x:Name="player3cardlist"
                                         
                                         ItemsSource="{Binding Path=Player3Container.PlayerCards}" 
                                         SelectedItem="{Binding Path=Player3Container.SelectedCardPlayer}"
@@ -155,10 +155,10 @@
                                 </ViewCell>
                             </DataTemplate>
                         </controls:CardItemsView.ItemTemplate>
-                    </controls:CardItemsView>
+                    </controls:CardItemsView>-->
                 </Grid>
-                <Grid Grid.Row="1" Grid.Column="1"
-                  ColumnDefinitions="*,*,*,*,*" RowDefinitions="Auto,Auto">
+                <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                  ColumnDefinitions="2*,2*,*,*,*" RowDefinitions="*,Auto">
 
                     <controls:CardView Card="{Binding Path=CurrentCard}" 
                                    Margin="5,0,5,0"

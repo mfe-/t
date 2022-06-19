@@ -123,6 +123,7 @@ public class CardItemsView : StackLayout
 
     private async Task CardView_TappedEvent(object? sender, TappedEventArgs e)
     {
+        if (!IsEnabled) return;
         if (e.DoubleTapped)
         {
             TapGestureRecognizer_Tapped(sender, e);

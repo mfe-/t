@@ -10,6 +10,14 @@ public partial class DebugPageMobile : ContentPage
 
     private void DebugPageMobile_Loaded(object? sender, EventArgs e)
     {
-        label.Text = $"grid.w {grid1.DesiredSize} grid.h {grid1.Height} ";
+        var tapGestureRecognizer = new TapGestureRecognizer();
+        tapGestureRecognizer.Parent = card;
+        tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped; ;
+        card.GestureRecognizers.Add(tapGestureRecognizer);
+    }
+
+    private void TapGestureRecognizer_Tapped(object? sender, EventArgs e)
+    {
+
     }
 }

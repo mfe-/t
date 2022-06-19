@@ -31,6 +31,21 @@ namespace t.App
 #endif
             });
 
+#if ANDROID
+            Microsoft.Maui.Handlers.ElementHandler.ElementMapper.AppendToMapping("OnTouch", (handler, view) =>
+            {
+                if (view is CardView cardView && handler.PlatformView is ContentViewGroup contentViewGroup)
+                {
+                    var children = VisualTreeHelper.GetAllChildren(contentViewGroup);
+                    var myTouchListener = new MyTouchListener(cardView);
+                    foreach (var child in children)
+                    {
+                        child.SetOnTouchListener(myTouchListener);
+                    }
+                }
+            });
+#endif
+
             Microsoft.Maui.Handlers.ButtonHandler.ElementMapper.AppendToMapping("ButtonMouseOver", (handler, view) =>
             {
 #if WINDOWS
@@ -68,4 +83,44 @@ namespace t.App
         //    return window;
         //}
     }
+
+#if ANDROID
+    public class MyTouchListener : Java.Lang.Object, Android.Views.View.IOnTouchListener
+    {
+        private readonly CardView cardView;
+
+        public MyTouchListener(CardView cardView)
+        {
+            this.cardView = cardView;
+        }
+        private DateTime startTime;
+        //constant for defining the time duration between the click that can be considered as double-tap
+        private const int MAX_DURATION = 200;
+        public bool OnTouch(Android.Views.View? v, Android.Views.MotionEvent? e)
+        {
+            if (v == null || e == null) return false;
+
+            if (e.Action == Android.Views.MotionEventActions.Up)
+            {
+                startTime = DateTime.Now;
+                cardView.RaiseTappedEvent(new Controls.TappedEventArgs(false));
+                return true;
+            }
+            else if (e.Action == Android.Views.MotionEventActions.Down)
+            {
+                var timeSpan = DateTime.Now.Subtract(startTime);
+                
+                if (timeSpan.TotalMilliseconds < MAX_DURATION)
+                {
+                    startTime = DateTime.Now;
+                    cardView.RaiseTappedEvent(new Controls.TappedEventArgs(true));
+                    return true;
+                }
+            }
+
+
+            return false;
+        }
+    }
+#endif
 }

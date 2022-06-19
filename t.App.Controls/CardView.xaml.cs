@@ -5,9 +5,17 @@ namespace t.App.Controls;
 
 public partial class CardView : ContentView
 {
+    public delegate Task EventHandlerAsync<in TEventArgs>(object? sender, TEventArgs e);
+
+    public event EventHandlerAsync<TappedEventArgs>? TappedEvent;
+
     public CardView()
     {
         PropertyChanged += CardView_PropertyChanged;
+    }
+    public void RaiseTappedEvent(TappedEventArgs tappedEventArgs)
+    {
+        TappedEvent?.Invoke(this, tappedEventArgs);
     }
 
     private void CardView_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -89,7 +97,7 @@ public partial class CardView : ContentView
         }
         else
         {
-            size = new Size(WidthRequest,HeightRequest);
+            size = new Size(WidthRequest, HeightRequest);
         }
         this.DesiredSize = size;
         base.MeasureOverride(size.Width, size.Height);
@@ -115,7 +123,7 @@ public partial class CardView : ContentView
         {
             width = bounds.Width;
         }
-        if(this.DesiredSize.Height < bounds.Height)
+        if (this.DesiredSize.Height < bounds.Height)
         {
             height = DesiredSize.Height;
         }
@@ -158,5 +166,4 @@ public partial class CardView : ContentView
         }
         return new Size(width, height);
     }
-
 }

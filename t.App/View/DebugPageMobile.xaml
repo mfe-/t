@@ -61,39 +61,36 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Label x:Name="label" />
-            <!--<controls:CardView Card="{Binding Player1Container.SelectedCardPlayer}"
+
+            <Grid x:Name="grid1" Grid.Row="0" BackgroundColor="DarkOrange">
+                <controls:CardView x:Name="card" Card="{Binding Player1Container.SelectedCardPlayer}"
                                                    ZIndex="10"
-                                               Style="{StaticResource cardViewInList}"
                                                TranslationYOffset="9">
 
             
-            </controls:CardView>-->
-            <Grid x:Name="grid1" Grid.Row="0" BackgroundColor="DarkOrange">
-                
+            </controls:CardView>
             </Grid>
             <Grid x:Name="grid2" Grid.Row="1" BackgroundColor="Aquamarine">
                 <controls:CardItemsView x:Name="cardList"
                                     ItemsSource="{Binding Path=Player1Container.PlayerCards}" 
                                     SelectedItem="{Binding Path=Player1Container.SelectedCardPlayer}"
                                     HorizontalOptions="Center" VerticalOptions="Center"
-                                    SelectionChangedCommand="{Binding Path=PickCardCommand}"
-                                    IsEnabled="{Binding Path=CardsEnabledPlayer1}"
-                                    BackgroundColor="Green">
-                <controls:CardItemsView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <controls:CardView Card="{Binding}"
+                                    SelectionChangedCommand="{Binding Path=PickCardCommand}">
+                    <controls:CardItemsView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <controls:CardView Card="{Binding}"
                                                ZIndex="10"
                           
                                                WidthRequest="85"
                                                HeightRequest="130"
                                                TranslationYOffset="9">
 
-                            </controls:CardView>
-                        </ViewCell>
-                    </DataTemplate>
-                </controls:CardItemsView.ItemTemplate>
-            </controls:CardItemsView>
+                                </controls:CardView>
+                            </ViewCell>
+                        </DataTemplate>
+                    </controls:CardItemsView.ItemTemplate>
+                </controls:CardItemsView>
             </Grid>
 
         </Grid>

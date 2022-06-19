@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Layouts;
+﻿using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Layouts;
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -14,11 +15,7 @@ public class CardItemsView : StackLayout
 {
     public CardItemsView()
     {
-        void CardItemsView_Loaded(object? sender, EventArgs e)
-        {
 
-        };
-        Loaded += CardItemsView_Loaded;
     }
 
     public static readonly BindableProperty ItemTemplateProperty =
@@ -65,6 +62,10 @@ public class CardItemsView : StackLayout
                             tap.Tapped -= TapGestureRecognizer_Tapped;
                             view.GestureRecognizers.Remove(tap);
                         }
+                        if (container is CardView cardView)
+                        {
+                            cardView.TappedEvent -= CardView_TappedEvent;
+                        }
                         this.Children.Remove(container);
                     }
                 }
@@ -100,12 +101,38 @@ public class CardItemsView : StackLayout
         var elementView = GenerateContainer(item);
         if (elementView != null)
         {
+#if ANDROID
+            //android workaround because of https://github.com/dotnet/maui/issues/8121
+            //for android tapGestureRecognizer does not propagate tap events of childs we have to use our own event
+            if (elementView is CardView cardView)
+            {
+                cardView.TappedEvent += CardView_TappedEvent;
+            }
+
+#else
             elementView.BindingContext = item;
             var tapGestureRecognizer = new TapGestureRecognizer();
             tapGestureRecognizer.Parent = elementView;
             tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped;
             elementView.GestureRecognizers.Add(tapGestureRecognizer);
+#endif
+
             Children.Add(elementView);
+        }
+    }
+
+    private async Task CardView_TappedEvent(object? sender, TappedEventArgs e)
+    {
+        if (e.DoubleTapped)
+        {
+            TapGestureRecognizer_Tapped(sender, e);
+        }
+        else
+        {
+            if (sender is CardView cardView)
+            {
+                await cardView.HighlightAnimationAsync();
+            }
         }
     }
 
@@ -137,6 +164,10 @@ public class CardItemsView : StackLayout
 
     private object? GetItem(View? sender)
     {
+        if (sender is CardView cardView)
+        {
+            return cardView.Card;
+        }
         return sender?.BindingContext;
     }
 
@@ -156,6 +187,10 @@ public class CardItemsView : StackLayout
             if (child is View view && view.BindingContext == item)
             {
                 return view;
+            }
+            if (child is CardView cardView && cardView.Card == item)
+            {
+                return cardView;
             }
         }
         return null;
@@ -181,10 +216,9 @@ public class CardItemsView : StackLayout
         get => (IEnumerable)GetValue(ItemsSourceProperty);
         set => SetValue(ItemsSourceProperty, value);
     }
-    protected override ILayoutManager CreateLayoutManager()
-    {
-        return new CardListLayoutManager(this);
-    }
+    protected override ILayoutManager CreateLayoutManager() =>
+        new CardListLayoutManager(this);
+
     public void UpdateChilds()
     {
         foreach (var child in Children)

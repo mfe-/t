@@ -48,7 +48,7 @@
                HasShadow="True"
                IsClippedToBounds="True"
                Padding="0"
-               x:Name="cardview">
+               x:Name="PART_Frame">
             <Frame.Resources>
                 <Style TargetType="Label">
                     <Setter Property="TextColor" Value="{x:StaticResource CardLabelForeground}" />

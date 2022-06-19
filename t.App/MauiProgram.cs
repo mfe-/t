@@ -43,6 +43,11 @@ public static class MauiProgram
         builder.Services.AddTransient<GamePage>();
         builder.Services.AddSingleton<GamePageViewModel>();
 
+#if ANDROID
+        builder.Services.AddTransient<GameMobilePage>();
+        builder.Services.AddTransient<GameMobilePageViewModel>();
+#endif
+
         builder.Services.AddTransient<NewGamePage>();
         builder.Services.AddTransient<NewGamePageViewModel>();
 

@@ -13,7 +13,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
 
     <!-- Display name -->
-		<ApplicationTitle>t.App</ApplicationTitle>
+    <ApplicationTitle>t.App</ApplicationTitle>
 
     <!-- App Identifier -->
     <ApplicationId>get.the.solution.t.App</ApplicationId>
@@ -52,5 +52,11 @@
   <ItemGroup>
     <ProjectReference Include="..\t.App.Controls\t.App.Controls.csproj" />
     <ProjectReference Include="..\t.lib\t.lib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MauiXaml Update="View\GameMobilePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
   </ItemGroup>
 </Project>

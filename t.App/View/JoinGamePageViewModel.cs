@@ -15,8 +15,8 @@ internal class JoinGamePageViewModel : BaseViewModel
     private readonly AppConfig appConfig;
     private readonly GameService gameService;
     private readonly DialogService dialogService;
-    private readonly CancellationTokenSource cancellationTokenSource;
     private readonly SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
+    private CancellationTokenSource? cancellationTokenSourceSearchGamesAsync;
     public JoinGamePageViewModel(ILogger<JoinGamePageViewModel> logger,
         NavigationService navigationService,
         AppConfig appConfig,
@@ -33,15 +33,15 @@ internal class JoinGamePageViewModel : BaseViewModel
         this.dialogService = dialogService;
         this.gameService.Current = null;
         _PublicGames = new();
-        cancellationTokenSource = new CancellationTokenSource();
+        cancellationTokenSourceSearchGamesAsync = new CancellationTokenSource();
         //this task will never be aborted
-        Task.Factory.StartNew(SearchGamesAsync, cancellationTokenSource.Token);
+        Task.Factory.StartNew(SearchGamesAsync, cancellationTokenSourceSearchGamesAsync.Token);
     }
 
 
     private async Task SearchGamesAsync()
     {
-        while (cancellationTokenSource != null && !cancellationTokenSource.IsCancellationRequested)
+        while (cancellationTokenSourceSearchGamesAsync != null && !cancellationTokenSourceSearchGamesAsync.IsCancellationRequested)
         {
             using (CancellationTokenSource cancellationTokenSource2 = new CancellationTokenSource(TimeSpan.FromSeconds(3)))
             {
@@ -130,18 +130,30 @@ internal class JoinGamePageViewModel : BaseViewModel
     public ICommand JoinGameCommand { get; }
     private async Task OnJoinGameAsync()
     {
-        if (SelectedGame == null)
+        try
         {
-            await dialogService.DisplayAsync("Select Game", "Please select the game to join", "ok");
-            return;
-        }
+            //abort SearchGamesAsync
+            cancellationTokenSourceSearchGamesAsync?.Cancel();
+            cancellationTokenSourceSearchGamesAsync?.Dispose();
+            cancellationTokenSourceSearchGamesAsync = null;
+            if (SelectedGame == null)
+            {
+                await dialogService.DisplayAsync("Select Game", "Please select the game to join", "ok");
+                return;
+            }
 
-        gameService.Current = new Models.GameConfig(SelectedGame.GameName, PlayerName, SelectedGame.GameRounds, SelectedGame.RequiredAmountOfPlayers, SelectedGame.ServerIpAddress.ToString(), SelectedGame.ServerPort, 0, new CancellationTokenSource());
+            gameService.Current = new Models.GameConfig(SelectedGame.GameName, PlayerName, SelectedGame.GameRounds, SelectedGame.RequiredAmountOfPlayers, SelectedGame.ServerIpAddress.ToString(), SelectedGame.ServerPort, 0, new CancellationTokenSource());
 #if ANDROID
-        await navigationService.NavigateToAsync(typeof(GameMobilePageViewModel), gameService.Current);
+            await navigationService.NavigateToAsync(typeof(GameMobilePageViewModel), gameService.Current);
 #else
-        await navigationService.NavigateToAsync(typeof(GamePageViewModel), gameService.Current);
+            await navigationService.NavigateToAsync(typeof(GamePageViewModel), gameService.Current);
 #endif
 
+            PublicGames.Clear();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, e.Message);
+        }
     }
 }

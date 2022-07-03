@@ -57,7 +57,7 @@ namespace t.App.View
                 };
             }
 
-            Player1Container.SelectedCardPlayer = Player1Container.PlayerCards[0];
+            //Player1Container.SelectedCardPlayer = Player1Container.PlayerCards[0];
 
             this.navigationService = navigationService;
         }

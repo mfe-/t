@@ -33,12 +33,26 @@ internal class JoinGamePageViewModel : BaseViewModel
         this.dialogService = dialogService;
         this.gameService.Current = null;
         _PublicGames = new();
-        cancellationTokenSourceSearchGamesAsync = new CancellationTokenSource();
-        //this task will never be aborted
-        Task.Factory.StartNew(SearchGamesAsync, cancellationTokenSourceSearchGamesAsync.Token);
+        this.navigationService.AppearedEvent += NavigationService_AppearedEvent; ;
+        this.navigationService.DisappearedEvent += NavigationService_DisappearedEvent; ;
     }
 
-
+    private Task NavigationService_AppearedEvent(object? sender, EventArgs<object> e)
+    {
+        AddManuallPublicGame = false;
+        cancellationTokenSourceSearchGamesAsync = new CancellationTokenSource();
+        Task.Factory.StartNew(SearchGamesAsync, cancellationTokenSourceSearchGamesAsync.Token);
+        return Task.CompletedTask;
+    }
+    private Task NavigationService_DisappearedEvent(object? sender, EventArgs<object> e)
+    {
+        //abort SearchGamesAsync
+        cancellationTokenSourceSearchGamesAsync?.Cancel();
+        cancellationTokenSourceSearchGamesAsync?.Dispose();
+        cancellationTokenSourceSearchGamesAsync = null;
+        PublicGames.Clear();
+        return Task.CompletedTask;
+    }
     private async Task SearchGamesAsync()
     {
         while (cancellationTokenSourceSearchGamesAsync != null && !cancellationTokenSourceSearchGamesAsync.IsCancellationRequested)
@@ -132,10 +146,6 @@ internal class JoinGamePageViewModel : BaseViewModel
     {
         try
         {
-            //abort SearchGamesAsync
-            cancellationTokenSourceSearchGamesAsync?.Cancel();
-            cancellationTokenSourceSearchGamesAsync?.Dispose();
-            cancellationTokenSourceSearchGamesAsync = null;
             if (SelectedGame == null)
             {
                 await dialogService.DisplayAsync("Select Game", "Please select the game to join", "ok");

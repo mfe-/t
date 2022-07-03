@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using t.App.Controls;
 using t.App.Service;
 using t.App.View;
 using t.lib;
@@ -17,10 +18,9 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("NunitoSans-Bold.ttf", "NunitoSansBold");
                 fonts.AddFont("NunitoSans-Regular.ttf", "NunitoSansRegular");
-
-                fonts.AddEmbeddedResourceFont(typeof(Controls.CardView).Assembly, "Halogen-Bold.ttf", "HalogenBold");
             });
 
+        builder.UseControls();
 
         builder.Services.AddSingleton(
             provider =>

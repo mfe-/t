@@ -115,6 +115,19 @@ namespace t.lib.Network
         {
             var ipHostInfo = Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(a => a.AddressFamily == AddressFamily.InterNetwork);
             var unicastIPAddressInformation = new List<UnicastIPAddressInformation>();
+            //try getting the ipadress with the constraint from above
+            GetInterNetwork(unicastIPAddressInformation, ipHostInfo);
+            //if we dont have any results (this can happen under android) we try to lookup without any constraints
+            if(!unicastIPAddressInformation.Any())
+            {
+                GetInterNetwork(unicastIPAddressInformation);
+            }
+
+            return unicastIPAddressInformation;
+        }
+
+        private static void GetInterNetwork(List<UnicastIPAddressInformation> unicastIPAddressInformation, IEnumerable<IPAddress> ipHostInfo = null)
+        {
             foreach (var inter in NetworkInterface.GetAllNetworkInterfaces() ?? Enumerable.Empty<NetworkInterface>())
             {
                 if (!(inter.NetworkInterfaceType == NetworkInterfaceType.Ethernet || inter.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
@@ -123,15 +136,14 @@ namespace t.lib.Network
                 foreach (var unicastadress in ipprop.UnicastAddresses)
                 {
                     if (unicastadress.Address.AddressFamily == AddressFamily.InterNetwork
-                        && ipHostInfo.Any(a => IPAddress.Equals(a, unicastadress.Address)))
+                        && (ipHostInfo == null || (ipHostInfo.Any(a => IPAddress.Equals(a, unicastadress.Address)))))
                     {
                         unicastIPAddressInformation.Add(unicastadress);
                     }
                 }
             }
-
-            return unicastIPAddressInformation;
         }
+
         public static IPAddress GetBroadcastAddress(UnicastIPAddressInformation unicastAddress)
         {
             return GetBroadcastAddress(unicastAddress.Address, unicastAddress.IPv4Mask);

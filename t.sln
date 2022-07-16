@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "t.TestProject1", "t.TestPro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "t.App", "t.App\t.App.csproj", "{9B48D9BE-6D38-4F95-BA3C-D6706854F530}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "t.App.Controls", "t.App.Controls\t.App.Controls.csproj", "{D5E72594-D914-4693-AA00-361A263CE223}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "t.App.Controls", "t.App.Controls\t.App.Controls.csproj", "{D5E72594-D914-4693-AA00-361A263CE223}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +36,7 @@ Global
 		{9B48D9BE-6D38-4F95-BA3C-D6706854F530}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{9B48D9BE-6D38-4F95-BA3C-D6706854F530}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B48D9BE-6D38-4F95-BA3C-D6706854F530}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B48D9BE-6D38-4F95-BA3C-D6706854F530}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{D5E72594-D914-4693-AA00-361A263CE223}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D5E72594-D914-4693-AA00-361A263CE223}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5E72594-D914-4693-AA00-361A263CE223}.Release|Any CPU.ActiveCfg = Release|Any CPU

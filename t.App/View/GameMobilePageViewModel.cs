@@ -10,7 +10,8 @@ namespace t.App.View;
 
 internal class GameMobilePageViewModel : GamePageViewModel
 {
-    public GameMobilePageViewModel(ILogger<GamePageViewModel> logger, NavigationService navigationService, GameService gameService) : base(logger, navigationService, gameService)
+    public GameMobilePageViewModel(ILogger<GamePageViewModel> logger, NavigationService navigationService, GameService gameService, DialogService dialogService)
+        : base(logger, navigationService, gameService, dialogService)
     {
     }
 }

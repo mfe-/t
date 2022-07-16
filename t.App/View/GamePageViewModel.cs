@@ -7,11 +7,13 @@ namespace t.App.View
     {
         private readonly NavigationService navigationService;
         private readonly GameService gameService;
+        private readonly DialogService dialogService;
 
-        public GamePageViewModel(ILogger<GamePageViewModel> logger, NavigationService navigationService, GameService gameService) : base(logger)
+        public GamePageViewModel(ILogger<GamePageViewModel> logger, NavigationService navigationService, GameService gameService, DialogService dialogService) : base(logger)
         {
             this.navigationService = navigationService;
             this.gameService = gameService;
+            this.dialogService = dialogService;
             this.navigationService.AppearedEvent += NavigationService_AppearedEvent;
             this.navigationService.DisappearedEvent += NavigationService_DisappearedEvent;
         }
@@ -38,7 +40,7 @@ namespace t.App.View
             if (sender != this) return;
             if (GameClientViewModel == null && gameService.Current != null)
             {
-                GameClientViewModel = new GameClientViewModel(logger, navigationService, new lib.AppConfig());
+                GameClientViewModel = new GameClientViewModel(logger, navigationService, new lib.AppConfig(), dialogService);
                 GameClientViewModel.Title = $"{gameService.Current.Gamename} Waiting players";
                 await gameService.JoinStartedGameServerAsync(GameClientViewModel);
 

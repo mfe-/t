@@ -106,8 +106,8 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="Auto,Auto" HorizontalOptions="End">
-                                    <Label Margin="1" Grid.Column="0" Text="{Binding GameClientViewModel.Player.Name}"  />
-                                    <Label Margin="1" Grid.Column="1" Text="{Binding GameClientViewModel.Player.Points,StringFormat=' Points {0}'}" />
+                                    <Label Margin="1" Grid.Column="0" Text="{Binding Player.Name}"  />
+                                    <Label Margin="1" Grid.Column="1" Text="{Binding Player.Points,StringFormat=' Points {0}'}" />
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>

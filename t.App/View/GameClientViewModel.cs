@@ -19,12 +19,14 @@ namespace t.App.View
         private const int ShowAllOfferedPlayerCardsSeconds = 2;
         private readonly SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
         private readonly NavigationService navigationService;
+        private readonly DialogService dialogService;
 
-        public GameClientViewModel(ILogger logger, NavigationService navigationService, AppConfig appConfig)
+        public GameClientViewModel(ILogger logger, NavigationService navigationService, AppConfig appConfig, DialogService dialogService)
             : base(logger, appConfig)
         {
             PickCardCommand = new Command<Card>(OnPickCard);
             this.navigationService = navigationService;
+            this.dialogService = dialogService;
         }
         private string _Title = "";
         public string Title
@@ -62,7 +64,7 @@ namespace t.App.View
             }
             catch (SocketException e)
             {
-                //todo show dialog or something with lost connection and return to overview
+                await dialogService.DisplayAsync("Error", $"Connection lost. {e.ToString}", "Ok");
                 logger.LogCritical(e, e.ToString());
             }
             gameSocketClient?.ExitGame();
@@ -112,7 +114,9 @@ namespace t.App.View
         {
             void AddJoinedPlayer(t.lib.Game.Player player)
             {
+#pragma warning disable S2971 // surpress "IEnumerable" LINQs should be simplified as we need to call ToArray() since the collection can change
                 var currentPlayer = Game.Players.ToArray().FirstOrDefault(a => a.PlayerId == gameSocketClient?.Player?.PlayerId);
+#pragma warning restore S2971 // "IEnumerable" LINQs should be simplified
 
                 if (!Players.Any(a => Mapper.ToPlayer(player).PlayerId == a.Player.PlayerId))
                 {
@@ -203,6 +207,7 @@ namespace t.App.View
                 {
                     var player = Game.Players.First(a => playerCardContainer.Player.PlayerId == a.PlayerId);
                     playerCardContainer.PlayerCards = new ObservableCollection<Card>(Game.PlayerCards[player]);
+                    playerCardContainer.IsVisible = true;
                 }
             }
             if (Game.Round > 1)

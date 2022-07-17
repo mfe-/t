@@ -28,13 +28,14 @@ public static class AppBuilderExtensions
             {
                 return new CardViewGroup(contentcontrols, arg.Context);
             }
+            //return null to force a fall back 
             return null;
         }
         ContentViewHandler.PlatformViewFactory = ContentViewFactory;
 #endif
-    
 
-    builder.ConfigureFonts(fonts =>
+
+        builder.ConfigureFonts(fonts =>
         {
             fonts.AddEmbeddedResourceFont(typeof(Controls.CardView).Assembly, "Halogen-Bold.ttf", "HalogenBold");
         });

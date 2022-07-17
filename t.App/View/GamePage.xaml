@@ -26,65 +26,38 @@
 
 
         <Style x:Key="cardViewInList" BasedOn="{StaticResource cardView}" TargetType="{x:Type controls:CardView}">
-            <Style.Triggers>
-                <!-- Check if current card is selected card -->
-                <DataTrigger TargetType="controls:CardView" Value="True">
-                    <DataTrigger.Binding>
-                        <MultiBinding Converter="{StaticResource ValuesComparerMultiValueConverter}" ConverterParameter="TreatNullAsFalse">
-                            <MultiBinding.Bindings>
-                                <!-- current card -->
-                                <Binding />
-                                <!-- selected card -->
-                                <Binding Path="SelectedItem" Source="{x:Reference cardList}" />
-                            </MultiBinding.Bindings>
-                        </MultiBinding>
-                    </DataTrigger.Binding>
-                    <Setter Property="IsVisible" Value="False" />
-                </DataTrigger>
-                <!--check if current card is unselected card -->
-                <DataTrigger TargetType="controls:CardView" Value="False">
-                    <DataTrigger.Binding>
-                        <MultiBinding Converter="{StaticResource ValuesComparerMultiValueConverter}" ConverterParameter="TreatNullAsFalse">
-                            <MultiBinding.Bindings>
-                                <Binding />
-                                <Binding Path="SelectedItem" Source="{x:Reference cardList}" />
-                            </MultiBinding.Bindings>
-                        </MultiBinding>
-                    </DataTrigger.Binding>
-                    <Setter Property="IsVisible" Value="True" />
-                </DataTrigger>
-            </Style.Triggers>
+
         </Style>
 
     </ContentPage.Resources>
     <ContentPage.Content>
-        <Grid BindingContext="{Binding Path=GameClientViewModel}">
+        <Grid>
             <!-- hidden overlayer -->
             <Grid ZIndex="1" >
                 <Label x:Name="nextRoundLabel" 
                    IsVisible="False"
                    VerticalOptions="Center"
                    HorizontalOptions="Center"
-                   Text="{Binding Path=NextRound}"
+                   Text="{Binding Path=GameClientViewModel.NextRound}"
                    TextColor="{StaticResource CardLila}">
                 </Label>
                 <Label x:Name="nextRoundWinnerLabel" 
                    IsVisible="False"
                    VerticalOptions="Center"
                    HorizontalOptions="Center"
-                   Text="{Binding Path=WinnerText}"
+                   Text="{Binding Path=GameClientViewModel.WinnerText}"
                    TextColor="{StaticResource Key=CardRed}">
                 </Label>
 
                 <Grid.Behaviors>
-                    <behaviour:AnimationBehaviorStoryBoard StartAnimation="{Binding Path=StartAnimationNextRound}">
+                    <behaviour:AnimationBehaviorStoryBoard StartAnimation="{Binding Path=GameClientViewModel.StartAnimationNextRound}">
                         <behaviour:AnimationBehaviorStoryBoard.StoryBoard>
                             <animations:StoryBoard>
                                 <animations:NextRoundLabelAnimation Target="{x:Reference nextRoundLabel}" />
                             </animations:StoryBoard>
                         </behaviour:AnimationBehaviorStoryBoard.StoryBoard>
                     </behaviour:AnimationBehaviorStoryBoard>
-                    <behaviour:AnimationBehaviorStoryBoard StartAnimation="{Binding Path=StartAnimationWinnerText}">
+                    <behaviour:AnimationBehaviorStoryBoard StartAnimation="{Binding Path=GameClientViewModel.StartAnimationWinnerText}">
                         <behaviour:AnimationBehaviorStoryBoard.StoryBoard>
                             <animations:StoryBoard>
                                 <animations:NextRoundLabelAnimation Target="{x:Reference nextRoundWinnerLabel}" />
@@ -109,8 +82,8 @@
                 </Grid>
                 <Grid Grid.Row="0" Grid.Column="1">
                     <controls:CardItemsView x:Name="player2cardlist"
-                                    ItemsSource="{Binding Path=Player2Container.PlayerCards}" 
-                                    SelectedItem="{Binding Path=Player2Container.SelectedCardPlayer}"
+                                    ItemsSource="{Binding Path=GameClientViewModel.Player2Container.PlayerCards}" 
+                                    SelectedItem="{Binding Path=GameClientViewModel.Player2Container.SelectedCardPlayer}"
                                     HorizontalOptions="Center" VerticalOptions="Center"
                                     IsEnabled="True">
                         <controls:CardItemsView.ItemTemplate>
@@ -129,12 +102,12 @@
                 </Grid>
                 <!-- High Score list -->
                 <Grid Grid.Row="0" Grid.Column="2" >
-                    <CollectionView ItemsSource="{Binding Players}" SelectionMode="None" HorizontalOptions="End">
+                    <CollectionView ItemsSource="{Binding GameClientViewModel.Players}" SelectionMode="None" HorizontalOptions="End">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="Auto,Auto" HorizontalOptions="End">
-                                    <Label Margin="1" Grid.Column="0" Text="{Binding Player.Name}"  />
-                                    <Label Margin="1" Grid.Column="1" Text="{Binding Player.Points,StringFormat=' Points {0}'}" />
+                                    <Label Margin="1" Grid.Column="0" Text="{Binding GameClientViewModel.Player.Name}"  />
+                                    <Label Margin="1" Grid.Column="1" Text="{Binding GameClientViewModel.Player.Points,StringFormat=' Points {0}'}" />
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -144,8 +117,8 @@
                 <Grid Grid.Row="1" Grid.Column="0" >
                     <controls:CardItemsView x:Name="player3cardlist"
                                         
-                                        ItemsSource="{Binding Path=Player3Container.PlayerCards}" 
-                                        SelectedItem="{Binding Path=Player3Container.SelectedCardPlayer}"
+                                        ItemsSource="{Binding Path=GameClientViewModel.Player3Container.PlayerCards}" 
+                                        SelectedItem="{Binding Path=GameClientViewModel.Player3Container.SelectedCardPlayer}"
                                         HorizontalOptions="Center" VerticalOptions="Center"
                                         IsEnabled="False">
                         <controls:CardItemsView.ItemTemplate>
@@ -160,22 +133,22 @@
                 <Grid Grid.Row="1" Grid.Column="1"
                   ColumnDefinitions="*,*,*,*,*" RowDefinitions="Auto,Auto">
 
-                    <controls:CardView Card="{Binding Path=CurrentCard}" 
+                    <controls:CardView Card="{Binding Path=GameClientViewModel.CurrentCard}" 
                                    Margin="5,0,5,0"
                                    WidthRequest="100" 
                                    HeightRequest="170"
                                    Grid.Column="0">
                         <controls:CardView.Triggers>
-                            <DataTrigger Binding="{Binding Path=CurrentCard,Converter={StaticResource IsNullConverter}}" Value="True" TargetType="{x:Type controls:CardView}">
+                            <DataTrigger Binding="{Binding Path=GameClientViewModel.CurrentCard,Converter={StaticResource IsNullConverter}}" Value="True" TargetType="{x:Type controls:CardView}">
                                 <Setter Property="IsVisible" Value="False" />
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding Path=CurrentCard,Converter={StaticResource IsNullConverter}}" Value="False" TargetType="{x:Type controls:CardView}">
+                            <DataTrigger Binding="{Binding Path=GameClientViewModel.CurrentCard,Converter={StaticResource IsNullConverter}}" Value="False" TargetType="{x:Type controls:CardView}">
                                 <Setter Property="IsVisible" Value="True" />
                             </DataTrigger>
                         </controls:CardView.Triggers>
                     </controls:CardView>
 
-                    <controls:CardView Card="{Binding Path=Player1Container.SelectedCardPlayer}" 
+                    <controls:CardView Card="{Binding Path=GameClientViewModel.Player1Container.SelectedCardPlayer}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"
                                    ControlTemplate="{StaticResource CardViewBackControlTemplate}"
@@ -183,23 +156,23 @@
                         <controls:CardView.IsVisible>
                             <MultiBinding Converter="{StaticResource BoolMultiConverter}">
                                 <MultiBinding.Bindings>
-                                    <Binding Path="Player1Container.IsBackCardVisible" />
-                                    <Binding Path="Player1Container.SelectedCardPlayer" Converter="{StaticResource IsNullConverter}" ConverterParameter="Invert" />
+                                    <Binding Path="GameClientViewModel.Player1Container.IsBackCardVisible" />
+                                    <Binding Path="GameClientViewModel.Player1Container.SelectedCardPlayer" Converter="{StaticResource IsNullConverter}" ConverterParameter="Invert" />
                                 </MultiBinding.Bindings>
                             </MultiBinding>
                         </controls:CardView.IsVisible>
                     </controls:CardView>
-                    <controls:CardView Card="{Binding Path=Player1Container.SelectedCardPlayer}" 
+                    <controls:CardView Card="{Binding Path=GameClientViewModel.Player1Container.SelectedCardPlayer}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"
                                    Grid.Column="1"
-                                   IsVisible="{Binding Player1Container.IsBackCardVisible,Converter={StaticResource InvertedBoolConverter}}">
+                                   IsVisible="{Binding GameClientViewModel.Player1Container.IsBackCardVisible,Converter={StaticResource InvertedBoolConverter}}">
                     </controls:CardView>
 
-                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Path=Player1Container.Player.Name}" 
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Path=GameClientViewModel.Player1Container.Player.Name}" 
                        HorizontalTextAlignment="Center" />
 
-                    <controls:CardView Card="{Binding Path=Player2Container.SelectedCardPlayer}" 
+                    <controls:CardView Card="{Binding Path=GameClientViewModel.Player2Container.SelectedCardPlayer}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"
                                    ControlTemplate="{StaticResource CardViewBackControlTemplate}"
@@ -207,19 +180,19 @@
                         <controls:CardView.IsVisible>
                             <MultiBinding Converter="{StaticResource BoolMultiConverter}">
                                 <MultiBinding.Bindings>
-                                    <Binding Path="Player2Container.IsBackCardVisible" />
-                                    <Binding Path="Player2Container.SelectedCardPlayer" Converter="{StaticResource IsNullConverter}" ConverterParameter="Invert" />
+                                    <Binding Path="GameClientViewModel.Player2Container.IsBackCardVisible" />
+                                    <Binding Path="GameClientViewModel.Player2Container.SelectedCardPlayer" Converter="{StaticResource IsNullConverter}" ConverterParameter="Invert" />
                                 </MultiBinding.Bindings>
                             </MultiBinding>
                         </controls:CardView.IsVisible>
                     </controls:CardView>
-                    <controls:CardView Card="{Binding Path=Player2Container.SelectedCardPlayer}" 
+                    <controls:CardView Card="{Binding Path=GameClientViewModel.Player2Container.SelectedCardPlayer}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"
                                    Grid.Column="2"
-                                   IsVisible="{Binding Player2Container.IsBackCardVisible,Converter={StaticResource InvertedBoolConverter}}">
+                                   IsVisible="{Binding GameClientViewModel.Player2Container.IsBackCardVisible,Converter={StaticResource InvertedBoolConverter}}">
                     </controls:CardView>
-                    <Label Grid.Row="1" Grid.Column="2" Text="{Binding Path=Player2Container.Player.Name}"
+                    <Label Grid.Row="1" Grid.Column="2" Text="{Binding Path=GameClientViewModel.Player2Container.Player.Name}"
                        HorizontalTextAlignment="Center"/>
 
                     <!--<controls:CardView Card="{Binding Path=Player3Container.SelectedCardPlayer}" 
@@ -241,11 +214,11 @@
                 </Grid>
                 <Grid Grid.Row="2" Grid.ColumnSpan="3">
                     <controls:CardItemsView x:Name="cardList"
-                                    ItemsSource="{Binding Path=Player1Container.PlayerCards}" 
-                                    SelectedItem="{Binding Path=Player1Container.SelectedCardPlayer}"
+                                    ItemsSource="{Binding Path=GameClientViewModel.Player1Container.PlayerCards}" 
+                                    SelectedItem="{Binding Path=GameClientViewModel.Player1Container.SelectedCardPlayer}"
                                     HorizontalOptions="Center" VerticalOptions="Center"
-                                    SelectionChangedCommand="{Binding Path=PickCardCommand}"
-                                    IsEnabled="{Binding Path=CardsEnabledPlayer1}">
+                                    SelectionChangedCommand="{Binding Path=GameClientViewModel.PickCardCommand}"
+                                    IsEnabled="{Binding Path=GameClientViewModel.CardsEnabledPlayer1}">
                         <controls:CardItemsView.ItemTemplate>
                             <DataTemplate>
                                 <ViewCell>

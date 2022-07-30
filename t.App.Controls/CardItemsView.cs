@@ -94,7 +94,7 @@ public class CardItemsView : StackLayout
         {
             AddItem(item);
         }
-    }
+     }
 
     private void AddItem(object item)
     {

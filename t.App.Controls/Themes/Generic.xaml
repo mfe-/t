@@ -45,12 +45,15 @@
     Represents the view of a card with the actual number
     -->
     <ControlTemplate x:Key="CardViewControlTemplate">
-        <Frame CornerRadius="30"
-               HasShadow="True"
-               IsClippedToBounds="True"
-               Padding="0"
-               x:Name="PART_Frame">
-            <Frame.Resources>
+        <Border
+            Padding="0"
+            x:Name="PART_Frame"
+            StrokeThickness="0"
+            >
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="30,30,30,30" />
+            </Border.StrokeShape>
+            <Border.Resources>
                 <Style TargetType="Label">
                     <Setter Property="TextColor" Value="{x:StaticResource CardLabelForeground}" />
                     <Setter Property="FontFamily" Value="HalogenBold" />
@@ -109,7 +112,7 @@
                     </Setter>
                 </Style>
 
-            </Frame.Resources>
+            </Border.Resources>
             <Grid x:Name="PART_Grid">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -173,60 +176,23 @@
 
                 <!-- middle -->
 
-                <Frame CornerRadius="250" 
-                       HasShadow="True"
-                       IsClippedToBounds="True"
+                <Border
                        Grid.Row="1"
                        Margin="10,0,10,0"
                        Padding="0"
                        Grid.ColumnSpan="3"
                        BackgroundColor="White"
                        VerticalOptions="Center">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="30,30,30,30" />
+                    </Border.StrokeShape>
                     <Label Style="{StaticResource LabelMiddle}"
                            x:Name="labelmiddle"
                            Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
                            TextColor="{Binding Path=BackgroundColor, Source={x:Reference PART_Grid}}"
                            HorizontalOptions="Center">
-                        <!--<VisualStateManager.VisualStateGroups>
-                            <VisualStateGroupList>
-                                <VisualStateGroup>
-                                    <VisualState x:Name="Small">
-                                        <VisualState.StateTriggers>
-                                            <AdaptiveTrigger MinWindowHeight="0" MinWindowWidth="0" />
-                                        </VisualState.StateTriggers>
-                                        <VisualState.Setters>
-                                            <Setter Property="Label.FontSize" Value="40" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="Middle">
-                                        <VisualState.StateTriggers>
-                                            <AdaptiveTrigger MinWindowHeight="400"  />
-                                        </VisualState.StateTriggers>
-                                        <VisualState.Setters>
-                                            <Setter Property="Label.FontSize" Value="60" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="Big">
-                                        <VisualState.StateTriggers>
-                                            <AdaptiveTrigger MinWindowHeight="500"  />
-                                        </VisualState.StateTriggers>
-                                        <VisualState.Setters>
-                                            <Setter Property="Label.FontSize" Value="80" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="Bigger">
-                                        <VisualState.StateTriggers>
-                                            <AdaptiveTrigger MinWindowHeight="600"  />
-                                        </VisualState.StateTriggers>
-                                        <VisualState.Setters>
-                                            <Setter Property="Label.FontSize" Value="100" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateGroupList>
-                        </VisualStateManager.VisualStateGroups>-->
                     </Label>
-                </Frame>
+                </Border>
 
                 <StackLayout Padding="0"
                              Grid.Row="2" Grid.Column="0"
@@ -246,7 +212,7 @@
                        HorizontalOptions="Center" />
                 </StackLayout>
             </Grid>
-        </Frame>
+        </Border>
     </ControlTemplate>
 
     <!--

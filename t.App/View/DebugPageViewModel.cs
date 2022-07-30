@@ -28,17 +28,32 @@ namespace t.App.View
                 new lib.Game.Player("asdf",Guid.Empty) {Points=5 },
                 new lib.Game.Player("ma",Guid.Empty) {Points=3 },
             }));
+            Task.Factory.StartNew(async () =>
+            {
+                await InitAsync();
+            }, TaskCreationOptions.DenyChildAttach);
 
+            //Player1Container.SelectedCardPlayer = Player1Container.PlayerCards[0];
+
+            this.navigationService = navigationService;
+        }
+
+        private async Task InitAsync()
+        {
             Player1Container = new(new Player("martin", Guid.Empty));
             Player2Container = new(new Player("stefan", Guid.Empty));
             Player3Container = new(new Player("katharina", Guid.Empty));
             Player4Container = new(new Player("simon", Guid.Empty));
+
+            await Task.Delay(TimeSpan.FromSeconds(1));
 
             _Players = new();
             Players.Add(Player1Container);
             Players.Add(Player2Container);
             Players.Add(Player3Container);
             Players.Add(Player4Container);
+
+            await Task.Delay(TimeSpan.FromSeconds(2));
 
             foreach (var container in Players)
             {
@@ -55,11 +70,8 @@ namespace t.App.View
                     new Card(9),
                     new Card(10)
                 };
+                await Task.Delay(TimeSpan.FromSeconds(1));
             }
-
-            //Player1Container.SelectedCardPlayer = Player1Container.PlayerCards[0];
-
-            this.navigationService = navigationService;
         }
 
         private ObservableCollection<PlayerCardContainer> _Players;
@@ -207,7 +219,7 @@ namespace t.App.View
 
                 await navigationService.NavigateToAsync(typeof(MainPageViewModel));
             }
-            
+
 
             if (SynchronizationContext.Current != synchronizationContext)
             {

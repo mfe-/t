@@ -21,7 +21,7 @@ public partial class CardViewGroup : ContentViewGroup
     private DateTime startTime;
     //constant for defining the time duration between the click that can be considered as double-tap
     private const int MAX_DURATION = 200;
-    public override bool OnInterceptTouchEvent(MotionEvent? ev)
+    public override bool DispatchTouchEvent(MotionEvent? ev)
     {
         if (ev == null) return false;
 
@@ -42,7 +42,7 @@ public partial class CardViewGroup : ContentViewGroup
                 return true;
             }
         }
-        return base.OnInterceptTouchEvent(ev);
+        return base.DispatchTouchEvent(ev);
     }
 }
 #endif

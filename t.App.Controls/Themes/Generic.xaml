@@ -57,30 +57,6 @@
                 <Style TargetType="Label">
                     <Setter Property="TextColor" Value="{x:StaticResource CardLabelForeground}" />
                     <Setter Property="FontFamily" Value="HalogenBold" />
-                    <!--<Setter Property="VisualStateManager.VisualStateGroups">
-                        <Setter.Value>
-                            <VisualStateGroupList>
-                                <VisualStateGroup>
-                                    <VisualState x:Name="Small">
-                                        <VisualState.StateTriggers>
-                                            <AdaptiveTrigger MinWindowHeight="0" MinWindowWidth="0" />
-                                        </VisualState.StateTriggers>
-                                        <VisualState.Setters>
-                                            <Setter Property="Label.FontSize" Value="15" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="Middle">
-                                        <VisualState.StateTriggers>
-                                            <AdaptiveTrigger MinWindowHeight="200" MinWindowWidth="120" />
-                                        </VisualState.StateTriggers>
-                                        <VisualState.Setters>
-                                            <Setter Property="Label.FontSize" Value="18" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateGroupList>
-                        </Setter.Value>
-                    </Setter>-->
                 </Style>
 
                 <Style x:Key="LabelMiddle" TargetType="Label">
@@ -176,23 +152,22 @@
 
                 <!-- middle -->
 
-                <Border
+                <Frame CornerRadius="250" 
+                       HasShadow="True"
+                       IsClippedToBounds="True"
                        Grid.Row="1"
                        Margin="10,0,10,0"
                        Padding="0"
                        Grid.ColumnSpan="3"
                        BackgroundColor="White"
                        VerticalOptions="Center">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="30,30,30,30" />
-                    </Border.StrokeShape>
                     <Label Style="{StaticResource LabelMiddle}"
                            x:Name="labelmiddle"
                            Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
                            TextColor="{Binding Path=BackgroundColor, Source={x:Reference PART_Grid}}"
                            HorizontalOptions="Center">
                     </Label>
-                </Border>
+                </Frame>
 
                 <StackLayout Padding="0"
                              Grid.Row="2" Grid.Column="0"

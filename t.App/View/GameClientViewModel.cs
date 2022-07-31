@@ -115,7 +115,15 @@ namespace t.App.View
             void AddJoinedPlayer(t.lib.Game.Player player)
             {
 #pragma warning disable S2971 // surpress "IEnumerable" LINQs should be simplified as we need to call ToArray() since the collection can change
-                var currentPlayer = Game.Players.ToArray().FirstOrDefault(a => a.PlayerId == gameSocketClient?.Player?.PlayerId);
+                t.lib.Game.Player? currentPlayer = null;
+                foreach (var item in Game.Players.ToArray())
+                {
+                    if (item.PlayerId == gameSocketClient?.Player?.PlayerId)
+                    {
+                        currentPlayer = item;
+                        break;
+                    }
+                }
 #pragma warning restore S2971 // "IEnumerable" LINQs should be simplified
 
                 if (!Players.Any(a => Mapper.ToPlayer(player).PlayerId == a.Player.PlayerId))

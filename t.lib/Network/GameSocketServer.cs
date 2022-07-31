@@ -166,7 +166,7 @@ namespace t.lib.Network
             foreach (var ip in lanIps)
             {
                 var broadcastIp = GetBroadcastAddress(ip);
-                _logger.LogInformation("Startin udp broadcast with {broadcastIp}", broadcastIp);
+                _logger.LogInformation("Starting udp broadcast with {broadcastIp}", broadcastIp);
                 var broadcastTask = await Task.Factory.StartNew(async () =>
                 {
                     using UdpClient client = new UdpClient() { EnableBroadcast = true };

@@ -72,6 +72,14 @@ public static class MauiProgram
         builder.Services.AddSingleton<GameService>();
         builder.Services.AddTransient<DialogService>();
 
+        builder.Services.AddLogging(logbuilder =>
+        {
+#if DEBUG
+            logbuilder.SetMinimumLevel(LogLevel.Trace);
+            logbuilder.AddOutput();
+#endif
+        });
+
         return builder.Build();
     }
 }

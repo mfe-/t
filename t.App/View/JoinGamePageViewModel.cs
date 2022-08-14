@@ -33,8 +33,8 @@ internal class JoinGamePageViewModel : BaseViewModel
         this.dialogService = dialogService;
         this.gameService.Current = null;
         _PublicGames = new();
-        this.navigationService.AppearedEvent += NavigationService_AppearedEvent; ;
-        this.navigationService.DisappearedEvent += NavigationService_DisappearedEvent; ;
+        this.navigationService.AppearedEvent += NavigationService_AppearedEvent;
+        this.navigationService.DisappearedEvent += NavigationService_DisappearedEvent;
     }
 
     private Task NavigationService_AppearedEvent(object? sender, EventArgs<object> e)

@@ -19,7 +19,7 @@
                 <Entry Text="{Binding Path=ServerIp}" HorizontalOptions="Start" MaxLength="15" />
 
                 <Label Text="Server Port" />
-                <Entry Text="{Binding Path=ServerPort}" HorizontalOptions="Start" MaxLength="4" />
+                <Entry Text="{Binding Path=ServerPort}" HorizontalOptions="Start" MaxLength="5" />
 
 
                 <Label Text="Found Games" />

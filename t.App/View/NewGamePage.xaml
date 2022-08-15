@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:t.App.View"
              x:Class="t.App.View.NewGamePage"
-             Style="{StaticResource PageStyle}"
              Title="{Binding Path=Title}">
     <ContentPage.Content>
         <Grid>

@@ -7,7 +7,6 @@
              xmlns:behaviour="clr-namespace:t.App.Controls.Behaviour;assembly=t.App.Controls"
              xmlns:animations="clr-namespace:t.App.Controls.Animations;assembly=t.App.Controls"
              xmlns:converter="clr-namespace:t.App.Controls.Converter;assembly=t.App.Controls"
-             Style="{StaticResource PageStyle}"
              Title="{Binding Path=GameClientViewModel.Title}"
              x:Class="t.App.View.GamePage">
     <ContentPage.Resources>

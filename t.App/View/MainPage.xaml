@@ -3,7 +3,6 @@
              xmlns:controls="clr-namespace:t.App.Controls;assembly=t.App.Controls"
              x:Class="t.App.View.MainPage"
              Title="{Binding Path=Title}"
-             Style="{StaticResource PageStyle}"
              NavigationPage.HasNavigationBar="false">
 
     <ScrollView>

@@ -10,19 +10,23 @@
                 <ResourceDictionary Source="Themes\Generic.xaml;assembly=t.App.Controls"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <Style TargetType="Label">
-                <Setter Property="FontFamily" Value="NunitoSansRegular" />
-            </Style>
-            <Style TargetType="Entry">
-                <Setter Property="FontFamily" Value="NunitoSansRegular" />
-            </Style>
-            
             <Color x:Key="BackgroundColor">#F3EFE5</Color>
 
             <Color x:Key="PrimaryColor">#CE9ED2</Color>
             <Color x:Key="SecondaryColor">#B9E3A5</Color>
             <Color x:Key="DanpanColor">#FF7E8E</Color>
             <Color x:Key="ButtonBackgroundColor">#FFFFFA</Color>
+            <Color x:Key="FontColor">#000000</Color>
+
+            <Style TargetType="Label">
+                <Setter Property="FontFamily" Value="NunitoSansRegular" />
+                <Setter Property="TextColor" Value="{StaticResource FontColor}" />
+            </Style>
+            <Style TargetType="Entry">
+                <Setter Property="FontFamily" Value="NunitoSansRegular" />
+                <Setter Property="TextColor" Value="{StaticResource FontColor}" />
+            </Style>
+            
 
             <Style TargetType="Button">
                 <Setter Property="TextColor" Value="{DynamicResource PrimaryColor}" />
@@ -33,12 +37,12 @@
                 <Setter Property="BorderWidth" Value="0" />
             </Style>
 
-            <Style TargetType="{x:Type NavigationPage}">
+            <Style ApplyToDerivedTypes="True" TargetType="{x:Type NavigationPage}">
                 <Setter Property="BarBackgroundColor" Value="{DynamicResource BackgroundColor}"/>
                 <Setter Property="IconColor" Value="Black" />
             </Style>
 
-            <Style x:Key="PageStyle" TargetType="{x:Type Page}">
+            <Style ApplyToDerivedTypes="True" TargetType="{x:Type Page}">
                 <Setter Property="Padding" Value="5" />
                 <Setter Property="BackgroundColor" Value="{DynamicResource BackgroundColor}" />
             </Style>

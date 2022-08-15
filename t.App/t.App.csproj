@@ -9,9 +9,8 @@
     <RootNamespace>t.App</RootNamespace>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-
+    <Nullable>enable</Nullable>
     <!-- Display name -->
     <ApplicationTitle>t.App</ApplicationTitle>
 
@@ -33,10 +32,10 @@
 
   <ItemGroup>
     <!-- App Icon -->
-    <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
     <!-- Splash Screen -->
-    <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
@@ -57,7 +56,7 @@
     <ProjectReference Include="..\t.App.Controls\t.App.Controls.csproj" />
     <ProjectReference Include="..\t.lib\t.lib.csproj" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <MauiXaml Update="View\GameMobilePage.xaml">
       <Generator>MSBuild:Compile</Generator>

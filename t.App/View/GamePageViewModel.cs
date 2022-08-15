@@ -15,7 +15,7 @@ namespace t.App.View
             this.gameService = gameService;
             this.dialogService = dialogService;
             this.navigationService.AppearedEvent += NavigationService_AppearedEvent;
-            this.navigationService.DisappearedEvent += NavigationService_DisappearedEvent;
+            this.navigationService.PageLeftEvent += NavigationService_DisappearedEvent;
         }
 
         private Task NavigationService_DisappearedEvent(object? sender, Models.EventArgs<object> e)

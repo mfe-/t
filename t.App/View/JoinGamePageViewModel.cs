@@ -34,7 +34,7 @@ internal class JoinGamePageViewModel : BaseViewModel
         this.gameService.Current = null;
         _PublicGames = new();
         this.navigationService.AppearedEvent += NavigationService_AppearedEvent;
-        this.navigationService.DisappearedEvent += NavigationService_DisappearedEvent;
+        this.navigationService.PageLeftEvent += NavigationService_DisappearedEvent;
     }
 
     private Task NavigationService_AppearedEvent(object? sender, EventArgs<object> e)
@@ -153,11 +153,11 @@ internal class JoinGamePageViewModel : BaseViewModel
             }
 
             gameService.Current = new Models.GameConfig(SelectedGame.GameName, PlayerName, SelectedGame.GameRounds, SelectedGame.RequiredAmountOfPlayers, SelectedGame.ServerIpAddress.ToString(), SelectedGame.ServerPort, 0, new CancellationTokenSource());
-#if ANDROID
-            await navigationService.NavigateToAsync(typeof(GameMobilePageViewModel), gameService.Current);
-#else
+            //#if ANDROID
+            //            await navigationService.NavigateToAsync(typeof(GameMobilePageViewModel), gameService.Current);
+            //#else
             await navigationService.NavigateToAsync(typeof(GamePageViewModel), gameService.Current);
-#endif
+            //#endif
 
             PublicGames.Clear();
         }

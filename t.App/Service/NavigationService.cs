@@ -10,7 +10,7 @@ public class NavigationService
     private readonly NavigationPage startPage;
     public delegate Task EventHandlerAsync<EventArg>(object? sender, EventArg e);
     public event EventHandlerAsync<EventArgs<object>>? AppearedEvent;
-    public event EventHandlerAsync<EventArgs<object>>? DisappearedEvent;
+    public event EventHandlerAsync<EventArgs<object>>? PageLeftEvent;
 
     public NavigationService(IServiceProvider serviceProvider, ILogger logger, NavigationPage startPage)
     {
@@ -58,7 +58,7 @@ public class NavigationService
                 {
                     page.BindingContext = viewmodel;
                     page.Appearing += Page_Appearing;
-                    page.Disappearing += Page_Disappearing;
+                    LeavePage(CurrentPage);
                     NavigationData = data;
                     await CurrentPage.Navigation.PushAsync(page);
                 }
@@ -84,14 +84,10 @@ public class NavigationService
         return $"{page}ViewModel";
     }
 
-    private void Page_Disappearing(object? sender, EventArgs e)
+    private void LeavePage(Page? page)
     {
-        if (sender is Page page)
-        {
-            var viewmodel = GetViewModelFromPage(page);
-            DisappearedEvent?.Invoke(viewmodel ?? sender, new EventArgs<object>(NavigationData));
-            page.Disappearing -= Page_Disappearing;
-        }
+        var viewmodel = GetViewModelFromPage(page);
+        PageLeftEvent?.Invoke(viewmodel ?? page, new EventArgs<object>(NavigationData));
     }
 
     private void Page_Appearing(object? sender, EventArgs e)

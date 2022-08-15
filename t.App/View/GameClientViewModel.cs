@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Windows.Input;
 using t.App.Models;
 using t.App.Service;
@@ -64,7 +65,7 @@ namespace t.App.View
             }
             catch (SocketException e)
             {
-                await dialogService.DisplayAsync("Error", $"Connection lost. {e.ToString}", "Ok");
+                synchronizationContext?.Post(async (o) => await dialogService.DisplayAsync("Error", $"Connection lost. {e.ToString}", "Ok"), e);
                 logger.LogCritical(e, e.ToString());
             }
             gameSocketClient?.ExitGame();

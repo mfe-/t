@@ -32,7 +32,7 @@ namespace t.App
             return true;
         }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
             if (!IsEnabled(logLevel))
             {
@@ -66,7 +66,7 @@ namespace t.App
                 else if (logLevel == LogLevel.Critical)
                     Android.Util.Log.Wtf(text, _name);
 #else
-                OutputWriteLine(text, _name);
+                        OutputWriteLine(text, _name);
 #endif
             }
         }

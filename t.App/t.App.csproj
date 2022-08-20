@@ -12,10 +12,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <!-- Display name -->
-    <ApplicationTitle>t.App</ApplicationTitle>
+    <ApplicationTitle>DadPan</ApplicationTitle>
 
     <!-- App Identifier -->
-    <ApplicationId>get.the.solution.t.App</ApplicationId>
+    <ApplicationId>get.the.solution.t.App.DadPan</ApplicationId>
     <ApplicationIdGuid>3069CCA9-1315-4DC3-A0D7-69AA76658D89</ApplicationIdGuid>
 
     <!-- Versions -->

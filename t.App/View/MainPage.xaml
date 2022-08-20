@@ -6,7 +6,7 @@
              NavigationPage.HasNavigationBar="false">
 
     <ScrollView>
-        <StackLayout Orientation="Vertical"
+        <StackLayout Orientation="Vertical" VerticalOptions="Center"
                      BackgroundColor="{DynamicResource BackgroundColor}">
 
             <Image

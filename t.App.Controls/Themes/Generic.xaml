@@ -51,7 +51,7 @@
             StrokeThickness="0"
             >
             <Border.StrokeShape>
-                <RoundRectangle CornerRadius="30,30,30,30" />
+                <RoundRectangle CornerRadius="15,15,15,15" />
             </Border.StrokeShape>
             <Border.Resources>
                 <Style TargetType="Label">

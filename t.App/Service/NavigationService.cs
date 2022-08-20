@@ -8,7 +8,7 @@ public class NavigationService
     private readonly IServiceProvider serviceProvider;
     private readonly ILogger logger;
     private readonly NavigationPage startPage;
-    public delegate Task EventHandlerAsync<EventArg>(object? sender, EventArg e);
+    public delegate Task EventHandlerAsync<in EventArg>(object? sender, EventArg e);
     public event EventHandlerAsync<EventArgs<object>>? AppearedEvent;
     public event EventHandlerAsync<EventArgs<object>>? PageLeftEvent;
 
@@ -86,6 +86,7 @@ public class NavigationService
 
     private void LeavePage(Page? page)
     {
+        if (page == null) return;
         var viewmodel = GetViewModelFromPage(page);
         PageLeftEvent?.Invoke(viewmodel ?? page, new EventArgs<object>(NavigationData));
     }

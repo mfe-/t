@@ -126,7 +126,7 @@ namespace t.lib.Network
             return unicastIPAddressInformation;
         }
 
-        private static void GetInterNetwork(List<UnicastIPAddressInformation> unicastIPAddressInformation, IEnumerable<IPAddress> ipHostInfo = null)
+        private static void GetInterNetwork(List<UnicastIPAddressInformation> unicastIPAddressInformation, IEnumerable<IPAddress>? ipHostInfo = null)
         {
             foreach (var inter in NetworkInterface.GetAllNetworkInterfaces() ?? Enumerable.Empty<NetworkInterface>())
             {

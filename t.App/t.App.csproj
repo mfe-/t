@@ -34,6 +34,8 @@
     <!-- App Icon -->
     <MauiIcon Include="Resources\AppIcon\dadpan_logo_icon_background.svg" ForegroundFile="Resources\AppIcon\dadpan_logo_icon_foreground.svg" Color="#F3EFE5" />
 
+    <MauiIcon Include="Resources\AppIcon\dadpan_logo_icon.svg" />
+
     <!-- Splash Screen -->
     <MauiSplashScreen Include="Resources\Splash\dadpan_logo_icon_foreground.svg" Color="#F3EFE5" BaseSize="128,128" />
 

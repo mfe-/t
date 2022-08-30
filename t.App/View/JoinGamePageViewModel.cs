@@ -151,7 +151,11 @@ internal class JoinGamePageViewModel : BaseViewModel
                 await dialogService.DisplayAsync("Select Game", "Please select the game to join", "ok");
                 return;
             }
-
+            if (String.IsNullOrEmpty(PlayerName))
+            {
+                await dialogService.DisplayAsync("Playername", "Playername missing", "ok");
+                return;
+            }
             gameService.Current = new Models.GameConfig(SelectedGame.GameName, PlayerName, SelectedGame.GameRounds, SelectedGame.RequiredAmountOfPlayers, SelectedGame.ServerIpAddress.ToString(), SelectedGame.ServerPort, 0, new CancellationTokenSource());
             //#if ANDROID
             //            await navigationService.NavigateToAsync(typeof(GameMobilePageViewModel), gameService.Current);

@@ -63,12 +63,10 @@ internal class JoinGamePageViewModel : BaseViewModel
 
                 synchronizationContext?.Post((arg) =>
                 {
+                    PublicGames.Clear();
                     foreach (var pg in publicGames)
                     {
-                        if (!PublicGames.Any(a => a.GameName == pg.GameName))
-                        {
-                            PublicGames.Add(pg);
-                        }
+                        PublicGames.Add(pg);
                     }
                 }, null);
             }

@@ -59,9 +59,4 @@
     <ProjectReference Include="..\t.lib\t.lib.csproj" />
   </ItemGroup>
   
-  <ItemGroup>
-    <MauiXaml Update="View\GameMobilePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-  </ItemGroup>
 </Project>

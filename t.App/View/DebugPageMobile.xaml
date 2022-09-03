@@ -100,7 +100,7 @@
         </Grid>
 
 
-        <Grid ZIndex="0" RowDefinitions="*,*,*" ColumnDefinitions="*,2*,*">
+        <Grid RowDefinitions="*,*,*" ColumnDefinitions="*,2*,*">
             <!--<Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto,Auto">
                 <Button Text="Next Round" Grid.Row="0" Command="{Binding Path=NextRoundCommand}" />
                 <Button Text="PlayWin Ani" Grid.Row="0" Command="{Binding StartPlayerWonAnimationCommand}" />

@@ -57,7 +57,7 @@
     </ContentPage.Resources>
     <Grid>
         <!-- hidden overlayer -->
-        <Grid ZIndex="1" >
+        <!--<Grid ZIndex="1" >
             <Label x:Name="nextRoundLabel" 
                    IsVisible="False"
                    VerticalOptions="Center"
@@ -90,17 +90,17 @@
                 </behaviour:AnimationBehaviorStoryBoard>
             </Grid.Behaviors>
 
-            <!--<Grid.Behaviors>
+            --><!--<Grid.Behaviors>
                 <behaviour:NextRoundLabelAnimation AssociatedObject="{x:Reference nextRoundWinnerLabel}" 
                                                    StartAnimation="{Binding WinnerText}"  />
                 <behaviour:NextRoundLabelAnimation AssociatedObject="{x:Reference nextRoundLabel}" 
                                                    StartAnimation="{Binding NextRound}"  />
 
-            </Grid.Behaviors>-->
-        </Grid>
+            </Grid.Behaviors>--><!--
+        </Grid>-->
 
-
-        <Grid ZIndex="0" RowDefinitions="*,*,*" ColumnDefinitions="*,2*,*">
+        <!--ZIndex="0"-->
+        <Grid  RowDefinitions="*,*,*" ColumnDefinitions="*,2*,*">
             <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto,Auto">
                 <Button Text="Next Round" Grid.Row="0" Command="{Binding Path=NextRoundCommand}" />
                 <Button Text="PlayWin Ani" Grid.Row="0" Command="{Binding StartPlayerWonAnimationCommand}" />
@@ -271,7 +271,6 @@
                         <DataTemplate>
                             <ViewCell>
                                 <controls:CardView Card="{Binding}"
-                                                   ZIndex="10"
                                                Style="{StaticResource cardViewInList}"
                                                TranslationYOffset="9">
 

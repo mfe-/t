@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:t.App.Controls;assembly=t.App.Controls"
+             xmlns:converter="clr-namespace:t.App.Controls.Converter;assembly=t.App.Controls"
+             xmlns:localconverter="clr-namespace:t.App"
+             x:Class="t.App.Controls.SelectedCardPlayerContainer">
+    <ContentView.Resources>
+
+        <localconverter:PlayerColumnDefinitionConverter x:Key="PlayerColumnDefinitionConverter" />
+        <converter:IsNullConverter x:Key="IsNullConverter" />
+        <converter:BoolMultiConverter x:Key="BoolMultiConverter" />
+        <converter:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+
+        <ControlTemplate x:Key="PlayerCardContainer">
+
+        </ControlTemplate>
+    </ContentView.Resources>
+    <ContentView.Content>
+        <StackLayout Orientation="Vertical">
+            <Label Text="{Binding Path=Player.Name}" 
+                       HorizontalTextAlignment="Center" />
+            <controls:CardView Card="{Binding Path=SelectedCardPlayer}" 
+                                   Margin="0,0,5,0"
+                                   Style="{StaticResource cardView}"
+                                   ControlTemplate="{StaticResource CardViewBackControlTemplate}"
+                                   >
+                <controls:CardView.IsVisible>
+                    <MultiBinding Converter="{StaticResource BoolMultiConverter}">
+                        <MultiBinding.Bindings>
+                            <Binding Path="IsBackCardVisible" />
+                            <Binding Path="SelectedCardPlayer" Converter="{StaticResource IsNullConverter}" ConverterParameter="Invert" />
+                        </MultiBinding.Bindings>
+                    </MultiBinding>
+                </controls:CardView.IsVisible>
+            </controls:CardView>
+            <controls:CardView Card="{Binding Path=SelectedCardPlayer}" 
+                                   Margin="0,0,5,0"
+                                   Style="{StaticResource cardView}"
+                                   IsVisible="{Binding IsBackCardVisible,Converter={StaticResource InvertedBoolConverter}}">
+            </controls:CardView>
+        </StackLayout>
+    </ContentView.Content>
+</ContentView>

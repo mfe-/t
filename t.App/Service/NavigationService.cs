@@ -7,12 +7,12 @@ public class NavigationService
 {
     private readonly IServiceProvider serviceProvider;
     private readonly ILogger logger;
-    private readonly NavigationPage startPage;
+    private readonly Shell startPage;
     public delegate Task EventHandlerAsync<in EventArg>(object? sender, EventArg e);
     public event EventHandlerAsync<EventArgs<object>>? AppearedEvent;
     public event EventHandlerAsync<EventArgs<object>>? PageLeftEvent;
 
-    public NavigationService(IServiceProvider serviceProvider, ILogger logger, NavigationPage startPage)
+    public NavigationService(IServiceProvider serviceProvider, ILogger logger, Shell startPage)
     {
         this.serviceProvider = serviceProvider;
         this.logger = logger;
@@ -60,7 +60,16 @@ public class NavigationService
                     page.Appearing += Page_Appearing;
                     LeavePage(CurrentPage);
                     NavigationData = data;
-                    await CurrentPage.Navigation.PushAsync(page);
+
+                    //if (CurrentPage is Shell shell)
+                    //{
+                    //    //not supported yet
+                    //}
+                    //else if (CurrentPage is Page currentPage)
+                    //{
+                        await CurrentPage.Navigation.PushAsync(page);
+                    //}
+
                 }
             }
             else
@@ -84,14 +93,14 @@ public class NavigationService
         return $"{page}ViewModel";
     }
 
-    private void LeavePage(Page? page)
+    internal void LeavePage(Page? page)
     {
         if (page == null) return;
         var viewmodel = GetViewModelFromPage(page);
         PageLeftEvent?.Invoke(viewmodel ?? page, new EventArgs<object>(NavigationData));
     }
 
-    private void Page_Appearing(object? sender, EventArgs e)
+    internal void Page_Appearing(object? sender, EventArgs e)
     {
         if (sender is Page page)
         {

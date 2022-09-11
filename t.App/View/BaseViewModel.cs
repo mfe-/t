@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls;
 using System.ComponentModel;
+using System.Windows.Input;
 
 namespace t.App.View;
 
@@ -11,6 +13,7 @@ public class BaseViewModel : INotifyPropertyChanged
     {
         this.logger = logger;
     }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     protected virtual void OnPropertyChanged(string propertyName)

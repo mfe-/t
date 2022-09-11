@@ -58,5 +58,5 @@
     <ProjectReference Include="..\t.App.Controls\t.App.Controls.csproj" />
     <ProjectReference Include="..\t.lib\t.lib.csproj" />
   </ItemGroup>
-  
+
 </Project>

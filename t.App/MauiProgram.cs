@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using t.App.Controls;
 using t.App.Service;
 using t.App.View;
@@ -22,11 +23,15 @@ public static class MauiProgram
 
         builder.UseControls();
 
-        builder.Services.AddSingleton(
-            provider =>
-            {
-                return new NavigationPage(provider.GetRequiredService<MainPage>());
-            });
+        //builder.Services.AddSingleton(
+        //    provider =>
+        //    {
+        //        return new NavigationPage(provider.GetRequiredService<MainPage>());
+        //    });
+
+        builder.Services.AddSingleton<AppShellViewModel>();
+        //builder.Services.AddSingleton<AppShell>(provider => new AppShell() { BindingContext = provider.GetRequiredService<AppShellViewModel>() });
+        builder.Services.AddSingleton<AppShell>();
 
         AppConfig appConfig = new AppConfig();
         appConfig.ServerPort = 12000;
@@ -56,7 +61,7 @@ public static class MauiProgram
             provider => new NavigationService(
             provider.GetRequiredService<IServiceProvider>(),
             provider.GetRequiredService<ILogger<NavigationService>>(),
-            provider.GetRequiredService<NavigationPage>()));
+            provider.GetRequiredService<AppShell>()));
 
         builder.Services.AddSingleton<GameService>();
         builder.Services.AddTransient<DialogService>();

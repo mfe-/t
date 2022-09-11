@@ -26,7 +26,7 @@
                 <Setter Property="FontFamily" Value="NunitoSansRegular" />
                 <Setter Property="TextColor" Value="{StaticResource FontColor}" />
             </Style>
-            
+
 
             <Style TargetType="Button">
                 <Setter Property="TextColor" Value="{DynamicResource PrimaryColor}" />
@@ -40,6 +40,10 @@
             <Style ApplyToDerivedTypes="True" TargetType="{x:Type NavigationPage}">
                 <Setter Property="BarBackgroundColor" Value="{DynamicResource BackgroundColor}"/>
                 <Setter Property="IconColor" Value="Black" />
+            </Style>
+
+            <Style ApplyToDerivedTypes="True" TargetType="{x:Type Shell}">
+                <Setter Property="BackgroundColor" Value="{DynamicResource BackgroundColor}"/>
             </Style>
 
             <Style ApplyToDerivedTypes="True" TargetType="{x:Type Page}">

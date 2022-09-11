@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell
+    x:Class="t.App.View.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:t.App.View"
+    Shell.FlyoutBehavior="Disabled">
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior Command="{Binding GoBackCommand, Mode=TwoWay}" IsEnabled="True" IsVisible="True">
+            <BackButtonBehavior.TextOverride>
+                <OnPlatform x:TypeArguments="x:String">
+                    <OnPlatform.Platforms>
+                        <On Platform="iOS" Value="Go Back" />
+                    </OnPlatform.Platforms>
+                </OnPlatform>
+            </BackButtonBehavior.TextOverride>
+        </BackButtonBehavior>
+    </Shell.BackButtonBehavior>
+    <ShellContent x:Name="_shellContent"
+        Title="Home"
+        ContentTemplate="{DataTemplate local:MainPage}"
+        Route="MainPage" />
+</Shell>

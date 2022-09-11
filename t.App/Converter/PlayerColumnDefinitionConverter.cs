@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace t.App
+namespace t.App.Converter
 {
     public class PlayerColumnDefinitionConverter : IMultiValueConverter, IValueConverter
     {

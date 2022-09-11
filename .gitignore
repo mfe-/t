@@ -348,3 +348,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+/t.App/maui-app_20220822_200406.speedscope.json
+/t.App/maui-app_20220822_200406.nettrace.etlx
+/t.App/maui-app_20220822_200406.nettrace

@@ -16,16 +16,13 @@
 
     </ContentView.Resources>
     <Grid x:Name="rootGrid" 
-          RowDefinitions="Auto,*"
+          RowDefinitions="Auto"
           Grid.ColumnDefinitions="{Binding Path=Players.Count,Converter={x:StaticResource PlayerColumnDefinitionConverter}}">
 
-    <!--<StackLayout x:Name="rootStackLayout" Orientation="Horizontal">-->
-
-        <StackLayout Grid.Column="0" Orientation="Vertical">
+        <StackLayout x:Name="_currentCardStackLayout" Grid.Column="0" Orientation="Vertical">
             <Label Text="" HorizontalTextAlignment="Center" />
             <controls:CardView Card="{Binding Path=CurrentCard}" 
-                                   Margin="5,0,5,0"
-                                   Grid.Column="0">
+                                   Margin="5,0,5,0">
                 <controls:CardView.Triggers>
                     <DataTrigger Binding="{Binding Path=CurrentCard,Converter={StaticResource IsNullConverter}}" Value="True" TargetType="{x:Type controls:CardView}">
                         <Setter Property="IsVisible" Value="False" />
@@ -37,50 +34,7 @@
             </controls:CardView>
         </StackLayout>
 
-        <!--<localcontrols:SelectedCardPlayerContainer Grid.Column="1" BindingContext="{Binding Path=Player1Container}">
-            
-        </localcontrols:SelectedCardPlayerContainer>
+        <!-- controls will be added here by code behind -->
 
-        <localcontrols:SelectedCardPlayerContainer Grid.Column="2" BindingContext="{Binding Path=Player2Container}">
-
-        </localcontrols:SelectedCardPlayerContainer>-->
-
-
-
-        <!--<controls:CardItemsView x:Name="playerSelectedCardlist"
-                                            Grid.Column="1" Grid.ColumnSpan="2"
-                                            ItemsSource="{Binding Path=Players}" 
-                                            HorizontalOptions="Start" VerticalOptions="Start"
-                                            IsEnabled="False" BackgroundColor="Green">
-                        <controls:CardItemsView.ItemTemplate>
-                            <DataTemplate>
-                                <ViewCell>
-                                    <StackLayout Orientation="Vertical" BackgroundColor="AliceBlue">
-                                        <Label Text="{Binding Path=Player.Name}" HorizontalTextAlignment="Center" />
-                                        <controls:CardView Card="{Binding Path=SelectedCardPlayer}" 
-                                                           Margin="0,0,5,0"
-                                                           Style="{StaticResource cardView}"
-                                                           ControlTemplate="{StaticResource CardViewBackControlTemplate}">
-                                            <controls:CardView.IsVisible>
-                                                <MultiBinding Converter="{StaticResource BoolMultiConverter}">
-                                                    <MultiBinding.Bindings>
-                                                        <Binding Path="IsBackCardVisible" />
-                                                        <Binding Path="SelectedCardPlayer" Converter="{StaticResource IsNullConverter}" ConverterParameter="Invert" />
-                                                    </MultiBinding.Bindings>
-                                                </MultiBinding>
-                                            </controls:CardView.IsVisible>
-                                        </controls:CardView>
-                                        <controls:CardView Card="{Binding Path=SelectedCardPlayer}" 
-                                                           Margin="0,0,5,0"
-                                                           Style="{StaticResource cardView}"
-                                                           IsVisible="{Binding IsBackCardVisible,Converter={StaticResource InvertedBoolConverter}}">
-                                        </controls:CardView>
-                                    </StackLayout>
-                                </ViewCell>
-                            </DataTemplate>
-                        </controls:CardItemsView.ItemTemplate>
-                    </controls:CardItemsView>-->
-
-        </Grid>
-    <!--</StackLayout>-->
+    </Grid>
 </ContentView>

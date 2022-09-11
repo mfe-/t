@@ -64,6 +64,7 @@
                 Grid.Row="5"
                 SemanticProperties.Hint="Debug test page"
                 HorizontalOptions="Center"
+                IsVisible="{Binding Path=ShowDebug}"
                 Command="{Binding Path=NavigateCommand}" 
                 CommandParameter="{OnPlatform Default=t.App.View.DebugPageViewModel, Android=t.App.View.DebugPageMobileViewModel}"/>
 

@@ -107,35 +107,21 @@
             </Grid>-->
 
 
-            <Grid RowDefinitions="Auto,*,*,*" ColumnDefinitions="*,2*,*">
-                <!-- High Score list -->
-                <Grid Grid.Row="0" Grid.ColumnSpan="{OnPlatform Android=2,Default=0}" Grid.RowSpan="{OnPlatform Android=0,Default=2}">
-                    <CollectionView ItemsSource="{Binding Players}" SelectionMode="None" HorizontalOptions="CenterAndExpand">
+            <Grid x:Name="_mainGrid" 
+                  RowDefinitions="{OnPlatform Default='Auto,*,2*,*', Android='Auto,*,*,*'}"
+                  ColumnDefinitions="*,2*,*">
+                
+                <!-- high score list -->
+                <Grid Grid.Row="0" Grid.ColumnSpan="{OnPlatform Android=2,Default=1}" Grid.RowSpan="{OnPlatform Android=1,Default=2}">
+                    <CollectionView ItemsSource="{Binding Players}" SelectionMode="None" HorizontalOptions="Start">
                         <CollectionView.ItemsLayout>
                             <LinearItemsLayout Orientation="Vertical" />
-                            <!--<LinearItemsLayout Orientation="{OnPlatform Android='Horizontal',Default=Vertical}" />-->
-                            
-                            <!--<OnPlatform x:TypeArguments="LinearItemsLayout">
-                                <On Platform="Default">
-                                    <LinearItemsLayout Orientation="Vertical" />
-                                </On>
-                                <On Platform="Android">
-                                    <LinearItemsLayout Orientation="Horizontal" />
-                                </On>
-                            </OnPlatform>-->
-
                         </CollectionView.ItemsLayout>
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="*,*" HorizontalOptions="End">
                                     <Label Margin="1" Grid.Column="0" Text="{Binding Player.Name}"  />
                                     <Label Margin="1" Grid.Column="1" Text="{Binding Player.Points,StringFormat=' Points {0}'}" />
-                                    <!--<Label Margin="1" Grid.Column="1">
-                                        <OnPlatform x:TypeArguments="x:String">
-                                            <On Platform="Default" Value="{Binding Player.Points,StringFormat=' Points {0}'}" />
-                                            <On Platform="Android" Value="{Binding Player.Points,StringFormat=' {0}'}" />
-                                        </OnPlatform>
-                                    </Label>-->
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -196,9 +182,11 @@
                                                       PlayerContainers="{Binding Path=Players}" />
 
 
-                <Grid Grid.Row="2" Grid.Column="2" >
+                <!--<Grid Grid.Row="2" Grid.Column="2" 
+                      IsVisible="{OnPlatform Default=True, Android=False}">
 
-                </Grid>
+                </Grid>-->
+                
                 <Grid Grid.Row="3" Grid.ColumnSpan="3">
                     <controls:CardItemsView x:Name="cardList"
                                     ItemsSource="{Binding Path=Player1Container.PlayerCards}" 

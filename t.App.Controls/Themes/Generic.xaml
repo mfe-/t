@@ -196,7 +196,7 @@
             </Border.StrokeShape>
             <Grid x:Name="PART_Grid">
                 <Label Text="Card" VerticalOptions="Center" HorizontalOptions="Center"
-                       Style="{StaticResource CardLabelStyle}" FontSize="25" FontAttributes="Bold" Rotation="-45"/>
+                       Style="{StaticResource CardLabelStyle}" FontSize="22" FontAttributes="Bold" Rotation="-45"/>
             </Grid>
         </Border>
     </ControlTemplate>

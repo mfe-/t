@@ -47,5 +47,17 @@ namespace t.App.View
 
         public ICommand ExitCommand { get; }
         private void Exit() => Environment.Exit(0);
+
+        public bool ShowDebug
+        {
+            get
+            {
+#if DEBUG
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
     }
 }

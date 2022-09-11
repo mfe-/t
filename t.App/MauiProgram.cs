@@ -25,10 +25,7 @@ public static class MauiProgram
         builder.Services.AddSingleton(
             provider =>
             {
-                return new NavigationPage(provider.GetRequiredService<MainPage>())
-                {
-                    //BindingContext = provider.GetRequiredService<MainPageViewModel>()
-                };
+                return new NavigationPage(provider.GetRequiredService<MainPage>());
             });
 
         AppConfig appConfig = new AppConfig();
@@ -43,11 +40,6 @@ public static class MauiProgram
         builder.Services.AddTransient<GamePage>();
         builder.Services.AddSingleton<GamePageViewModel>();
 
-#if ANDROID
-        builder.Services.AddTransient<GameMobilePage>();
-        builder.Services.AddTransient<GameMobilePageViewModel>();
-#endif
-
         builder.Services.AddTransient<NewGamePage>();
         builder.Services.AddTransient<NewGamePageViewModel>();
 
@@ -59,9 +51,6 @@ public static class MauiProgram
 
         builder.Services.AddTransient<DebugPage>();
         builder.Services.AddTransient<DebugPageViewModel>();
-
-        builder.Services.AddTransient<DebugPageMobile>();
-        builder.Services.AddSingleton<DebugPageMobileViewModel>();
 
         builder.Services.AddSingleton(
             provider => new NavigationService(

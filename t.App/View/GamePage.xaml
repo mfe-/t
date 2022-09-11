@@ -62,7 +62,8 @@
     <ContentPage.Content>
         <Grid BindingContext="{Binding Path=GameClientViewModel}">
             <!-- hidden overlayer -->
-            <!--<Grid ZIndex="1" >
+            <!-- set ZIndex="1" in codebehind due maui bug -->
+            <Grid x:Name="_animationGrid" >
                 <Label x:Name="nextRoundLabel" 
                    IsVisible="False"
                    VerticalOptions="Center"
@@ -95,7 +96,7 @@
                     </behaviour:AnimationBehaviorStoryBoard>
                 </Grid.Behaviors>
 
-                -->
+                
             <!--<Grid.Behaviors>
                 <behaviour:NextRoundLabelAnimation AssociatedObject="{x:Reference nextRoundWinnerLabel}" 
                                                    StartAnimation="{Binding WinnerText}"  />
@@ -103,8 +104,8 @@
                                                    StartAnimation="{Binding NextRound}"  />
 
             </Grid.Behaviors>-->
-            <!--
-            </Grid>-->
+            
+            </Grid>
 
 
             <Grid x:Name="_mainGrid" 

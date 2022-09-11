@@ -42,7 +42,7 @@
     </Style>
 
     <!--
-    Represents the view of a card with the actual number
+    Represents the view of a card an the actual number
     -->
     <ControlTemplate x:Key="CardViewControlTemplate">
         <Border
@@ -132,26 +132,22 @@
                         <Setter Property="BackgroundColor" Value="{x:StaticResource CardDarkBlue}" />
                     </DataTrigger>
                 </Grid.Triggers>
-                <StackLayout Grid.Row="0"
-                             Grid.Column="0"
-                             VerticalOptions="Center">
-                    <Label Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
-                           TextColor="{x:StaticResource CardLabelForeground}"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center"/>
-                </StackLayout>
 
-                <StackLayout Grid.Row="0"
-                             Grid.Column="2"
-                             VerticalOptions="Center">
-                    <Label Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
-                           TextColor="{x:StaticResource CardLabelForeground}"
-                           HorizontalOptions="Center" />
+                <Label Grid.Row="0"
+                       Grid.Column="0"
+                       Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
+                       TextColor="{x:StaticResource CardLabelForeground}"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
 
-                </StackLayout>
+                <Label Grid.Row="0"
+                       Grid.Column="2"
+                       Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
+                       TextColor="{x:StaticResource CardLabelForeground}"
+                       HorizontalOptions="Center" 
+                       VerticalOptions="Center" />
 
                 <!-- middle -->
-
                 <Frame CornerRadius="250" 
                        HasShadow="True"
                        IsClippedToBounds="True"
@@ -169,23 +165,20 @@
                     </Label>
                 </Frame>
 
-                <StackLayout Padding="0"
-                             Grid.Row="2" Grid.Column="0"
-                             VerticalOptions="Center">
-                    <Label Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
+                <Label Grid.Row="2" 
+                       Grid.Column="0"
+                       Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
                        TextColor="{x:StaticResource CardLabelForeground}"
-                       HorizontalOptions="Center" />
-                </StackLayout>
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
 
-
-
-                <StackLayout Padding="0"
-                             Grid.Row="2" Grid.Column="2"
-                             VerticalOptions="Center">
-                    <Label Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
+                <Label Grid.Row="2" 
+                       Grid.Column="2"
+                       Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
                        TextColor="{x:StaticResource CardLabelForeground}"
-                       HorizontalOptions="Center" />
-                </StackLayout>
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+
             </Grid>
         </Border>
     </ControlTemplate>
@@ -202,29 +195,9 @@
                 <RoundRectangle CornerRadius="20,20,20,20" />
             </Border.StrokeShape>
             <Grid x:Name="PART_Grid">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Border Grid.Row="1" Grid.ColumnSpan="3" 
-                        Stroke="White" 
-                        Rotation="-45" Margin="-5,0,0,0"
-                        >
-                    <!--Background="{StaticResource CardLinearGradientBrush}">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="20,20,20,20" />
-                    </Border.StrokeShape>-->
-                    <Label Text="Card" VerticalOptions="Center" HorizontalOptions="Center"
-                       Style="{StaticResource CardLabelStyle}" FontSize="25" FontAttributes="Bold"/>
-                </Border>
+                <Label Text="Card" VerticalOptions="Center" HorizontalOptions="Center"
+                       Style="{StaticResource CardLabelStyle}" FontSize="25" FontAttributes="Bold" Rotation="-45"/>
             </Grid>
-
         </Border>
     </ControlTemplate>
 

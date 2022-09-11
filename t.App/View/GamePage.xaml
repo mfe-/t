@@ -179,27 +179,30 @@
                       RowDefinitions="Auto,*"
                       Grid.ColumnSpan="{OnPlatform Default=1, Android=3}"
                       Grid.ColumnDefinitions="{Binding Path=Players.Count,Converter={x:StaticResource PlayerColumnDefinitionConverter}}">
-                    <controls:CardView Card="{Binding Path=CurrentCard}" 
+                    <StackLayout Grid.Column="0">
+                        <Label Text="Current Card"
+                               HorizontalTextAlignment="Start" />
+                        <controls:CardView Card="{Binding Path=CurrentCard}" 
                                    Margin="5,0,5,0"
                                    WidthRequest="100" 
                                    HeightRequest="170"
-                                   Grid.Column="0">
-                        <controls:CardView.Triggers>
-                            <DataTrigger Binding="{Binding Path=CurrentCard,Converter={StaticResource IsNullConverter}}" Value="True" TargetType="{x:Type controls:CardView}">
-                                <Setter Property="IsVisible" Value="False" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Path=CurrentCard,Converter={StaticResource IsNullConverter}}" Value="False" TargetType="{x:Type controls:CardView}">
-                                <Setter Property="IsVisible" Value="True" />
-                            </DataTrigger>
-                        </controls:CardView.Triggers>
-                    </controls:CardView>
-
+                                   >
+                            <controls:CardView.Triggers>
+                                <DataTrigger Binding="{Binding Path=CurrentCard,Converter={StaticResource IsNullConverter}}" Value="True" TargetType="{x:Type controls:CardView}">
+                                    <Setter Property="IsVisible" Value="False" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=CurrentCard,Converter={StaticResource IsNullConverter}}" Value="False" TargetType="{x:Type controls:CardView}">
+                                    <Setter Property="IsVisible" Value="True" />
+                                </DataTrigger>
+                            </controls:CardView.Triggers>
+                        </controls:CardView>
+                    </StackLayout>
                     <!--<CollectionView SelectionMode="None" >
                     </CollectionView>-->
 
                     <StackLayout Grid.Column="1" Orientation="Vertical">
                         <Label Text="{Binding Path=Player1Container.Player.Name}" 
-                       HorizontalTextAlignment="Center" />
+                       HorizontalTextAlignment="Start" />
                         <controls:CardView Card="{Binding Path=Player1Container.SelectedCardPlayer}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"
@@ -223,7 +226,7 @@
 
                     <StackLayout Grid.Column="2" Orientation="Vertical">
                         <Label Text="{Binding Path=Player2Container.Player.Name}"
-                       HorizontalTextAlignment="Center"/>
+                       HorizontalTextAlignment="Start"/>
                         <controls:CardView Card="{Binding Path=Player2Container.SelectedCardPlayer}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"
@@ -247,20 +250,30 @@
                     </StackLayout>
 
 
-
-
-                    <!--<controls:CardView Card="{Binding Path=Player3Container.SelectedCardPlayer}" 
+                    <!--<StackLayout Grid.Column="3" Orientation="Vertical">
+                        <Label Text="{Binding Path=Player3Container.Player.Name}"
+                       HorizontalTextAlignment="Start"/>
+                        <controls:CardView Card="{Binding Path=Player3Container.SelectedCardPlayer}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"
                                    ControlTemplate="{StaticResource CardViewBackControlTemplate}"
-                                   Grid.Column="3">
-                </controls:CardView>
-                <controls:CardView Card="{Binding Path=Player4Container.SelectedCardPlayer}" 
+                                   >
+                            <controls:CardView.IsVisible>
+                                <MultiBinding Converter="{StaticResource BoolMultiConverter}">
+                                    <MultiBinding.Bindings>
+                                        <Binding Path="Player3Container.IsBackCardVisible" />
+                                        <Binding Path="Player3Container.SelectedCardPlayer" Converter="{StaticResource IsNullConverter}" ConverterParameter="Invert" />
+                                    </MultiBinding.Bindings>
+                                </MultiBinding>
+                            </controls:CardView.IsVisible>
+                        </controls:CardView>
+                        <controls:CardView Card="{Binding Path=Player3Container.SelectedCardPlayer}" 
                                    Margin="0,0,5,0"
                                    Style="{StaticResource cardView}"
-                                   ControlTemplate="{StaticResource CardViewBackControlTemplate}"
-                                   Grid.Column="4">
-                </controls:CardView>-->
+                                   IsVisible="{Binding Player3Container.IsBackCardVisible,Converter={StaticResource InvertedBoolConverter}}">
+                        </controls:CardView>
+
+                    </StackLayout>-->
 
                 </Grid>
                 <Grid Grid.Row="1" Grid.Column="2" >

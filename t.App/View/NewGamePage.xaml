@@ -24,33 +24,40 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <Label Text="Game name" Grid.Column="0" Grid.Row="0" />
+                <Label Text="Game name" Grid.Column="0" Grid.Row="0" 
+                       VerticalOptions="Center" />
                 <Entry Text="{Binding Path=GameName}" 
                        MaxLength="10"
                        Keyboard="Text"
                        Grid.Column="1" Grid.Row="0" />
 
-                <Label Text="Player name" Grid.Column="0" Grid.Row="1" />
+                <Label Text="Player name" Grid.Column="0" Grid.Row="1"
+                       VerticalOptions="Center" />
                 <Entry Text="{Binding Path=PlayerName}" 
                        MaxLength="10"
                        Keyboard="Text"
                        Grid.Column="1" Grid.Row="1" />
 
-                <Label Text="Game Rounds" Grid.Column="0" Grid.Row="2" />
+                <Label Text="Game Rounds" Grid.Column="0" Grid.Row="2"
+                       VerticalOptions="Center" />
                 <Entry Text="{Binding Path=GameRounds}" 
                        Keyboard="Numeric"
                        MaxLength="2"
                        Grid.Column="1" Grid.Row="2" />
 
-                <Label Text="Required Players" Grid.Column="0" Grid.Row="3" />
+                <Label Text="Required Players" Grid.Column="0" Grid.Row="3"
+                       VerticalOptions="Center" />
                 <Entry Text="{Binding Path=RequiredPlayers}" 
                        Keyboard="Numeric"
                        MaxLength="1"
                        Grid.Column="1" Grid.Row="3"  />
 
-                <Button Text="Start game" 
+                <Button Text="Start game"
                         Command="{Binding Path=StartGameCommand}"
-                        Grid.Column="1" Grid.Row="4"></Button>
+                        Grid.Column="1" Grid.Row="4"
+                        Margin="-4,10"
+                        HorizontalOptions="Start"></Button>
+                
             </Grid>
         </Grid>
 

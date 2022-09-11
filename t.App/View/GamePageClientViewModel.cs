@@ -15,14 +15,14 @@ using t.lib.Network;
 
 namespace t.App.View
 {
-    public class GameClientViewModel : GameClient, INotifyPropertyChanged
+    public class GamePageClientViewModel : GameClient, INotifyPropertyChanged
     {
         private const int ShowAllOfferedPlayerCardsSeconds = 2;
         private readonly SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
         private readonly NavigationService navigationService;
         private readonly DialogService dialogService;
 
-        public GameClientViewModel(ILogger logger, NavigationService navigationService, AppConfig appConfig, DialogService dialogService)
+        public GamePageClientViewModel(ILogger logger, NavigationService navigationService, AppConfig appConfig, DialogService dialogService)
             : base(logger, appConfig)
         {
             PickCardCommand = new Command<Card>(OnPickCard);

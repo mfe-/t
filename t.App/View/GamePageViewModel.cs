@@ -40,15 +40,15 @@ namespace t.App.View
             if (sender != this) return;
             if (GameClientViewModel == null && gameService.Current != null)
             {
-                GameClientViewModel = new GameClientViewModel(logger, navigationService, new lib.AppConfig(), dialogService);
+                GameClientViewModel = new GamePageClientViewModel(logger, navigationService, new lib.AppConfig(), dialogService);
                 GameClientViewModel.Title = $"{gameService.Current.Gamename} Waiting players";
                 await gameService.JoinStartedGameServerAsync(GameClientViewModel);
 
             }
         }
 
-        private GameClientViewModel? _GameClientViewModel = null;
-        public GameClientViewModel? GameClientViewModel
+        private GamePageClientViewModel? _GameClientViewModel = null;
+        public GamePageClientViewModel? GameClientViewModel
         {
             get { return _GameClientViewModel; }
             set { SetProperty(ref _GameClientViewModel, value, nameof(GameClientViewModel)); }

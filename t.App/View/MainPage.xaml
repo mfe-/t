@@ -12,7 +12,7 @@
             <Image
                 Grid.Row="0"
                 Source="dadpan_logo.png"
-                SemanticProperties.Description="Cute dot net bot waving hi to you!"
+                SemanticProperties.Description="dadpan logo"
                 HeightRequest="40"
                 HorizontalOptions="Center"
                 Margin="0,40,0,20"/>

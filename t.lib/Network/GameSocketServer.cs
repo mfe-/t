@@ -118,7 +118,7 @@ namespace t.lib.Network
             //try getting the ipadress with the constraint from above
             GetInterNetwork(unicastIPAddressInformation, ipHostInfo);
             //if we dont have any results (this can happen under android) we try to lookup without any constraints
-            if(!unicastIPAddressInformation.Any())
+            if (!unicastIPAddressInformation.Any())
             {
                 GetInterNetwork(unicastIPAddressInformation);
             }
@@ -242,7 +242,11 @@ namespace t.lib.Network
                     while (true)
                     {
                         if (cancellationTokenSource != null && cancellationTokenSource.IsCancellationRequested)
+                        {
+                            //stop udp broadasting
+                            _cancellationTokenBroadcasting?.Cancel();
                             break;
+                        }
                         var connection = await listener.AcceptAsync();
                         if (Game.Players.Count == _RequiredAmountOfPlayers)
                         {
@@ -271,10 +275,6 @@ namespace t.lib.Network
                 }
             }
             cancellationTokenSource = null;
-            if (_cancellationTokenBroadcasting != null && !_cancellationTokenBroadcasting.IsCancellationRequested)
-            {
-                _cancellationTokenBroadcasting.Cancel();
-            }
         }
         /// <summary>
         /// Guid of first player which joined the game

@@ -22,7 +22,14 @@ public class GameService
 
     public Task StartGameServerAsync(string gamename, string playername, int gameRounds, int requiredAmountOfPlayers)
     {
-        var ServerIpAdress = GameSocketServer.GetLanIpAdress().First().Address.ToString();
+        var lanipAdresses = GameSocketServer.GetLanIpAdress();
+
+        if (!lanipAdresses.Any())
+        {
+            throw new InvalidOperationException("Could not retriev any lan ip adress of the mobile device. Is Wifi enabled?");
+        }
+
+        var ServerIpAdress = lanipAdresses.First().Address.ToString();
         var config = new AppConfig()
         {
             BroadcastPort = appConfig.BroadcastPort,

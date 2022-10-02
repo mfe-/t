@@ -8,13 +8,15 @@ public class NewGamePageViewModel : BaseViewModel
 {
     private readonly NavigationService navigationService;
     private readonly GameService gameService;
+    private readonly DialogService dialogService;
 
-    public NewGamePageViewModel(ILogger<NewGamePageViewModel> logger, NavigationService navigationService, GameService gameService)
+    public NewGamePageViewModel(ILogger<NewGamePageViewModel> logger, NavigationService navigationService, GameService gameService, DialogService dialogService)
         : base(logger)
     {
         StartGameCommand = new Command(async () => await StartGameAsync());
         this.navigationService = navigationService;
         this.gameService = gameService;
+        this.dialogService = dialogService;
     }
     public string Title { get; set; } = "Create new game";
 
@@ -22,8 +24,19 @@ public class NewGamePageViewModel : BaseViewModel
 
     private async Task StartGameAsync()
     {
-        await gameService.StartGameServerAsync(GameName,PlayerName, int.Parse(GameRounds), int.Parse(RequiredPlayers));
-        await navigationService.NavigateToAsync(typeof(GamePageViewModel));
+        try
+        {
+            await gameService.StartGameServerAsync(GameName, PlayerName, int.Parse(GameRounds), int.Parse(RequiredPlayers));
+            await navigationService.NavigateToAsync(typeof(GamePageViewModel));
+        }
+        catch (InvalidOperationException ex)
+        {
+            await dialogService.DisplayAsync("Error", ex.Message, "Ok");
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex, "Could not start game.");
+        }
     }
 
     private string _GameName = string.Empty;

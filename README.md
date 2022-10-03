@@ -2,7 +2,7 @@
 
 't' was the codename for the multiplayer game dadpan.
 
-It is implemented using sockts. There is console application and a maui app for the clients and server.
+It is using sockts for the client server communication . There is a console application and a maui app to make the game playable for users.
 
 - t.App (maui)
 - t.App.Controls (maui controls)

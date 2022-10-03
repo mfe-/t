@@ -11,6 +11,8 @@ namespace t.lib
     /// </summary>
     public interface ISocket : IDisposable
     {
+        public bool EnableBroadcast { get; set; }
+
         /// <summary>
         /// Ends a pending asynchronous send.
         /// </summary>

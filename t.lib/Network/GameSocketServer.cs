@@ -3,10 +3,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -15,6 +13,7 @@ using System.Threading.Tasks;
 using t.lib.Game.EventArgs;
 using t.lib.Game;
 using t.lib.Server;
+using System.Net.NetworkInformation;
 
 [assembly: InternalsVisibleTo("t.TestProject1")]
 namespace t.lib.Network
@@ -42,7 +41,7 @@ namespace t.lib.Network
             _guid = Guid.NewGuid();
             if (String.IsNullOrEmpty(serverIpAdress))
             {
-                _ServerIpAddress = GetLanIpAdress();
+                _ServerIpAddress = GetLanIpAdress().First().Address;
                 _logger.LogTrace($"{nameof(ServerIpAdress)} not set!");
             }
             else
@@ -112,32 +111,81 @@ namespace t.lib.Network
             await listenerTask;
         }
 
-        public static IPAddress GetLanIpAdress()
+        public static ICollection<UnicastIPAddressInformation> GetLanIpAdress()
         {
-            IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
-            return ipHostInfo.AddressList.First(a => a.AddressFamily == AddressFamily.InterNetwork);
+            var ipHostInfo = Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(a => a.AddressFamily == AddressFamily.InterNetwork);
+            var unicastIPAddressInformation = new List<UnicastIPAddressInformation>();
+            //try getting the ipadress with the constraint from above
+            GetInterNetwork(unicastIPAddressInformation, ipHostInfo);
+            //if we dont have any results (this can happen under android) we try to lookup without any constraints
+            if (!unicastIPAddressInformation.Any())
+            {
+                GetInterNetwork(unicastIPAddressInformation);
+            }
+
+            return unicastIPAddressInformation;
         }
 
+        private static void GetInterNetwork(List<UnicastIPAddressInformation> unicastIPAddressInformation, IEnumerable<IPAddress>? ipHostInfo = null)
+        {
+            foreach (var inter in NetworkInterface.GetAllNetworkInterfaces() ?? Enumerable.Empty<NetworkInterface>())
+            {
+                if (!(inter.NetworkInterfaceType == NetworkInterfaceType.Ethernet || inter.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+                    || (inter.Description.Contains("virtual", StringComparison.CurrentCultureIgnoreCase))) continue;
+                var ipprop = inter.GetIPProperties();
+                foreach (var unicastadress in ipprop.UnicastAddresses)
+                {
+                    if (unicastadress.Address.AddressFamily == AddressFamily.InterNetwork
+                        && (ipHostInfo == null || (ipHostInfo.Any(a => IPAddress.Equals(a, unicastadress.Address)))))
+                    {
+                        unicastIPAddressInformation.Add(unicastadress);
+                    }
+                }
+            }
+        }
 
+        public static IPAddress GetBroadcastAddress(UnicastIPAddressInformation unicastAddress)
+        {
+            return GetBroadcastAddress(unicastAddress.Address, unicastAddress.IPv4Mask);
+        }
+
+        public static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)
+        {
+            uint ipAddress = BitConverter.ToUInt32(address.GetAddressBytes(), 0);
+            uint ipMaskV4 = BitConverter.ToUInt32(mask.GetAddressBytes(), 0);
+            uint broadCastIpAddress = ipAddress | ~ipMaskV4;
+
+            return new IPAddress(BitConverter.GetBytes(broadCastIpAddress));
+        }
         public async Task StartBroadcastingServerAsync(string gameName, int requiredAmountOfPlayers, int gameRounds, CancellationToken cancellationToken)
         {
-            var broadcastTask = await Task.Factory.StartNew(async () =>
+            var lanIps = GetLanIpAdress();
+            //foreach lan ip we do a broadcast
+            Task[] broadCastingTask = new Task[lanIps.Count];
+            int i = 0;
+            foreach (var ip in lanIps)
             {
-                using UdpClient client = new UdpClient();
-                IPEndPoint ip = new IPEndPoint(IPAddress.Broadcast, UdpPort);
-                while (!cancellationToken.IsCancellationRequested)
+                var broadcastIp = GetBroadcastAddress(ip);
+                _logger.LogInformation("Starting udp broadcast with {broadcastIp}", broadcastIp);
+                var broadcastTask = await Task.Factory.StartNew(async () =>
                 {
-                    var msgbytes = GenerateBroadcastMessage(_ServerIpAddress, ServerPort, gameName, requiredAmountOfPlayers, _playerConnections.Count, gameRounds);
-                    _logger.LogTrace("UDP Broadcast {bytes} bytes {ServerIpAdress}:{socketServerPort} Gamename:{Gamename} Players {currentPlayers}/{ofRequiredPlayers} GameRounds:{GameRounds}", msgbytes.Length,
-                        _ServerIpAddress, ServerPort, gameName, _playerConnections.Count, requiredAmountOfPlayers, gameRounds);
-                    await client.SendAsync(msgbytes, ip, cancellationToken);
+                    using UdpClient client = new UdpClient() { EnableBroadcast = true };
+                    IPEndPoint ip = new IPEndPoint(broadcastIp, UdpPort);
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        var msgbytes = GenerateBroadcastMessage(_ServerIpAddress, ServerPort, gameName, requiredAmountOfPlayers, _playerConnections.Count, gameRounds);
+                        _logger.LogTrace("UDP Broadcast {bytes} bytes {ServerIpAdress}:{socketServerPort} Gamename:{Gamename} Players {currentPlayers}/{ofRequiredPlayers} GameRounds:{GameRounds}", msgbytes.Length,
+                            _ServerIpAddress, ServerPort, gameName, _playerConnections.Count, requiredAmountOfPlayers, gameRounds);
+                        _ = await client.SendAsync(msgbytes, ip, cancellationToken);
 
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                }
-                _logger.LogInformation($"Stopped {nameof(StartBroadcastingServerAsync)}");
-            });
-
-            await broadcastTask;
+                        await Task.Delay(TimeSpan.FromSeconds(1));
+                    }
+                    _logger.LogInformation($"Stopped {nameof(StartBroadcastingServerAsync)}");
+                }, cancellationToken);
+                broadCastingTask[i] = broadcastTask;
+                i++;
+            }
+            await Task.WhenAll(broadCastingTask);
 
         }
         public const int maxBroadcastCharacters = 60;
@@ -194,7 +242,11 @@ namespace t.lib.Network
                     while (true)
                     {
                         if (cancellationTokenSource != null && cancellationTokenSource.IsCancellationRequested)
+                        {
+                            //stop udp broadasting
+                            _cancellationTokenBroadcasting?.Cancel();
                             break;
+                        }
                         var connection = await listener.AcceptAsync();
                         if (Game.Players.Count == _RequiredAmountOfPlayers)
                         {
@@ -223,10 +275,6 @@ namespace t.lib.Network
                 }
             }
             cancellationTokenSource = null;
-            if (_cancellationTokenBroadcasting != null && !_cancellationTokenBroadcasting.IsCancellationRequested)
-            {
-                _cancellationTokenBroadcasting.Cancel();
-            }
         }
         /// <summary>
         /// Guid of first player which joined the game

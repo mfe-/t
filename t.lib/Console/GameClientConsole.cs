@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -12,17 +10,19 @@ using System.Threading.Tasks;
 using t.lib.Game.EventArgs;
 using t.lib.Game;
 using t.lib.Network;
-using t.lib.Server;
 
 namespace t.lib.Console
 {
     public class GameClientConsole : GameClient
     {
+        private readonly Func<Task<string>> _onCommandFunc;
+
         public IServiceProvider ServiceProvider { get; }
 
-        public GameClientConsole(IServiceProvider serviceProvider, ILogger logger, AppConfig appConfig, Func<Task<string>> onCommandFunc) : base(logger, appConfig, onCommandFunc)
+        public GameClientConsole(IServiceProvider serviceProvider, ILogger logger, Func<Task<string>> onCommandFunc, AppConfig appConfig) : base(logger, appConfig)
         {
             ServiceProvider = serviceProvider;
+            _onCommandFunc = onCommandFunc;
         }
         /// <summary>
         /// Parse StartArguments if provided
@@ -46,7 +46,7 @@ namespace t.lib.Console
                 try
                 {
                     System.Console.WriteLine("Please enter your command:");
-                    command = await onChoiceCommandFunc();
+                    command = System.Console.ReadLine() ?? "";
                     string enteredCommand = PrepareCommandInput(command);
                     string[] param = ToParam(command, enteredCommand);
                     await ProcessEntertedCommand(enteredCommand, param);
@@ -100,7 +100,7 @@ namespace t.lib.Console
                         string useappconfig = (param.FirstOrDefault(a => a.Contains("useappconfig")) ?? "").Replace("-useappconfig=", "");
                         string ip = (param.FirstOrDefault(a => a.Contains("ip")) ?? "").Replace("-ip=", "");
 
-                        var ServerIpAdress = GameSocketServer.GetLanIpAdress().ToString();
+                        var ServerIpAdress = GameSocketServer.GetLanIpAdress().First().Address.ToString();
                         if (!string.IsNullOrEmpty(ip))
                         {
                             ServerIpAdress = ip;
@@ -287,5 +287,10 @@ namespace t.lib.Console
                 }
             }
         }
+        public override Task<string> GetCardChoiceAsync() 
+            => _onCommandFunc();
+
+        public override Task OnPlayerKickedAsync(PlayerLeftEventArgs playerLeftEventArgs)
+            => Task.CompletedTask;
     }
 }

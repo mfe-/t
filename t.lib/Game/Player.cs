@@ -11,8 +11,8 @@ namespace t.lib.Game
             Name = name;
             PlayerId = playerid;
         }
-        public Guid PlayerId { get; set; }
-        public string Name { get; set; }
-        public int Points { get; set; }
+        public virtual Guid PlayerId { get; }
+        public virtual string Name { get; set; }
+        public virtual int Points { get; set; }
     }
 }

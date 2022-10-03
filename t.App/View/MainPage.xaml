@@ -1,0 +1,74 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:t.App.Controls;assembly=t.App.Controls"
+             x:Class="t.App.View.MainPage"
+             Title="{Binding Path=Title}"
+             NavigationPage.HasNavigationBar="false">
+
+    <ScrollView>
+        <StackLayout Orientation="Vertical" VerticalOptions="Center"
+                     BackgroundColor="{DynamicResource BackgroundColor}">
+
+            <Image
+                Grid.Row="0"
+                Source="dadpan_logo.png"
+                SemanticProperties.Description="dadpan logo"
+                HeightRequest="40"
+                HorizontalOptions="Center"
+                Margin="0,40,0,20"/>
+
+            <Button 
+                Text="New Game"
+                Grid.Row="1"
+                SemanticProperties.HeadingLevel="Level1"
+                FontSize="32"
+                HorizontalOptions="Center"
+                TextColor="#CE9ED2"
+                Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.NewGamePageViewModel" />
+
+            <Button 
+                Text="Join Game"
+                Grid.Row="2"
+                SemanticProperties.HeadingLevel="Level1"
+                SemanticProperties.Description="Join an lan Game"
+                FontSize="32"
+                HorizontalOptions="Center"
+                TextColor="#83D6BF"
+                Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.JoinGamePageViewModel" />
+
+            <Button 
+                Text="Settings"
+                Grid.Row="3"
+                SemanticProperties.HeadingLevel="Level1"
+                SemanticProperties.Description="Settings"
+                FontSize="32"
+                FontAttributes="Bold"
+                x:Name="CounterLabel"
+                HorizontalOptions="Center"
+                TextColor="#FFC581"
+                
+                Command="{Binding Path=NavigateCommand}" CommandParameter="t.App.View.SettingPageViewModel" />
+
+            <Button 
+                Text="Exit"
+                FontSize="32"
+                Grid.Row="4"
+                SemanticProperties.Hint="Exit the app"
+                HorizontalOptions="Center"
+                TextColor="#A2D6E2"
+                Command="{Binding Path=ExitCommand}" CommandParameter="t.App.View.SettingPageViewModel"/>
+
+            <Button 
+                Text="Debug page"
+                FontSize="32"
+                Grid.Row="5"
+                SemanticProperties.Hint="Debug test page"
+                HorizontalOptions="Center"
+                IsVisible="{Binding Path=ShowDebug}"
+                Command="{Binding Path=NavigateCommand}" 
+                CommandParameter="t.App.View.DebugPageViewModel" />
+
+
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

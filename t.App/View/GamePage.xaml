@@ -1,0 +1,214 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:t.App.View"
+             xmlns:gmodel="clr-namespace:t.lib.Game;assembly=t.lib" 
+             xmlns:controls="clr-namespace:t.App.Controls;assembly=t.App.Controls"
+             xmlns:behaviour="clr-namespace:t.App.Controls.Behaviour;assembly=t.App.Controls"
+             xmlns:animations="clr-namespace:t.App.Controls.Animations;assembly=t.App.Controls"
+             xmlns:converter="clr-namespace:t.App.Controls.Converter;assembly=t.App.Controls"
+             xmlns:localcontrols="clr-namespace:t.App.Controls;assembly=t.App"
+             xmlns:localconverter="clr-namespace:t.App.Converter"
+             Title="{Binding Path=GameClientViewModel.Title}"
+             NavigationPage.HasNavigationBar="false"
+             x:Class="t.App.View.GamePage">
+    <ContentPage.Resources>
+        <x:Double x:Key="WidthCard">90</x:Double>
+        <x:Double x:Key="HeightCard">150</x:Double>
+
+        <converter:ValuesComparerMultiValueConverter x:Key="ValuesComparerMultiValueConverter" />
+
+        <localconverter:ToItemsLayoutOrientationConverter x:Key="ToItemsLayoutOrientationConverter" />
+
+
+        <Style x:Key="cardView" TargetType="{x:Type controls:CardView}">
+            <!--<Setter Property="WidthRequest" Value="{StaticResource WidthCard}" />
+            <Setter Property="HeightRequest" Value="{StaticResource HeightCard}" />-->
+        </Style>
+
+
+        <Style x:Key="cardViewInList" BasedOn="{StaticResource cardView}" TargetType="{x:Type controls:CardView}">
+            <Style.Triggers>
+                <!-- Check if current card is selected card -->
+                <DataTrigger TargetType="controls:CardView" Value="True">
+                    <DataTrigger.Binding>
+                        <MultiBinding Converter="{StaticResource ValuesComparerMultiValueConverter}" ConverterParameter="TreatNullAsFalse">
+                            <MultiBinding.Bindings>
+                                <!-- current card -->
+                                <Binding />
+                                <!-- selected card -->
+                                <Binding Path="SelectedItem" Source="{x:Reference cardList}" />
+                            </MultiBinding.Bindings>
+                        </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="IsVisible" Value="False" />
+                </DataTrigger>
+                <!--check if current card is unselected card -->
+                <DataTrigger TargetType="controls:CardView" Value="False">
+                    <DataTrigger.Binding>
+                        <MultiBinding Converter="{StaticResource ValuesComparerMultiValueConverter}" ConverterParameter="TreatNullAsFalse">
+                            <MultiBinding.Bindings>
+                                <Binding />
+                                <Binding Path="SelectedItem" Source="{x:Reference cardList}" />
+                            </MultiBinding.Bindings>
+                        </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="IsVisible" Value="True" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <Grid BindingContext="{Binding Path=GameClientViewModel}">
+            <!-- hidden overlayer -->
+            <!-- set ZIndex="1" in codebehind due maui bug -->
+            <Grid x:Name="_animationGrid" >
+                <Label x:Name="nextRoundLabel" 
+                   IsVisible="False"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"
+                   Text="{Binding Path=NextRound}"
+                   TextColor="{StaticResource CardLila}">
+                </Label>
+                <Label x:Name="nextRoundWinnerLabel" 
+                   IsVisible="False"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"
+                   Text="{Binding Path=WinnerText}"
+                   TextColor="{StaticResource Key=CardRed}">
+                </Label>
+
+                <Grid.Behaviors>
+                    <behaviour:AnimationBehaviorStoryBoard StartAnimation="{Binding Path=StartAnimationNextRound}">
+                        <behaviour:AnimationBehaviorStoryBoard.StoryBoard>
+                            <animations:StoryBoard>
+                                <animations:NextRoundLabelAnimation Target="{x:Reference nextRoundLabel}" />
+                            </animations:StoryBoard>
+                        </behaviour:AnimationBehaviorStoryBoard.StoryBoard>
+                    </behaviour:AnimationBehaviorStoryBoard>
+                    <behaviour:AnimationBehaviorStoryBoard StartAnimation="{Binding Path=StartAnimationWinnerText}">
+                        <behaviour:AnimationBehaviorStoryBoard.StoryBoard>
+                            <animations:StoryBoard>
+                                <animations:NextRoundLabelAnimation Target="{x:Reference nextRoundWinnerLabel}" />
+                            </animations:StoryBoard>
+                        </behaviour:AnimationBehaviorStoryBoard.StoryBoard>
+                    </behaviour:AnimationBehaviorStoryBoard>
+                </Grid.Behaviors>
+
+                
+            <!--<Grid.Behaviors>
+                <behaviour:NextRoundLabelAnimation AssociatedObject="{x:Reference nextRoundWinnerLabel}" 
+                                                   StartAnimation="{Binding WinnerText}"  />
+                <behaviour:NextRoundLabelAnimation AssociatedObject="{x:Reference nextRoundLabel}" 
+                                                   StartAnimation="{Binding NextRound}"  />
+
+            </Grid.Behaviors>-->
+            
+            </Grid>
+
+
+            <Grid x:Name="_mainGrid" 
+                  RowDefinitions="{OnPlatform Default='Auto,*,2*,*', Android='Auto,*,*,*'}"
+                  ColumnDefinitions="*,2*,*">
+                
+                <!-- high score list -->
+                <Grid Grid.Row="0" Grid.ColumnSpan="{OnPlatform Android=2,Default=1}" Grid.RowSpan="{OnPlatform Android=1,Default=2}">
+                    <CollectionView ItemsSource="{Binding Players}" SelectionMode="None" HorizontalOptions="Start">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,*" HorizontalOptions="End">
+                                    <Label Margin="1" Grid.Column="0" Text="{Binding Player.Name}"  />
+                                    <Label Margin="1" Grid.Column="1" Text="{Binding Player.Points,StringFormat=' Points {0}'}" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+
+
+
+                <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="1">
+                    <controls:CardItemsView x:Name="player2cardlist"
+                                    ItemsSource="{Binding Path=Player2Container.PlayerCards}" 
+                                    SelectedItem="{Binding Path=Player2Container.SelectedCardPlayer}"
+                                    HorizontalOptions="Center" VerticalOptions="Center"
+                                    IsEnabled="True">
+                        <controls:CardItemsView.ItemTemplate>
+                            <DataTemplate>
+                                <ViewCell>
+                                    <controls:CardView Card="{Binding}"
+                                               Style="{StaticResource cardViewInList}"
+                                               ControlTemplate="{StaticResource CardViewBackControlTemplate}"
+                                               TranslationYOffset="0">
+
+                                    </controls:CardView>
+                                </ViewCell>
+                            </DataTemplate>
+                        </controls:CardItemsView.ItemTemplate>
+                    </controls:CardItemsView>
+                </Grid>
+
+                <Grid Grid.Row="1" Grid.Column="2" >
+
+                </Grid>
+
+                <!--<Grid Grid.Row="2" Grid.Column="0">
+                    <controls:CardItemsView x:Name="player3cardlist"
+                                        ItemsSource="{Binding Path=Player3Container.PlayerCards}" 
+                                        SelectedItem="{Binding Path=Player3Container.SelectedCardPlayer}"
+                                        HorizontalOptions="Center" VerticalOptions="Center"
+                                        IsEnabled="False">
+                        <controls:CardItemsView.ItemTemplate>
+                            <DataTemplate>
+                                <ViewCell>
+                                    <Label Text="asdf0 " />
+                                </ViewCell>
+                            </DataTemplate>
+                        </controls:CardItemsView.ItemTemplate>
+                    </controls:CardItemsView>
+                </Grid>-->
+
+                <!-- 
+                the middle of the table where the current card is displayed and the cards which the players played 
+                on the android platform we assume that we dont display the cards of the 3rd and 4th player so we can use ColumnSpan =3 and start at Column=0
+                -->
+
+                <localcontrols:PlayedCardsContentView Grid.Row="2"
+                                                      Grid.Column="{OnPlatform Default=1, Android=0}" 
+                                                      Grid.ColumnSpan="{OnPlatform Default=1, Android=3}"
+                                                      PlayerContainers="{Binding Path=Players}" />
+
+
+                <!--<Grid Grid.Row="2" Grid.Column="2" 
+                      IsVisible="{OnPlatform Default=True, Android=False}">
+
+                </Grid>-->
+                
+                <Grid Grid.Row="3" Grid.ColumnSpan="3">
+                    <controls:CardItemsView x:Name="cardList"
+                                    ItemsSource="{Binding Path=Player1Container.PlayerCards}" 
+                                    SelectedItem="{Binding Path=Player1Container.SelectedCardPlayer}"
+                                    HorizontalOptions="Center" VerticalOptions="Center"
+                                    SelectionChangedCommand="{Binding Path=PickCardCommand}"
+                                    IsEnabled="{Binding Path=CardsEnabledPlayer1}">
+                        <controls:CardItemsView.ItemTemplate>
+                            <DataTemplate>
+                                <ViewCell>
+                                    <controls:CardView Card="{Binding}"
+                                               Style="{StaticResource cardViewInList}"
+                                               TranslationYOffset="9">
+
+                                    </controls:CardView>
+                                </ViewCell>
+                            </DataTemplate>
+                        </controls:CardItemsView.ItemTemplate>
+                    </controls:CardItemsView>
+                </Grid>
+            </Grid>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

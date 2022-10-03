@@ -7,7 +7,6 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using t.lib.Game.EventArgs;
 using t.lib.Game;
@@ -29,7 +28,7 @@ namespace t.lib.Network
             ActionDictionary.Add(PhaseConstants.ErrorOccoured, OnProtocolErrorAsync);
             ActionDictionary.Add(PhaseConstants.RegisterPlayer, OnPlayerRegisterAsync);
         }
-        protected virtual GameLogic Game => _game;
+        internal virtual GameLogic Game => _game;
         protected virtual Task OnPlayerRegisterAsync(GameActionProtocol gameActionProtocol, object? obj)
         {
             if (gameActionProtocol.Phase != PhaseConstants.RegisterPlayer) throw new InvalidOperationException($"Expecting {nameof(gameActionProtocol)} to be in the phase {nameof(PhaseConstants.RegisterPlayer)}");
@@ -178,7 +177,7 @@ namespace t.lib.Network
             }
             return gameActionProtocol;
         }
-        public static string Seperator = "\r\n";
+        public static readonly string Seperator = "\r\n";
         private static GameActionProtocol GameActionProtocolNewPlayer(Player? player, int? number, ref GameActionProtocol gameActionProtocol)
         {
             if (player == null) throw new ArgumentNullException(nameof(player), $"{nameof(PhaseConstants.NewPlayer)} requires argument {nameof(player)}");

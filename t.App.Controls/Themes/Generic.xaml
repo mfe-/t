@@ -1,0 +1,219 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    x:Class="t.App.Controls.Themes.Generic"
+                    xmlns:controls="clr-namespace:t.App.Controls"
+                    >
+    <!--x:Class="t.App.Controls.Themes.Generic">-->
+    <!-- 
+    Card colors
+    -->
+    <Color x:Key="CardYellow">#F1DA76</Color>
+    <Color x:Key="CardBlue">#A3D7E3</Color>
+    <Color x:Key="CardOrange">#FBD1A3</Color>
+    <Color x:Key="CardGreen">#BAE4A6</Color>
+    <Color x:Key="CardGray">#C6C6C6</Color>
+    <Color x:Key="CardPink">#FDBDE0</Color>
+    <Color x:Key="CardLila">#D4A7D5</Color>
+    <Color x:Key="CardTurquoise">#84D7C0</Color>
+    <Color x:Key="CardRed">#FF7E8F</Color>
+    <Color x:Key="CardDarkBlue">#A7B5E1</Color>
+    <Color x:Key="CardBack">#000000</Color>
+
+
+    <Color x:Key="CardLabelForeground">#FFFFFF</Color>
+
+    <LinearGradientBrush x:Key="CardLinearGradientBrush" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="{x:StaticResource CardYellow}" Offset="0.1"/>
+        <GradientStop Color="{x:StaticResource CardBlue}" Offset="0.2"/>
+        <GradientStop Color="{x:StaticResource CardOrange}" Offset="0.3"/>
+        <GradientStop Color="{x:StaticResource CardGreen}" Offset="0.4"/>
+        <GradientStop Color="{x:StaticResource CardGray}" Offset="0.5"/>
+        <GradientStop Color="{x:StaticResource CardPink}" Offset="0.6"/>
+        <GradientStop Color="{x:StaticResource CardTurquoise}" Offset="0.7"/>
+        <GradientStop Color="{x:StaticResource CardLila}" Offset="0.8"/>
+        <GradientStop Color="{x:StaticResource CardRed}" Offset="0.9"/>
+        <GradientStop Color="{x:StaticResource CardDarkBlue}" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <Style x:Key="CardLabelStyle" TargetType="{x:Type Label}">
+        <Setter Property="TextColor" Value="{x:StaticResource CardLabelForeground}" />
+        <Setter Property="FontFamily" Value="HalogenBold" />
+    </Style>
+
+    <!--
+    Represents the view of a card an the actual number
+    -->
+    <ControlTemplate x:Key="CardViewControlTemplate">
+        <Border
+            Padding="0"
+            x:Name="PART_Frame"
+            StrokeThickness="0"
+            >
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="15,15,15,15" />
+            </Border.StrokeShape>
+            <Border.Resources>
+                <Style TargetType="Label">
+                    <Setter Property="TextColor" Value="{x:StaticResource CardLabelForeground}" />
+                    <Setter Property="FontFamily" Value="HalogenBold" />
+                </Style>
+
+                <Style x:Key="LabelMiddle" TargetType="Label">
+                    <Setter Property="TextColor" Value="{x:StaticResource CardLabelForeground}" />
+                    <Setter Property="FontFamily" Value="HalogenBold" />
+                    <Setter Property="VisualStateManager.VisualStateGroups">
+                        <Setter.Value>
+                            <VisualStateGroupList>
+                                <VisualStateGroup>
+                                    <VisualState x:Name="Small">
+                                        <VisualState.StateTriggers>
+                                            <AdaptiveTrigger MinWindowHeight="0" MinWindowWidth="0" />
+                                        </VisualState.StateTriggers>
+                                        <VisualState.Setters>
+                                            <Setter Property="Label.FontSize" Value="30" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Middle">
+                                        <VisualState.StateTriggers>
+                                            <AdaptiveTrigger MinWindowHeight="200" MinWindowWidth="120" />
+                                        </VisualState.StateTriggers>
+                                        <VisualState.Setters>
+                                            <Setter Property="Label.FontSize" Value="40" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateGroupList>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+
+            </Border.Resources>
+            <Grid x:Name="PART_Grid">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.Triggers>
+                    <DataTrigger Binding="{TemplateBinding Path=Card.Value}" Value="1" TargetType="Grid">
+                        <Setter Property="BackgroundColor" Value="{x:StaticResource CardYellow}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{TemplateBinding Path=Card.Value}" Value="2" TargetType="Grid">
+                        <Setter Property="BackgroundColor" Value="{x:StaticResource CardBlue}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{TemplateBinding Path=Card.Value}" Value="3" TargetType="Grid">
+                        <Setter Property="BackgroundColor" Value="{x:StaticResource CardOrange}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{TemplateBinding Path=Card.Value}" Value="4" TargetType="Grid">
+                        <Setter Property="BackgroundColor" Value="{x:StaticResource CardGreen}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{TemplateBinding Path=Card.Value}" Value="5" TargetType="Grid">
+                        <Setter Property="BackgroundColor" Value="{x:StaticResource CardGray}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{TemplateBinding Path=Card.Value}" Value="6" TargetType="Grid">
+                        <Setter Property="BackgroundColor" Value="{x:StaticResource CardPink}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{TemplateBinding Path=Card.Value}" Value="7" TargetType="Grid">
+                        <Setter Property="BackgroundColor" Value="{x:StaticResource CardTurquoise}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{TemplateBinding Path=Card.Value}" Value="8" TargetType="Grid">
+                        <Setter Property="BackgroundColor" Value="{x:StaticResource CardLila}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{TemplateBinding Path=Card.Value}" Value="9" TargetType="Grid">
+                        <Setter Property="BackgroundColor" Value="{x:StaticResource CardRed}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{TemplateBinding Path=Card.Value}" Value="10" TargetType="Grid">
+                        <Setter Property="BackgroundColor" Value="{x:StaticResource CardDarkBlue}" />
+                    </DataTrigger>
+                </Grid.Triggers>
+
+                <Label Grid.Row="0"
+                       Grid.Column="0"
+                       Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
+                       TextColor="{x:StaticResource CardLabelForeground}"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+
+                <Label Grid.Row="0"
+                       Grid.Column="2"
+                       Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
+                       TextColor="{x:StaticResource CardLabelForeground}"
+                       HorizontalOptions="Center" 
+                       VerticalOptions="Center" />
+
+                <!-- middle -->
+                <Frame CornerRadius="250" 
+                       HasShadow="True"
+                       IsClippedToBounds="True"
+                       Grid.Row="1"
+                       Margin="10,0,10,0"
+                       Padding="0"
+                       Grid.ColumnSpan="3"
+                       BackgroundColor="White"
+                       VerticalOptions="Center">
+                    <Label Style="{StaticResource LabelMiddle}"
+                           x:Name="labelmiddle"
+                           Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
+                           TextColor="{Binding Path=BackgroundColor, Source={x:Reference PART_Grid}}"
+                           HorizontalOptions="Center">
+                    </Label>
+                </Frame>
+
+                <Label Grid.Row="2" 
+                       Grid.Column="0"
+                       Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
+                       TextColor="{x:StaticResource CardLabelForeground}"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+
+                <Label Grid.Row="2" 
+                       Grid.Column="2"
+                       Text="{TemplateBinding Path=Card.Value,Mode=TwoWay}"
+                       TextColor="{x:StaticResource CardLabelForeground}"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+
+            </Grid>
+        </Border>
+    </ControlTemplate>
+
+    <!--
+    Represents the view of a card from the back
+    -->
+    <ControlTemplate x:Key="CardViewBackControlTemplate">
+        <Border StrokeThickness="4"
+        Background="{StaticResource CardBack}"
+        HorizontalOptions="Center"
+                Stroke="White">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="20,20,20,20" />
+            </Border.StrokeShape>
+            <Grid x:Name="PART_Grid">
+                <Label Text="Card" VerticalOptions="Center" HorizontalOptions="Center"
+                       Style="{StaticResource CardLabelStyle}" FontSize="22" FontAttributes="Bold" Rotation="-45"/>
+            </Grid>
+        </Border>
+    </ControlTemplate>
+
+    <Style TargetType="{x:Type controls:CardView}">
+        <Setter Property="ControlTemplate"
+                    Value="{StaticResource CardViewControlTemplate}" />
+    </Style>
+
+    <!--
+    Theme-level dictionaries are stored in a subfolder named Themes. 
+    The files in the Themes folder correspond to themes. 
+    For example, you might have Aero.NormalColor.xaml, Luna.NormalColor.xaml, Royale.NormalColor.xaml, and so on. 
+    You can also have a file named Generic.xaml. 
+    When the system looks for a resource at the themes level, it first looks for it in the theme-specific file and then looks for it in Generic.xaml.
+    -->
+
+
+
+</ResourceDictionary>

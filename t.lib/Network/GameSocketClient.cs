@@ -41,7 +41,10 @@ namespace t.lib.Network
             {
                 Game.Players.Remove(removePlayer);
             }
-
+            if (arg2 is MessageReceiveArgs messageReceiveArgs)
+            {
+                messageReceiveArgs.OnPlayerKickedAsync.Invoke(new PlayerLeftEventArgs(player));
+            }
             return Task.CompletedTask;
         }
 
@@ -61,6 +64,10 @@ namespace t.lib.Network
                 }
 
                 _logger.LogInformation($"Adding {(_guid != player.PlayerId ? "new" : "")} PlayerId {{PlayerId)}} {{Name}}", player.PlayerId, player.Name);
+                if (obj is Func<Player, Task> onnewPlayerFunc)
+                {
+                    onnewPlayerFunc.Invoke(player);
+                }
                 Game.RegisterPlayer(player);
             }
             return Task.CompletedTask;
@@ -78,9 +85,13 @@ namespace t.lib.Network
             Game.Start(totalPoints: values.Totalpoints);
             return Task.CompletedTask;
         }
-
+        /// <summary>
+        /// Returns the current player from the session
+        /// </summary>
+        /// <remarks>Start a new session with <see cref="JoinGameAsync"/></remarks>
+        public Player? Player => _player;
         // The port number for the remote device.  
-        public async Task JoinGameAsync(string name)
+        public async Task JoinGameAsync(string name, Func<Player, Task>? onPlayerJoinedAsync = null)
         {
             _guid = Guid.NewGuid();
             // Data buffer for incoming data.  
@@ -119,7 +130,7 @@ namespace t.lib.Network
                     int bytesRec = SenderSocket.Receive(bytes);
                     _logger.LogTrace("Received {0} bytes.", bytesRec);
                     gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
-                    await OnMessageReceiveAsync(gameActionProtocolRec, null);
+                    await OnMessageReceiveAsync(gameActionProtocolRec, onPlayerJoinedAsync);
                     //send ok
                     sendPayLoad = GameActionProtocolFactory(PhaseConstants.Ok).ToByteArray();
                     bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
@@ -151,48 +162,41 @@ namespace t.lib.Network
             ThrowException(messageReceiveArgs);
             if (_player == null) throw new InvalidOperationException($"{nameof(_player)} not set!");
             if (SenderSocket == null) throw new InvalidOperationException($"{nameof(_senderSocket)} is not set! Make sure you called {nameof(JoinGameAsync)}");
-            try
+            GameActionProtocol gameActionProtocolRec;
+            GameActionProtocol gameActionProtocolSend;
+            gameActionProtocolRec.Phase = PhaseConstants.Ok;
+            int bytesSent;
+            byte[] bytes;
+            byte[] sendPayLoad;
+            while (gameActionProtocolRec.Phase != PhaseConstants.PlayerWon)
             {
-                GameActionProtocol gameActionProtocolRec;
-                GameActionProtocol gameActionProtocolSend;
-                gameActionProtocolRec.Phase = PhaseConstants.Ok;
-                int bytesSent;
-                byte[] bytes;
-                byte[] sendPayLoad;
-                while (gameActionProtocolRec.Phase != PhaseConstants.PlayerWon)
-                {
-                    // Receive the response from the remote device.  
-                    bytes = new byte[1024];
-                    int bytesRec = SenderSocket.Receive(bytes);
-                    gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
-                    // server should send next round or annaounce the winner
-                    _logger.LogTrace("Received {0} bytes.", bytesRec);
+                // Receive the response from the remote device.  
+                bytes = new byte[1024];
+                int bytesRec = SenderSocket.Receive(bytes);
+                gameActionProtocolRec = bytes.AsSpan().Slice(0, bytesRec).ToArray().ToGameActionProtocol(bytesRec);
+                // server should send next round or annaounce the winner
+                _logger.LogTrace("Received {0} bytes.", bytesRec);
 
-                    await OnMessageReceiveAsync(gameActionProtocolRec, messageReceiveArgs);
-                    gameActionProtocolSend = GameActionProtocolFactory(PhaseConstants.Ok);
+                await OnMessageReceiveAsync(gameActionProtocolRec, messageReceiveArgs);
+                gameActionProtocolSend = GameActionProtocolFactory(PhaseConstants.Ok);
+                sendPayLoad = gameActionProtocolSend.ToByteArray();
+                if (gameActionProtocolRec.Phase == PhaseConstants.NextRound)
+                {
+                    //get picked card
+                    int pickedCard = await GetPlayerCardChoiceAsync(messageReceiveArgs.OnChoiceCommandFuncAsync);
+                    //send server picked card
+                    gameActionProtocolSend = GameActionProtocolFactory(PhaseConstants.PlayerReported, number: pickedCard);
                     sendPayLoad = gameActionProtocolSend.ToByteArray();
-                    if (gameActionProtocolRec.Phase == PhaseConstants.NextRound)
-                    {
-                        //get picked card
-                        int pickedCard = await GetPlayerCardChoiceAsync(messageReceiveArgs.OnChoiceCommandFuncAsync);
-                        //send server picked card
-                        gameActionProtocolSend = GameActionProtocolFactory(PhaseConstants.PlayerReported, number: pickedCard);
-                        sendPayLoad = gameActionProtocolSend.ToByteArray();
-                    }
-                    else if (gameActionProtocolRec.Phase == PhaseConstants.PlayerScored)
-                    {
-                        //send ok
-                    }
-                    _logger.LogDebug("Send as {ClientId} {PlayerName} Phase={Phase}", gameActionProtocolSend.PlayerId, _player.Name, PhaseConstants.ToString(gameActionProtocolSend.Phase));
-                    bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
-                    _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
                 }
-                SenderSocket.Close();
+                else if (gameActionProtocolRec.Phase == PhaseConstants.PlayerScored)
+                {
+                    //send ok
+                }
+                _logger.LogDebug("Send as {ClientId} {PlayerName} Phase={Phase}", gameActionProtocolSend.PlayerId, _player.Name, PhaseConstants.ToString(gameActionProtocolSend.Phase));
+                bytesSent = await SenderSocket.SendAsync(new ArraySegment<byte>(sendPayLoad), SocketFlags.None);
+                _logger.LogTrace("Sent {0} bytes to server.", bytesSent);
             }
-            catch (SocketException e)
-            {
-                _logger.LogCritical(e, e.ToString());
-            }
+            SenderSocket.Close();
         }
 
         private void ThrowException(MessageReceiveArgs messageReceiveArgs)
@@ -311,14 +315,12 @@ namespace t.lib.Network
         public static async Task<IEnumerable<PublicGame>> FindLanGamesAsync(int udpPort, CancellationToken cancellationToken)
         {
             //Client uses as receive udp client
-            using UdpClient udpClient = new UdpClient(udpPort);
-            List<PublicGame> publicGames = new List<PublicGame>();
+            var publicGames = new List<PublicGame>();
             try
             {
+                using UdpClient udpClient = new UdpClient(udpPort);
                 while (!cancellationToken.IsCancellationRequested)
                 {
-
-                    //IPEndPoint object will allow us to read datagrams sent from any source.
                     var receivedResults = await udpClient.ReceiveAsync(cancellationToken);
 
                     if (TryGetBroadcastMessage(receivedResults.Buffer, out var ipadress, out var port, out var gameName,

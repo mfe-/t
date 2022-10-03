@@ -61,6 +61,9 @@ public class NavigationService
                     LeavePage(CurrentPage);
                     NavigationData = data;
                     await CurrentPage.Navigation.PushAsync(page);
+#if !WINDOWS //windows is firing this event multiple times which results in unexpected behavior there we dont register this event on windows
+                    page.Disappearing += Page_Disappearing;
+#endif
                 }
             }
             else
@@ -72,6 +75,14 @@ public class NavigationService
         else
         {
             throw new InvalidOperationException($"Could not resolve the viewmodel instance of type {viewmodelTypeToNavigate}");
+        }
+    }
+
+    private void Page_Disappearing(object? sender, EventArgs e)
+    {
+        if(sender is Page page)
+        {
+            LeavePage(page);
         }
     }
 
